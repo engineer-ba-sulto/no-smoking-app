@@ -11,10 +11,25 @@ import {
 } from "lucide-react-native";
 import { ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
 
+// 設定項目の型定義
+interface SettingItem {
+  icon: React.ReactElement;
+  label: string;
+  value?: string | boolean;
+  toggle?: boolean;
+  onPress?: () => void;
+  onToggle?: (value: boolean) => void;
+}
+
+interface SettingSection {
+  title: string;
+  items: SettingItem[];
+}
+
 export default function SettingsScreen() {
   const { smokerData, updateSmokerData } = useSmokerData();
 
-  const settingSections = [
+  const settingSections: SettingSection[] = [
     {
       title: "あなたの禁煙情報",
       items: [
