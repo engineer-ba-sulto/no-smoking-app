@@ -7,6 +7,7 @@ import {
   Cigarette,
   DollarSign,
   FileText,
+  Play,
   Shield,
 } from "lucide-react-native";
 import { ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
@@ -85,6 +86,22 @@ export default function SettingsScreen() {
     },
   ];
 
+  // 開発環境でのみ表示するセクション
+  const devSections: SettingSection[] = __DEV__
+    ? [
+        {
+          title: "開発者向け",
+          items: [
+            {
+              icon: <Play size={20} color="#EF4444" strokeWidth={2} />,
+              label: "オンボーディングを確認",
+              onPress: () => router.push("/onboarding"),
+            },
+          ],
+        },
+      ]
+    : [];
+
   return (
     <View className="flex-1 bg-gray-50">
       {/* Header */}
@@ -148,6 +165,41 @@ export default function SettingsScreen() {
                         />
                       </>
                     )}
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        ))}
+
+        {/* 開発環境でのみ表示されるセクション */}
+        {devSections.map((section, sectionIndex) => (
+          <View key={`dev-${sectionIndex}`} className="mb-6">
+            <Text className="text-base font-semibold text-gray-800 mb-3">
+              ▼ {section.title}
+            </Text>
+            <View className="bg-white rounded-xl shadow-sm border-2 border-red-100">
+              {section.items.map((item, itemIndex) => (
+                <TouchableOpacity
+                  key={itemIndex}
+                  className={`flex-row items-center justify-between px-4 py-4 ${
+                    itemIndex === section.items.length - 1
+                      ? ""
+                      : "border-b border-gray-100"
+                  }`}
+                  onPress={item.onPress}
+                >
+                  <View className="flex-row items-center flex-1">
+                    {item.icon}
+                    <Text className="text-sm font-medium text-gray-800 ml-3">
+                      {item.label}
+                    </Text>
+                  </View>
+                  <View className="flex-row items-center">
+                    <Text className="text-xs text-red-500 mr-2 font-medium">
+                      DEV
+                    </Text>
+                    <ChevronRight size={16} color="#9CA3AF" strokeWidth={2} />
                   </View>
                 </TouchableOpacity>
               ))}
