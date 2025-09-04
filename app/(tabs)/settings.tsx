@@ -83,9 +83,7 @@ export default function SettingsScreen() {
           borderBottomRightRadius: 20,
         }}
       >
-        <Text className="text-2xl font-bold text-white text-center">
-          せってい
-        </Text>
+        <Text className="text-2xl font-bold text-white text-center">設定</Text>
       </LinearGradient>
 
       <ScrollView
