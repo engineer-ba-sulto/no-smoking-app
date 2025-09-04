@@ -1,23 +1,22 @@
-import React from 'react';
-import { TouchableOpacity, Text, ViewStyle } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient } from "expo-linear-gradient";
+import { Text, TouchableOpacity } from "react-native";
 
 interface Props {
   title: string;
   onPress: () => void;
   disabled?: boolean;
-  variant?: 'primary' | 'secondary';
+  variant?: "primary" | "secondary";
   className?: string;
 }
 
-export function StepButton({ 
-  title, 
-  onPress, 
-  disabled = false, 
-  variant = 'primary',
-  className = ''
+export function StepButton({
+  title,
+  onPress,
+  disabled = false,
+  variant = "primary",
+  className = "",
 }: Props) {
-  if (variant === 'secondary') {
+  if (variant === "secondary") {
     return (
       <TouchableOpacity
         className={`py-4 items-center ${className}`}
@@ -32,16 +31,25 @@ export function StepButton({
 
   return (
     <TouchableOpacity
-      className={`rounded-xl ${disabled ? 'opacity-50' : ''} ${className}`}
+      className={`rounded-xl ${disabled ? "opacity-50" : ""} ${className}`}
       onPress={onPress}
       disabled={disabled}
       activeOpacity={0.8}
     >
       <LinearGradient
-        colors={disabled ? ['#D1D5DB', '#9CA3AF'] : ['#10B981', '#059669']}
-        className="py-4 px-8 rounded-xl items-center"
+        colors={disabled ? ["#D1D5DB", "#9CA3AF"] : ["#10B981", "#059669"]}
+        style={{
+          paddingVertical: 16,
+          paddingHorizontal: 32,
+          borderRadius: 12,
+          alignItems: "center",
+        }}
       >
-        <Text className={`text-base font-semibold ${disabled ? 'text-gray-100' : 'text-white'}`}>
+        <Text
+          className={`text-base font-semibold ${
+            disabled ? "text-gray-100" : "text-white"
+          }`}
+        >
           {title}
         </Text>
       </LinearGradient>
