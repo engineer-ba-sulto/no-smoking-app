@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
+import { SOSScreen } from "@/components/SOSScreen";
+import { StatsCard } from "@/components/StatsCard";
+import { useQuitTimer } from "@/hooks/useQuitTimer";
+import { useSmokerData } from "@/hooks/useSmokerData";
+import { LinearGradient } from "expo-linear-gradient";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  Platform,
-  Modal,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Heart, DollarSign, Clock, Target, CircleAlert as AlertCircle } from 'lucide-react-native';
-import { SOSScreen } from '@/components/SOSScreen';
-import { StatsCard } from '@/components/StatsCard';
-import { useSmokerData } from '@/hooks/useSmokerData';
-import { useQuitTimer } from '@/hooks/useQuitTimer';
+  CircleAlert as AlertCircle,
+  Clock,
+  DollarSign,
+  Heart,
+  Target,
+} from "lucide-react-native";
+import { useState } from "react";
+import { Modal, Text, TouchableOpacity, View } from "react-native";
 
 export default function HomeScreen() {
   const [showSOS, setShowSOS] = useState(false);
@@ -23,30 +23,43 @@ export default function HomeScreen() {
     smokerData?.cigarettesPerPack
   );
 
-  const userName = smokerData?.name || 'あなた';
+  const userName = smokerData?.name || "あなた";
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-gray-100">
       {/* Header with gradient */}
       <LinearGradient
-        colors={['#10B981', '#059669']}
-        className="pt-15 ios:pt-15 android:pt-10 px-5 pb-5 rounded-b-2xl"
+        colors={["#10B981", "#059669"]}
+        style={{
+          paddingTop: 60,
+          paddingBottom: 10,
+          paddingHorizontal: 20,
+          borderBottomLeftRadius: 20,
+          borderBottomRightRadius: 20,
+        }}
       >
-        <Text className="text-lg font-semibold text-white mb-2">こんにちは、{userName}さん！</Text>
+        <Text className="text-lg font-semibold text-white mb-2">
+          こんにちは、{userName}さん！
+        </Text>
         <View className="flex-row items-center bg-white/20 px-3 py-1.5 rounded-xl self-start">
           <Heart size={16} color="#ffffff" strokeWidth={2} />
-          <Text className="text-xs text-white ml-1.5 font-medium">血圧が正常値に近づいています</Text>
+          <Text className="text-xs text-white ml-1.5 font-medium">
+            血圧が正常値に近づいています
+          </Text>
         </View>
       </LinearGradient>
 
       {/* Main content */}
       <View className="flex-1 px-5 pt-8">
-        <Text className="text-base text-gray-600 text-center mb-5 font-medium">あなたが禁煙をはじめてから...</Text>
-        
+        <Text className="text-base text-gray-600 text-center mb-5 font-medium">
+          あなたが禁煙をはじめてから...
+        </Text>
+
         {/* Main timer display */}
         <View className="bg-white rounded-2xl p-8 mb-8 items-center shadow-sm">
           <Text className="text-2xl font-bold text-gray-800 text-center leading-8">
-            {quitStats.days}日 {quitStats.hours}時間 {quitStats.minutes}分 {quitStats.seconds}秒
+            {quitStats.days}日 {quitStats.hours}時間 {quitStats.minutes}分{" "}
+            {quitStats.seconds}秒
           </Text>
         </View>
 
@@ -81,13 +94,19 @@ export default function HomeScreen() {
 
       {/* SOS FAB */}
       <TouchableOpacity
-        className="absolute bottom-25 right-5 w-15 h-15 rounded-full shadow-lg"
+        className="absolute bottom-5 right-5 w-15 h-15 rounded-full shadow-lg"
         onPress={() => setShowSOS(true)}
         activeOpacity={0.8}
       >
         <LinearGradient
-          colors={['#EF4444', '#DC2626']}
-          className="w-15 h-15 rounded-full items-center justify-center"
+          colors={["#EF4444", "#DC2626"]}
+          style={{
+            width: 60,
+            height: 60,
+            borderRadius: 30,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
         >
           <AlertCircle size={24} color="#ffffff" strokeWidth={2} />
           <Text className="text-xs font-bold text-white mt-0.5">SOS</Text>

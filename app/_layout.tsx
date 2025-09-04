@@ -1,10 +1,9 @@
-import { useEffect } from 'react';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import '../global.css';
-import { useFrameworkReady } from '@/hooks/useFrameworkReady';
-import { useSmokerData } from '@/hooks/useSmokerData';
-import { router } from 'expo-router';
+import { useFrameworkReady } from "@/hooks/useFrameworkReady";
+import { useSmokerData } from "@/hooks/useSmokerData";
+import { router, Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import "../global.css";
 
 export default function RootLayout() {
   useFrameworkReady();
@@ -13,9 +12,9 @@ export default function RootLayout() {
   useEffect(() => {
     if (!loading && smokerData) {
       if (!smokerData.hasCompletedOnboarding) {
-        router.replace('/onboarding');
+        router.replace("/onboarding");
       } else {
-        router.replace('/(tabs)');
+        router.replace("/(tabs)");
       }
     }
   }, [loading, smokerData]);

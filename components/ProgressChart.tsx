@@ -1,8 +1,7 @@
-import React from 'react';
-import { View, Text, Dimensions } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient } from "expo-linear-gradient";
+import { Dimensions, Text, View } from "react-native";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 interface QuitStats {
   days: number;
@@ -17,17 +16,18 @@ interface QuitStats {
 }
 
 interface Props {
-  period: 'week' | 'month' | 'year';
-  type: 'money' | 'cigarettes';
+  period: "week" | "month" | "year";
+  type: "money" | "cigarettes";
   quitStats: QuitStats;
 }
 
 export function ProgressChart({ period, type, quitStats }: Props) {
   // Generate mock data for demonstration
   const generateChartData = () => {
-    const dataPoints = period === 'week' ? 7 : period === 'month' ? 30 : 12;
-    const maxValue = type === 'money' ? quitStats.moneySaved : quitStats.cigarettesNotSmoked;
-    
+    const dataPoints = period === "week" ? 7 : period === "month" ? 30 : 12;
+    const maxValue =
+      type === "money" ? quitStats.moneySaved : quitStats.cigarettesNotSmoked;
+
     return Array.from({ length: dataPoints }, (_, index) => {
       const progress = (index + 1) / dataPoints;
       return Math.floor(maxValue * progress * (0.7 + Math.random() * 0.3));
@@ -41,10 +41,10 @@ export function ProgressChart({ period, type, quitStats }: Props) {
   const barWidth = chartWidth / data.length - 4;
 
   const getLabel = (index: number) => {
-    if (period === 'week') {
-      const days = ['月', '火', '水', '木', '金', '土', '日'];
+    if (period === "week") {
+      const days = ["月", "火", "水", "木", "金", "土", "日"];
       return days[index];
-    } else if (period === 'month') {
+    } else if (period === "month") {
       return `${index + 1}`;
     } else {
       return `${index + 1}月`;
@@ -52,7 +52,7 @@ export function ProgressChart({ period, type, quitStats }: Props) {
   };
 
   const formatValue = (value: number) => {
-    if (type === 'money') {
+    if (type === "money") {
       return `¥${value.toLocaleString()}`;
     } else {
       return `${value}本`;
@@ -68,12 +68,12 @@ export function ProgressChart({ period, type, quitStats }: Props) {
             const height = maxValue > 0 ? (value / maxValue) * chartHeight : 0;
             return (
               <View key={index} className="items-center mx-0.5">
-                <View 
+                <View
                   className="bg-gray-200 rounded-t-sm justify-end overflow-hidden"
                   style={{ width: barWidth, height: chartHeight }}
                 >
                   <LinearGradient
-                    colors={['#10B981', '#059669']}
+                    colors={["#10B981", "#059669"]}
                     style={{
                       width: barWidth,
                       height: height,
@@ -81,7 +81,9 @@ export function ProgressChart({ period, type, quitStats }: Props) {
                     }}
                   />
                 </View>
-                <Text className="text-xs text-gray-400 mt-1 font-medium">{getLabel(index)}</Text>
+                <Text className="text-xs text-gray-400 mt-1 font-medium">
+                  {getLabel(index)}
+                </Text>
               </View>
             );
           })}
@@ -90,9 +92,15 @@ export function ProgressChart({ period, type, quitStats }: Props) {
 
       {/* Current value display */}
       <View className="items-center py-3 px-5 bg-primary-50 rounded-lg border border-primary-500">
-        <Text className="text-xs text-primary-600 font-medium mb-1">現在の合計</Text>
+        <Text className="text-xs text-primary-600 font-medium mb-1">
+          現在の合計
+        </Text>
         <Text className="text-lg font-bold text-primary-500">
-          {formatValue(type === 'money' ? quitStats.moneySaved : quitStats.cigarettesNotSmoked)}
+          {formatValue(
+            type === "money"
+              ? quitStats.moneySaved
+              : quitStats.cigarettesNotSmoked
+          )}
         </Text>
       </View>
     </View>
