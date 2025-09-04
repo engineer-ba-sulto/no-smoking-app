@@ -1,0 +1,96 @@
+import React from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { Award, Lock } from 'lucide-react-native';
+
+interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  achieved: boolean;
+  tier: 'bronze' | 'silver' | 'gold' | 'platinum';
+  targetValue: number;
+  currentValue: number;
+  unit: string;
+}
+
+interface Props {
+  achievement: Achievement;
+}
+
+const tierColors = {
+  bronze: '#CD7C32',
+  silver: '#C0C0C0',
+  gold: '#FFD700',
+  platinum: '#E5E4E2',
+};
+
+export function AchievementBadge({ achievement }: Props) {
+  const tierColor = tierColors[achievement.tier];
+  const isAchieved = achievement.achieved;
+  const progress = Math.min(achievement.currentValue / achievement.targetValue, 1);
+  const remaining = Math.max(achievement.targetValue - achievement.currentValue, 0);
+
+  return (
+    <TouchableOpacity
+      className={`w-[48%] bg-white rounded-xl p-4 mb-4 items-center shadow-sm ${
+        isAchieved ? 'border border-primary-500' : 'opacity-80'
+      }`}
+      activeOpacity={0.8}
+    >
+      <View 
+        className="w-12 h-12 rounded-full items-center justify-center mb-2"
+        style={{
+          backgroundColor: isAchieved ? `${tierColor}20` : '#f3f4f6',
+        }}
+      >
+        {isAchieved ? (
+          <Award size={24} color={tierColor} strokeWidth={2} />
+        ) : (
+          <Lock size={24} color="#9CA3AF" strokeWidth={2} />
+        )}
+      </View>
+      
+      <Text 
+        className="text-xs font-bold mb-1"
+        style={{ color: isAchieved ? tierColor : '#9CA3AF' }}
+      >
+        [{achievement.tier.toUpperCase()}]
+      </Text>
+      
+      <Text className={`text-sm font-semibold text-center mb-1 ${
+        isAchieved ? 'text-gray-800' : 'text-gray-400'
+      }`}>
+        {achievement.title}
+      </Text>
+      
+      <Text className={`text-xs text-center leading-4 mb-2 ${
+        isAchieved ? 'text-gray-600' : 'text-gray-300'
+      }`}>
+        {achievement.description}
+      </Text>
+
+      {!isAchieved && (
+        <View className="w-full items-center">
+          <Text className="text-xs text-center mb-1.5">
+            <Text className="text-gray-400">目標まであと </Text>
+            <Text className="text-primary-500 font-semibold">
+              {remaining.toLocaleString()}{achievement.unit}
+            </Text>
+          </Text>
+          <View className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
+            <View 
+              className="h-full bg-primary-500 rounded-full"
+              style={{ width: `${progress * 100}%` }}
+            />
+          </View>
+        </View>
+      )}
+
+      {isAchieved && (
+        <Text className="text-xs text-primary-500 text-center mt-1">
+          タップして詳細を見る
+        </Text>
+      )}
+    </TouchableOpacity>
+  );
+}
