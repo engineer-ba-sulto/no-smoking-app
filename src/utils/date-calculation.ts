@@ -11,3 +11,21 @@ export const calculateSmokingCessationDuration = (
   const endDate = new Date(); // 現在時刻
   return intervalToDuration({ start: startDate, end: endDate });
 };
+
+/**
+ * Duration オブジェクトを「X年Yヶ月Z日...」の形式の文字列に変換します。
+ * @param duration - Duration オブジェクト
+ * @returns フォーマットされた文字列
+ */
+export const formatDuration = (duration: Duration): string => {
+  const parts = [
+    duration.years && `${duration.years}年`,
+    duration.months && `${duration.months}ヶ月`,
+    duration.days && `${duration.days}日`,
+    duration.hours && `${duration.hours}時間`,
+    duration.minutes && `${duration.minutes}分`,
+    duration.seconds && `${duration.seconds}秒`,
+  ].filter(Boolean); // null や undefined を除去
+
+  return parts.join("");
+};
