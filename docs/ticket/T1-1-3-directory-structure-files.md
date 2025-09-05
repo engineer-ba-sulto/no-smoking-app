@@ -43,7 +43,7 @@ import type { Config } from "drizzle-kit";
 
 export default {
   schema: "./src/drizzle/schema.ts",
-  out: "./src/drizzle",
+  out: "./src/drizzle/migrations",
   dialect: "sqlite",
   driver: "expo", // 重要：Expo用の設定
 } satisfies Config;
@@ -71,7 +71,7 @@ export type Database = typeof db;
 #### 2-3. `src/drizzle/schema.ts` - テーブルスキーマ定義
 
 ```typescript
-import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
+import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const userProfile = sqliteTable("user_profile", {
   id: integer("id").primaryKey({ autoIncrement: true }),
