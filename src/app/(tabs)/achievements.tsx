@@ -3,6 +3,7 @@ import { HealthTimeline } from "@/components/HealthTimeline";
 import { ProgressChart } from "@/components/ProgressChart";
 import { useQuitTimer } from "@/hooks/useQuitTimer";
 import { useSmokerData } from "@/hooks/useSmokerData";
+import { checkAllAchievements } from "@/utils/achievement-logic";
 import { LinearGradient } from "expo-linear-gradient";
 import { Award, Heart, TrendingUp } from "lucide-react-native";
 import { useState } from "react";
@@ -25,68 +26,51 @@ export default function AchievementsScreen() {
     smokerData?.cigarettesPerPack
   );
 
-  const achievements = [
-    {
-      id: "first-24h",
-      title: "禁煙24時間 達成！",
-      description: "最初の24時間を乗り越えました",
-      achieved: quitStats.days >= 1,
-      tier: "bronze" as const,
-      targetValue: 1,
-      currentValue: quitStats.days,
-      unit: "日",
-    },
-    {
-      id: "week-milestone",
-      title: "禁煙1週間 達成！",
-      description: "7日間の継続、素晴らしいです",
-      achieved: quitStats.days >= 7,
-      tier: "silver" as const,
-      targetValue: 7,
-      currentValue: quitStats.days,
-      unit: "日",
-    },
-    {
-      id: "hundred-cigarettes",
-      title: "我慢100本 達成！",
-      description: "健康への大きな投資",
-      achieved: quitStats.cigarettesNotSmoked >= 100,
-      tier: "silver" as const,
-      targetValue: 100,
-      currentValue: quitStats.cigarettesNotSmoked,
-      unit: "本",
-    },
-    {
-      id: "money-10k",
-      title: "節約額1万円突破",
-      description: "経済的メリットを実感",
-      achieved: quitStats.moneySaved >= 10000,
-      tier: "gold" as const,
-      targetValue: 10000,
-      currentValue: quitStats.moneySaved,
-      unit: "円",
-    },
-    {
-      id: "month-milestone",
-      title: "禁煙30日 達成！",
-      description: "1ヶ月の大きな節目です",
-      achieved: quitStats.days >= 30,
-      tier: "gold" as const,
-      targetValue: 30,
-      currentValue: quitStats.days,
-      unit: "日",
-    },
-    {
-      id: "hundred-days",
-      title: "禁煙100日 達成！",
-      description: "習慣が完全に変わりました",
-      achieved: quitStats.days >= 100,
-      tier: "platinum" as const,
-      targetValue: 100,
-      currentValue: quitStats.days,
-      unit: "日",
-    },
-  ];
+  // quitStatsをOutcomeData型に変換してcheckAllAchievements関数を呼び出し
+  const outcomeData = {
+    durationInSeconds: quitStats.totalSeconds,
+    resistedCigarettes: quitStats.cigarettesNotSmoked,
+    savedMoney: quitStats.moneySaved,
+  };
+
+  const achievementStatuses = checkAllAchievements(outcomeData);
+
+  // AchievementStatusをAchievementBadgeが期待する型に変換
+  const achievements = achievementStatuses.map((status) => {
+    let currentValue: number;
+    let targetValue: number;
+
+    switch (status.category) {
+      case "duration":
+        currentValue = Math.floor(status.goal / (24 * 3600)); // 日数に変換
+        targetValue = Math.floor(status.goal / (24 * 3600));
+        break;
+      case "cigarettes":
+        currentValue = quitStats.cigarettesNotSmoked;
+        targetValue = status.goal;
+        break;
+      case "money":
+        currentValue = quitStats.moneySaved;
+        targetValue = status.goal;
+        break;
+      default:
+        currentValue = 0;
+        targetValue = status.goal;
+    }
+
+    return {
+      id: status.id,
+      title: status.title,
+      description: status.description,
+      category: status.category,
+      goal: status.goal,
+      tier: status.tier,
+      unit: status.unit,
+      isUnlocked: status.isUnlocked,
+      targetValue,
+      currentValue,
+    };
+  });
 
   const tabs = [
     { key: "badges" as TabType, label: "バッジ", icon: Award },
