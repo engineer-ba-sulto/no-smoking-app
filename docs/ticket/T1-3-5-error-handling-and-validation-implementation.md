@@ -2,700 +2,171 @@
 
 ## 概要
 
-T1-3-4 で実装した作成機能を基に、リポジトリ層全体のエラーハンドリングとバリデーション機能を統合・強化する。カスタムエラークラス、バリデーション関数、エラーログ機能などを実装し、アプリケーション全体で一貫したエラー処理を提供する。
+リポジトリ層の堅牢性を高めるため、入力データのバリデーション機能と、データベース操作中に発生しうるエラーをハンドリングする仕組みを実装する。`zod` を用いてスキーマベースのバリデーションを行い、カスタムエラークラスを定義して、エラーの種類を明確に識別できるようにする。
 
 ## 目的
 
-- リポジトリ層全体のエラーハンドリングを統合・強化する
-- バリデーション機能を統合・最適化する
-- カスタムエラークラスとエラーログ機能を実装する
-- アプリケーション全体で一貫したエラー処理を提供する
+- `zod` を使用して、ユーザープロファイルの入力データ用スキーマと型を定義する
+- `create` および `update` 操作の前に、入力データをバリデーションする関数を実装する
+- データベース関連のエラーを捕捉し、アプリケーション層で扱いやすいカスタムエラーに変換する
+- `findById` で対象が見つからない場合に、専用の `UserProfileNotFoundError` をスローするようにリポジトリを修正する
 
 ## 依存関係
 
-- **依存タスク**: T1-3-4（ユーザープロファイル作成機能の実装）
+- **親タスク**: T1-3-0 (データ操作用リポジトリ層の実装)
+- **依存タスク**: T1-3-4 (ユーザープロファイル作成機能の実装)
 - **担当領域**: バックエンド
 
 ## 実装詳細
 
-### 1. カスタムエラークラスの実装
+### 1. `zod` を用いたスキーマと型の定義
 
-#### 基本エラークラス
+`src/drizzle/schema.ts` に、`userProfile` テーブルとは別に、バリデーション用の `zod` スキーマを定義する。
 
 ```typescript
-// src/drizzle/errors/base-errors.ts
-export abstract class BaseError extends Error {
-  abstract readonly code: string;
-  abstract readonly statusCode: number;
+// src/drizzle/schema.ts
+import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
+import { z } from "zod";
 
-  constructor(message: string, public readonly context?: any) {
+// ... (既存の userProfile テーブル定義)
+
+// zod を使用して入力データ用のスキーマを定義
+export const userProfileInputSchema = z.object({
+  smokingStartDate: z
+    .string()
+    .datetime({ message: "有効なISO形式の日付文字列である必要があります" }),
+  cigsPerDay: z
+    .number()
+    .int()
+    .min(0, { message: "0以上の数値を入力してください" }),
+  pricePerPack: z
+    .number()
+    .int()
+    .min(0, { message: "0以上の数値を入力してください" }),
+  cigsPerPack: z
+    .number()
+    .int()
+    .min(0, { message: "0以上の数値を入力してください" }),
+});
+
+// 新規作成用の型定義
+export type CreateUserProfileInput = z.infer<typeof userProfileInputSchema>;
+
+// 更新用の型定義 (全プロパティをオプショナルに)
+export type UpdateUserProfileInput = z.infer<
+  typeof userProfileInputSchema.partial()
+>;
+```
+
+### 2. カスタムエラークラスの定義
+
+アプリケーション全体で利用可能なカスタムエラーを `src/drizzle/errors.ts` に定義する。
+
+```typescript
+// src/drizzle/errors.ts
+export class UserProfileError extends Error {
+  constructor(message: string) {
     super(message);
-    this.name = this.constructor.name;
-    Error.captureStackTrace(this, this.constructor);
-  }
-
-  toJSON() {
-    return {
-      name: this.name,
-      code: this.code,
-      message: this.message,
-      statusCode: this.statusCode,
-      context: this.context,
-      stack: this.stack,
-    };
+    this.name = "UserProfileError";
   }
 }
 
-export class ValidationError extends BaseError {
-  readonly code = "VALIDATION_ERROR";
-  readonly statusCode = 400;
-
-  constructor(message: string, public readonly field?: string, context?: any) {
-    super(message, context);
+export class UserProfileNotFoundError extends UserProfileError {
+  constructor(id: number) {
+    super(`User profile with id ${id} not found`);
+    this.name = "UserProfileNotFoundError";
   }
 }
 
-export class DatabaseError extends BaseError {
-  readonly code = "DATABASE_ERROR";
-  readonly statusCode = 500;
-
-  constructor(
-    message: string,
-    public readonly originalError?: any,
-    context?: any
-  ) {
-    super(message, context);
-  }
-}
-
-export class NotFoundError extends BaseError {
-  readonly code = "NOT_FOUND";
-  readonly statusCode = 404;
-
-  constructor(resource: string, identifier: any, context?: any) {
-    super(`${resource} with identifier ${identifier} not found`, context);
-  }
-}
-
-export class ConflictError extends BaseError {
-  readonly code = "CONFLICT";
-  readonly statusCode = 409;
-
-  constructor(message: string, context?: any) {
-    super(message, context);
+export class UserProfileValidationError extends UserProfileError {
+  constructor(public issues: z.ZodIssue[]) {
+    const message = issues.map((i) => i.message).join(", ");
+    super(message);
+    this.name = "UserProfileValidationError";
   }
 }
 ```
 
-#### ユーザープロファイル専用エラークラス
+### 3. バリデーション関数の実装
+
+リポジトリ内で使用するバリデーションロジックを実装する。ここではシンプルにするため、各リポジトリ関数内で直接 `safeParse` を呼び出す。
+
+### 4. リポジトリ関数の修正
+
+作成したバリデーションとエラーハンドリングを既存のリポジトリ関数に組み込む。
+
+#### `create` 関数の修正
 
 ```typescript
-// src/drizzle/errors/user-profile-errors.ts
-import {
-  BaseError,
-  ValidationError,
-  NotFoundError,
-  ConflictError,
-} from "./base-errors";
+// src/drizzle/repositories/user-profile.repository.ts
+// ... (imports)
+import { UserProfileValidationError } from "@/drizzle/errors";
 
-export class UserProfileError extends BaseError {
-  readonly code = "USER_PROFILE_ERROR";
-  readonly statusCode = 500;
-}
-
-export class UserProfileValidationError extends ValidationError {
-  readonly code = "USER_PROFILE_VALIDATION_ERROR";
-
-  constructor(message: string, field?: string, context?: any) {
-    super(message, field, context);
+// ...
+async create(input: CreateUserProfileInput) {
+  const validationResult = userProfileInputSchema.safeParse(input);
+  if (!validationResult.success) {
+    throw new UserProfileValidationError(validationResult.error.issues);
   }
-}
 
-export class UserProfileNotFoundError extends NotFoundError {
-  readonly code = "USER_PROFILE_NOT_FOUND";
-
-  constructor(id: number, context?: any) {
-    super("User profile", id, context);
-  }
-}
-
-export class UserProfileConflictError extends ConflictError {
-  readonly code = "USER_PROFILE_CONFLICT";
-
-  constructor(message: string, context?: any) {
-    super(message, context);
-  }
-}
-
-export class UserProfileDuplicateError extends ConflictError {
-  readonly code = "USER_PROFILE_DUPLICATE";
-
-  constructor(context?: any) {
-    super("User profile with the same data already exists", context);
-  }
-}
+  // ... (既存の作成ロジック)
+},
 ```
 
-### 2. 統合バリデーション機能の実装
-
-#### バリデーション関数の統合
+#### `update` 関数の修正
 
 ```typescript
-// src/drizzle/validators/user-profile-validator.ts
-import { CreateUserProfileInput, UpdateUserProfileInput } from "../types";
-import { UserProfileValidationError } from "../errors/user-profile-errors";
+// src/drizzle/repositories/user-profile.repository.ts
+// ...
+async update(id: number, input: UpdateUserProfileInput) {
+  const validationResult = userProfileInputSchema.partial().safeParse(input);
+  if (!validationResult.success) {
+    throw new UserProfileValidationError(validationResult.error.issues);
+  }
 
-export const validateUserProfileInput = {
-  // 作成用バリデーション
-  create: (input: CreateUserProfileInput): void => {
-    const errors: ValidationError[] = [];
-
-    // 必須フィールドのチェック
-    if (!input.smokingStartDate) {
-      errors.push(
-        new ValidationError("smokingStartDate is required", "smokingStartDate")
-      );
-    } else if (!isValidISODate(input.smokingStartDate)) {
-      errors.push(
-        new ValidationError(
-          "smokingStartDate must be a valid ISO date string",
-          "smokingStartDate"
-        )
-      );
-    }
-
-    if (input.cigsPerDay === undefined || input.cigsPerDay === null) {
-      errors.push(new ValidationError("cigsPerDay is required", "cigsPerDay"));
-    } else if (
-      !Number.isInteger(input.cigsPerDay) ||
-      input.cigsPerDay < 0 ||
-      input.cigsPerDay > 100
-    ) {
-      errors.push(
-        new ValidationError(
-          "cigsPerDay must be an integer between 0 and 100",
-          "cigsPerDay"
-        )
-      );
-    }
-
-    if (input.pricePerPack === undefined || input.pricePerPack === null) {
-      errors.push(
-        new ValidationError("pricePerPack is required", "pricePerPack")
-      );
-    } else if (
-      typeof input.pricePerPack !== "number" ||
-      input.pricePerPack < 0 ||
-      input.pricePerPack > 10000
-    ) {
-      errors.push(
-        new ValidationError(
-          "pricePerPack must be a number between 0 and 10000",
-          "pricePerPack"
-        )
-      );
-    }
-
-    if (input.cigsPerPack === undefined || input.cigsPerPack === null) {
-      errors.push(
-        new ValidationError("cigsPerPack is required", "cigsPerPack")
-      );
-    } else if (
-      !Number.isInteger(input.cigsPerPack) ||
-      input.cigsPerPack < 0 ||
-      input.cigsPerPack > 50
-    ) {
-      errors.push(
-        new ValidationError(
-          "cigsPerPack must be an integer between 0 and 50",
-          "cigsPerPack"
-        )
-      );
-    }
-
-    // 論理的な整合性チェック
-    if (input.cigsPerDay > 0 && input.cigsPerPack === 0) {
-      errors.push(
-        new ValidationError(
-          "cigsPerPack cannot be 0 when cigsPerDay is greater than 0",
-          "cigsPerPack"
-        )
-      );
-    }
-
-    if (input.pricePerPack > 0 && input.cigsPerPack === 0) {
-      errors.push(
-        new ValidationError(
-          "cigsPerPack cannot be 0 when pricePerPack is greater than 0",
-          "cigsPerPack"
-        )
-      );
-    }
-
-    if (errors.length > 0) {
-      throw new UserProfileValidationError(
-        `Validation failed: ${errors.map((e) => e.message).join(", ")}`,
-        undefined,
-        { errors: errors.map((e) => ({ field: e.field, message: e.message })) }
-      );
-    }
-  },
-
-  // 更新用バリデーション
-  update: (input: UpdateUserProfileInput): void => {
-    const errors: ValidationError[] = [];
-
-    if (input.smokingStartDate !== undefined) {
-      if (!isValidISODate(input.smokingStartDate)) {
-        errors.push(
-          new ValidationError(
-            "smokingStartDate must be a valid ISO date string",
-            "smokingStartDate"
-          )
-        );
-      }
-    }
-
-    if (input.cigsPerDay !== undefined) {
-      if (
-        !Number.isInteger(input.cigsPerDay) ||
-        input.cigsPerDay < 0 ||
-        input.cigsPerDay > 100
-      ) {
-        errors.push(
-          new ValidationError(
-            "cigsPerDay must be an integer between 0 and 100",
-            "cigsPerDay"
-          )
-        );
-      }
-    }
-
-    if (input.pricePerPack !== undefined) {
-      if (
-        typeof input.pricePerPack !== "number" ||
-        input.pricePerPack < 0 ||
-        input.pricePerPack > 10000
-      ) {
-        errors.push(
-          new ValidationError(
-            "pricePerPack must be a number between 0 and 10000",
-            "pricePerPack"
-          )
-        );
-      }
-    }
-
-    if (input.cigsPerPack !== undefined) {
-      if (
-        !Number.isInteger(input.cigsPerPack) ||
-        input.cigsPerPack < 0 ||
-        input.cigsPerPack > 50
-      ) {
-        errors.push(
-          new ValidationError(
-            "cigsPerPack must be an integer between 0 and 50",
-            "cigsPerPack"
-          )
-        );
-      }
-    }
-
-    if (errors.length > 0) {
-      throw new UserProfileValidationError(
-        `Validation failed: ${errors.map((e) => e.message).join(", ")}`,
-        undefined,
-        { errors: errors.map((e) => ({ field: e.field, message: e.message })) }
-      );
-    }
-  },
-
-  // IDバリデーション
-  id: (id: number): void => {
-    if (!Number.isInteger(id) || id <= 0) {
-      throw new UserProfileValidationError(
-        "ID must be a positive integer",
-        "id"
-      );
-    }
-  },
-};
-
-const isValidISODate = (dateString: string): boolean => {
-  const date = new Date(dateString);
-  return (
-    date instanceof Date &&
-    !isNaN(date.getTime()) &&
-    dateString === date.toISOString()
-  );
-};
+  // ... (既存の更新ロジック)
+},
 ```
 
-### 3. エラーハンドリングの統合
+#### `findById` 関数の修正
 
-#### エラーハンドラーの実装
+`null` を返す代わりに `UserProfileNotFoundError` をスローする。
 
 ```typescript
-// src/drizzle/error-handlers/error-handler.ts
-import {
-  BaseError,
-  DatabaseError,
-  ValidationError,
-  NotFoundError,
-  ConflictError,
-} from "../errors/base-errors";
-import {
-  UserProfileError,
-  UserProfileValidationError,
-  UserProfileNotFoundError,
-  UserProfileConflictError,
-} from "../errors/user-profile-errors";
-
-export class ErrorHandler {
-  // エラーの分類と処理
-  static handle(error: any): BaseError {
-    // 既にカスタムエラーの場合
-    if (error instanceof BaseError) {
-      return error;
-    }
-
-    // データベースエラーの場合
-    if (error.code && error.code.startsWith("SQLITE_")) {
-      return this.handleDatabaseError(error);
-    }
-
-    // バリデーションエラーの場合
-    if (error.message && error.message.includes("Validation")) {
-      return new UserProfileValidationError(error.message);
-    }
-
-    // その他のエラー
-    return new UserProfileError(error.message || "Unknown error", {
-      originalError: error,
-    });
+// src/drizzle/repositories/user-profile.repository.ts
+import { UserProfileNotFoundError } from "@/drizzle/errors";
+// ...
+async findById(id: number) {
+  const result = await db.query.userProfile.findFirst({
+    where: eq(userProfile.id, id),
+  });
+  if (!result) {
+    throw new UserProfileNotFoundError(id);
   }
-
-  // データベースエラーの処理
-  private static handleDatabaseError(error: any): DatabaseError {
-    switch (error.code) {
-      case "SQLITE_CONSTRAINT":
-        return new UserProfileConflictError("Database constraint violation", {
-          originalError: error,
-        });
-      case "SQLITE_BUSY":
-        return new DatabaseError("Database is busy", error);
-      case "SQLITE_LOCKED":
-        return new DatabaseError("Database is locked", error);
-      default:
-        return new DatabaseError("Database error", error);
-    }
-  }
-
-  // エラーログの出力
-  static logError(error: BaseError, context?: any): void {
-    const logData = {
-      timestamp: new Date().toISOString(),
-      error: error.toJSON(),
-      context,
-    };
-
-    console.error("Error occurred:", JSON.stringify(logData, null, 2));
-
-    // 本番環境では外部ログサービスに送信
-    if (process.env.NODE_ENV === "production") {
-      this.sendToLogService(logData);
-    }
-  }
-
-  // 外部ログサービスへの送信（実装例）
-  private static sendToLogService(logData: any): void {
-    // 実装例: Sentry, LogRocket, など
-    // 実際の実装は使用するログサービスに応じて変更
-    console.log("Sending to log service:", logData);
-  }
-}
+  return result;
+},
 ```
 
-#### リポジトリ層でのエラーハンドリング統合
-
-```typescript
-// src/drizzle/repositories/user-profile-repository.ts (統合版)
-import { db } from "../connection";
-import { userProfile } from "../schema";
-import { eq } from "drizzle-orm";
-import {
-  UserProfile,
-  CreateUserProfileInput,
-  UpdateUserProfileInput,
-} from "../types";
-import { ErrorHandler } from "../error-handlers/error-handler";
-import { validateUserProfileInput } from "../validators/user-profile-validator";
-import {
-  UserProfileNotFoundError,
-  UserProfileDuplicateError,
-} from "../errors/user-profile-errors";
-
-export const userProfileRepository = {
-  // 取得機能
-  findById: async (id: number): Promise<UserProfile> => {
-    try {
-      validateUserProfileInput.id(id);
-
-      const result = await db
-        .select()
-        .from(userProfile)
-        .where(eq(userProfile.id, id))
-        .limit(1);
-
-      if (result.length === 0) {
-        throw new UserProfileNotFoundError(id);
-      }
-
-      return result[0];
-    } catch (error) {
-      const handledError = ErrorHandler.handle(error);
-      ErrorHandler.logError(handledError, { operation: "findById", id });
-      throw handledError;
-    }
-  },
-
-  // 作成機能
-  create: async (input: CreateUserProfileInput): Promise<UserProfile> => {
-    try {
-      validateUserProfileInput.create(input);
-
-      const createData = {
-        ...input,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      const result = await db
-        .insert(userProfile)
-        .values(createData)
-        .returning();
-
-      return result[0];
-    } catch (error) {
-      const handledError = ErrorHandler.handle(error);
-      ErrorHandler.logError(handledError, { operation: "create", input });
-      throw handledError;
-    }
-  },
-
-  // 更新機能
-  update: async (
-    id: number,
-    input: UpdateUserProfileInput
-  ): Promise<UserProfile> => {
-    try {
-      validateUserProfileInput.id(id);
-      validateUserProfileInput.update(input);
-
-      const updateData = {
-        ...input,
-        updatedAt: new Date().toISOString(),
-      };
-
-      const result = await db
-        .update(userProfile)
-        .set(updateData)
-        .where(eq(userProfile.id, id))
-        .returning();
-
-      if (result.length === 0) {
-        throw new UserProfileNotFoundError(id);
-      }
-
-      return result[0];
-    } catch (error) {
-      const handledError = ErrorHandler.handle(error);
-      ErrorHandler.logError(handledError, { operation: "update", id, input });
-      throw handledError;
-    }
-  },
-
-  // 削除機能
-  delete: async (id: number): Promise<boolean> => {
-    try {
-      validateUserProfileInput.id(id);
-
-      const result = await db
-        .delete(userProfile)
-        .where(eq(userProfile.id, id))
-        .returning();
-
-      return result.length > 0;
-    } catch (error) {
-      const handledError = ErrorHandler.handle(error);
-      ErrorHandler.logError(handledError, { operation: "delete", id });
-      throw handledError;
-    }
-  },
-};
-```
-
-### 4. エラーログとモニタリング機能
-
-#### ログ設定
-
-```typescript
-// src/drizzle/logging/logger.ts
-export class Logger {
-  private static instance: Logger;
-  private logLevel: "debug" | "info" | "warn" | "error" = "info";
-
-  static getInstance(): Logger {
-    if (!Logger.instance) {
-      Logger.instance = new Logger();
-    }
-    return Logger.instance;
-  }
-
-  setLogLevel(level: "debug" | "info" | "warn" | "error"): void {
-    this.logLevel = level;
-  }
-
-  debug(message: string, context?: any): void {
-    if (this.shouldLog("debug")) {
-      console.debug(`[DEBUG] ${message}`, context);
-    }
-  }
-
-  info(message: string, context?: any): void {
-    if (this.shouldLog("info")) {
-      console.info(`[INFO] ${message}`, context);
-    }
-  }
-
-  warn(message: string, context?: any): void {
-    if (this.shouldLog("warn")) {
-      console.warn(`[WARN] ${message}`, context);
-    }
-  }
-
-  error(message: string, context?: any): void {
-    if (this.shouldLog("error")) {
-      console.error(`[ERROR] ${message}`, context);
-    }
-  }
-
-  private shouldLog(level: string): boolean {
-    const levels = ["debug", "info", "warn", "error"];
-    return levels.indexOf(level) >= levels.indexOf(this.logLevel);
-  }
-}
-```
+_Note: この変更は呼び出し元に影響を与えるため、ドキュメント化とチーム内での周知が重要。_
 
 ## 実装手順
 
-1. **カスタムエラークラスの実装**
-
-   ```bash
-   # エラークラスファイルを作成
-   mkdir -p src/drizzle/errors
-   touch src/drizzle/errors/base-errors.ts
-   touch src/drizzle/errors/user-profile-errors.ts
-   ```
-
-2. **統合バリデーション機能の実装**
-
-   ```bash
-   # 統合バリデーションファイルを作成
-   touch src/drizzle/validators/user-profile-validator.ts
-   ```
-
-3. **エラーハンドラーの実装**
-
-   ```bash
-   # エラーハンドラーファイルを作成
-   mkdir -p src/drizzle/error-handlers
-   touch src/drizzle/error-handlers/error-handler.ts
-   ```
-
-4. **ログ機能の実装**
-
-   ```bash
-   # ログファイルを作成
-   mkdir -p src/drizzle/logging
-   touch src/drizzle/logging/logger.ts
-   ```
-
-5. **リポジトリ層の統合**
-
-   ```bash
-   # 統合リポジトリファイルを作成
-   touch src/drizzle/repositories/user-profile-repository.ts
-   ```
-
-6. **テストの実装**
-
-   ```bash
-   # テストファイルを作成
-   touch src/drizzle/errors/__tests__/base-errors.test.ts
-   touch src/drizzle/validators/__tests__/user-profile-validator.test.ts
-   ```
-
-7. **動作確認**
-
-   ```bash
-   # TypeScriptの型チェック
-   npx tsc --noEmit src/drizzle/errors/base-errors.ts
-
-   # テストの実行
-   npm test src/drizzle/errors/__tests__/base-errors.test.ts
-   ```
+1. `src/drizzle/schema.ts` に `zod` を用いた `userProfileInputSchema` と関連する型 `CreateUserProfileInput`, `UpdateUserProfileInput` を定義する。
+2. `src/drizzle/errors.ts` ファイルを作成し、`UserProfileError`, `UserProfileNotFoundError`, `UserProfileValidationError` の 3 つのカスタムエラークラスを定義する。
+3. `user-profile.repository.ts` の `create` 関数を修正し、処理の先頭で `userProfileInputSchema.safeParse` を用いたバリデーションを追加する。
+4. `update` 関数を修正し、`userProfileInputSchema.partial().safeParse` を用いたバリデーションを追加する。
+5. `findById` 関数を修正し、結果が見つからない場合に `null` を返す代わりに `UserProfileNotFoundError` をスローするように変更する。
+6. 他の関数 (`findAll` など) は、必要に応じて try-catch ブロックを追加し、予期せぬデータベースエラーを捕捉して `UserProfileError` として再スローすることを検討する（このタスクでは必須としない）。
 
 ## 完了条件
 
-- [ ] カスタムエラークラスが実装されている
-- [ ] 統合バリデーション機能が実装されている
-- [ ] エラーハンドラーが実装されている
-- [ ] ログ機能が実装されている
-- [ ] リポジトリ層が統合されている
-- [ ] 各機能の単体テストが実装されている
-- [ ] TypeScript の型チェックが通る
-- [ ] エラーログが適切に出力される
+- [ ] `src/drizzle/schema.ts` に `zod` を用いたバリデーションスキーマと型が定義されている。
+- [ ] `src/drizzle/errors.ts` にカスタムエラークラスが定義されている。
+- [ ] `create` リポジトリ関数にバリデーションが組み込まれている。
+- [ ] `update` リポジトリ関数にバリデーションが組み込まれている。
+- [ ] `findById` リポジトリ関数が、見つからない場合に `UserProfileNotFoundError` をスローする。
+- [ ] バリデーション失敗時に `UserProfileValidationError` がスローされ、エラー情報が含まれている。
 
 ## 次のタスク
 
 - **T1-4**: 開発用データのシーディング
-- **依存関係**: このタスクの完了後に実行可能
-
-## トラブルシューティング
-
-### よくある問題
-
-1. **エラークラスの継承エラー**
-
-   ```bash
-   # 型定義の確認
-   npx tsc --noEmit src/drizzle/errors/base-errors.ts
-   ```
-
-2. **バリデーション関数のエラー**
-
-   ```bash
-   # バリデーション関数のテスト
-   npx tsx test-validator.ts
-   ```
-
-3. **エラーハンドラーのエラー**
-
-   ```bash
-   # エラーハンドラーのテスト
-   npx tsx test-error-handler.ts
-   ```
-
-4. **ログ機能のエラー**
-   ```bash
-   # ログ機能のテスト
-   npx tsx test-logger.ts
-   ```
-
-## 備考
-
-- エラーハンドリングは一貫性があり、適切なエラーメッセージとエラーコードを提供する
-- バリデーション機能は入力データの整合性を保証する
-- ログ機能は開発・本番環境に応じて適切に設定する
-- エラーモニタリングは本番環境での問題発見に役立つ

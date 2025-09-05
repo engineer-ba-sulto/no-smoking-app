@@ -1,14 +1,9 @@
 import { drizzle } from "drizzle-orm/expo-sqlite";
-import { openDatabaseSync } from "expo-sqlite";
+import { sqlite } from "./connection";
 import * as schema from "./schema";
 
-// SQLiteデータベースの初期化（change listener有効化）
-const expo = openDatabaseSync("no-smoking-app.db", {
-  enableChangeListener: true,
-});
+// Drizzle ORMインスタンスを作成
+export const db = drizzle(sqlite, { schema });
 
-// Drizzle ORMの初期化
-export const db = drizzle(expo, { schema });
-
-// 型エクスポート
-export type Database = typeof db;
+// スキーマをエクスポート
+export * from "./schema";
