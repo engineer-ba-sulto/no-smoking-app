@@ -1,4 +1,5 @@
-import { Achievement } from "../types/achievement";
+import { ACHIEVEMENTS } from "../constants/achievements";
+import { Achievement, AchievementStatus } from "../types/achievement";
 import { OutcomeData } from "../types/outcome";
 
 /**
@@ -21,4 +22,18 @@ export const isAchievementUnlocked = (
     default:
       return false;
   }
+};
+
+/**
+ * すべてのアチーブメントの達成状況を判定します。
+ * @param outcomes - 現在の成果データ
+ * @returns 全アチーブメントの達成状況リスト
+ */
+export const checkAllAchievements = (
+  outcomes: OutcomeData
+): AchievementStatus[] => {
+  return ACHIEVEMENTS.map((achievement) => ({
+    ...achievement,
+    isUnlocked: isAchievementUnlocked(achievement, outcomes),
+  }));
 };

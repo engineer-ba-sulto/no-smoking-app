@@ -10,3 +10,7 @@ export interface Achievement {
   tier: AchievementTier; // UI表示用のランク
   unit: string; // UI表示用の単位
 }
+
+export interface AchievementStatus extends Achievement {
+  isUnlocked: boolean;
+}
