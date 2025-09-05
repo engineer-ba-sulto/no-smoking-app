@@ -21,20 +21,20 @@ export const DatabaseManagerComponent = ({
   onDataChange,
 }: DatabaseManagerProps) => {
   const [loading, setLoading] = useState(false);
-  const [currentRecordCount, setCurrentRecordCount] = useState<number>(0);
+  const [hasData, setHasData] = useState<boolean>(false);
   const [mainSeeder] = useState(() => new MainSeeder());
 
-  // コンポーネントのマウント時に現在のデータ件数を取得
+  // コンポーネントのマウント時にデータ存在状況を取得
   useEffect(() => {
-    fetchCurrentRecordCount();
+    fetchDataStatus();
   }, []);
 
-  const fetchCurrentRecordCount = async () => {
+  const fetchDataStatus = async () => {
     try {
-      const count = await mainSeeder.getCurrentRecordCount();
-      setCurrentRecordCount(count);
+      const dataExists = await mainSeeder.hasData();
+      setHasData(dataExists);
     } catch (error) {
-      console.error("データ件数の取得に失敗しました:", error);
+      console.error("データ存在確認に失敗しました:", error);
     }
   };
 
@@ -47,8 +47,8 @@ export const DatabaseManagerComponent = ({
     try {
       await action();
       Alert.alert("✅ 成功", successMessage);
-      // 操作後にデータ件数を再取得
-      await fetchCurrentRecordCount();
+      // 操作後にデータ存在状況を再取得
+      await fetchDataStatus();
       onDataChange?.();
     } catch (error) {
       console.error("Database operation error:", error);
@@ -158,22 +158,22 @@ export const DatabaseManagerComponent = ({
           <View className="space-y-2">
             <TouchableOpacity
               className={`flex-row items-center justify-between p-4 rounded-lg border ${
-                currentRecordCount > 0
+                hasData
                   ? "bg-red-50 border-red-200"
                   : "bg-gray-100 border-gray-300"
               } ${loading ? "opacity-50" : ""}`}
               onPress={handleClearAllData}
-              disabled={loading || currentRecordCount === 0}
+              disabled={loading || !hasData}
             >
               <View className="flex-row items-center">
                 <Trash2
                   size={20}
-                  color={currentRecordCount > 0 ? "#EF4444" : "#9CA3AF"}
+                  color={hasData ? "#EF4444" : "#9CA3AF"}
                   strokeWidth={2}
                 />
                 <Text
                   className={`text-sm font-medium ml-3 ${
-                    currentRecordCount > 0 ? "text-gray-800" : "text-gray-500"
+                    hasData ? "text-gray-800" : "text-gray-500"
                   }`}
                 >
                   全データ削除 (Clean)
@@ -181,10 +181,10 @@ export const DatabaseManagerComponent = ({
               </View>
               <Text
                 className={`text-xs ${
-                  currentRecordCount > 0 ? "text-gray-500" : "text-gray-400"
+                  hasData ? "text-gray-500" : "text-gray-400"
                 }`}
               >
-                {currentRecordCount > 0 ? "タップ" : "データなし"}
+                {hasData ? "タップ" : "データなし"}
               </Text>
             </TouchableOpacity>
           </View>

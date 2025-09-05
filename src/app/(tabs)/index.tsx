@@ -1,6 +1,5 @@
 import { SOSScreen } from "@/components/SOSScreen";
 import { StatsCard } from "@/components/StatsCard";
-import { UserProfileDisplay } from "@/components/UserProfileDisplay";
 import { useQuitTimer } from "@/hooks/useQuitTimer";
 import { useSmokerData } from "@/hooks/useSmokerData";
 import { LinearGradient } from "expo-linear-gradient";
@@ -123,14 +122,6 @@ export default function HomeScreen() {
       >
         <SOSScreen onClose={() => setShowSOS(false)} />
       </Modal>
-
-      {/* Test: UserProfileDisplay for database testing */}
-      <View className="m-4 p-4 bg-white rounded-lg">
-        <Text className="text-lg font-bold mb-2">
-          Database Test (UserProfileDisplay)
-        </Text>
-        <UserProfileDisplay />
-      </View>
     </View>
   );
 }

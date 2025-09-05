@@ -11,12 +11,7 @@
     "lint": "expo lint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio",
-    "db:seed": "tsx src/drizzle/seeders/run-seeder.ts",
-    "db:seed:all": "tsx src/drizzle/seeders/run-seeder.ts all",
-    "db:seed:clean": "tsx src/drizzle/seeders/run-seeder.ts clean",
-    "db:seed:basic": "tsx src/drizzle/seeders/run-seeder.ts basic",
-    "db:seed:verify": "tsx src/drizzle/seeders/run-seeder.ts verify"
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",

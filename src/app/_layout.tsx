@@ -7,20 +7,12 @@ import { useEffect } from "react";
 import { Text, View } from "react-native";
 import { db } from "../drizzle";
 import migrations from "../drizzle/migrations";
-import { seedDatabase } from "../drizzle/seeders/seed";
 import "../global.css";
 
 export default function RootLayout() {
   useFrameworkReady();
   const { smokerData, loading } = useSmokerData();
   const { success, error } = useMigrations(db, migrations);
-
-  // 開発環境でのみシード実行
-  useEffect(() => {
-    if (success && __DEV__) {
-      seedDatabase();
-    }
-  }, [success]);
 
   useEffect(() => {
     if (!loading && smokerData) {

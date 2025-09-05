@@ -1,7 +1,6 @@
 import { db, userProfile } from "@/drizzle";
 import { userProfileRepository } from "@/drizzle/repositories/user-profile-repository";
 import { CreateUserProfileInput } from "@/drizzle/schema";
-import { DummyDataGenerator } from "./dummy-data-generator";
 
 /**
  * メインシーダークラス
@@ -22,59 +21,16 @@ export class MainSeeder {
   }
 
   /**
-   * 指定されたデータセットをデータベースに投入する
-   * @param dataSet 投入するデータセット
+   * データベースにデータが存在するかどうかを確認する
+   * @returns データが存在する場合はtrue、存在しない場合はfalse
    */
-  async seedFromDataSet(dataSet: CreateUserProfileInput[]): Promise<void> {
-    for (const data of dataSet) {
-      await this.userProfileRepository.create(data);
-    }
-  }
-
-  /**
-   * ランダムなデータを指定された件数分投入する
-   * @param count 投入する件数
-   */
-  async seedRandomData(count: number): Promise<void> {
-    for (let i = 0; i < count; i++) {
-      const randomData = DummyDataGenerator.createRandomUserProfile();
-      await this.userProfileRepository.create(randomData);
-    }
-  }
-
-  /**
-   * 現在データベースに格納されているuser_profileの件数を確認する
-   */
-  async verify(): Promise<void> {
-    const profiles = await this.userProfileRepository.findAll();
-    console.log(`現在のuser_profileレコード数: ${profiles.length}件`);
-  }
-
-  /**
-   * 現在データベースに格納されているuser_profileの件数を取得する
-   * @returns レコード数
-   */
-  async getCurrentRecordCount(): Promise<number> {
+  async hasData(): Promise<boolean> {
     try {
-      const profiles = await this.userProfileRepository.findAll();
-      return profiles.length;
+      const profile = await db.query.userProfile.findFirst();
+      return profile !== null;
     } catch (error) {
-      console.error("Error getting record count:", error);
-      return 0;
-    }
-  }
-
-  /**
-   * データベースの状態を確認する（デバッグ用）
-   */
-  async checkDatabaseStatus(): Promise<void> {
-    try {
-      console.log("Checking database status...");
-      const profiles = await this.userProfileRepository.findAll();
-      console.log("Current profiles:", profiles);
-      console.log("Profile count:", profiles.length);
-    } catch (error) {
-      console.error("Database status check failed:", error);
+      console.error("Error checking data existence:", error);
+      return false;
     }
   }
 
