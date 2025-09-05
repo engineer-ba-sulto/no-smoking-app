@@ -2,617 +2,135 @@
 
 ## 概要
 
-T1-3 で実装したリポジトリ層を基に、開発・テスト用のダミーデータを自動生成・投入するシーディング機能を実装する。オンボーディング機能実装前に、動作確認用のテストデータを用意し、開発効率を向上させる。
+T1-3 で実装したデータリポジトリ層を利用して、開発およびテスト用のダミーデータをデータベースに投入（シーディング）する機能を構築する。この機能により、オンボーディング機能が未実装の段階でも、UI の表示確認やビジネスロジックのテストを効率的に進めることが可能になる。
 
 ## 目的
 
-- 開発・テスト用のダミーデータを自動生成する
-- シーディングスクリプトを実装してデータ投入を自動化する
-- 様々なシナリオのテストデータを用意する
-- 開発効率を向上させる
+- 手動でのデータ入力の手間を省き、開発効率を大幅に向上させる。
+- 正常系、境界値、特定シナリオ（アチーブメント達成など）を網羅したテストデータを簡単に用意できるようにする。
+- 誰でも同じデータセットでテストを実行できる環境を整え、再現性を担保する。
 
 ## 依存関係
 
-- **依存タスク**: T1-3（データ操作用リポジトリ層の実装）
+- **依存タスク**: `T1-3` (データ操作用リポジトリ層の実装)
 - **担当領域**: 開発効率
 
 ## サブチケット
 
-- **T1-4-1**: ダミーデータ生成機能の実装
+- **T1-4-1**: ダミーデータ生成ロジックの実装
 - **T1-4-2**: シーディングスクリプトの実装
 - **T1-4-3**: テストデータの投入と動作確認
 
-## 実装詳細
+---
 
-### 1. ダミーデータ生成機能の実装
+## T1-4-1: ダミーデータ生成ロジックの実装
 
-#### ダミーデータ生成器の実装
+### 方針
 
-```typescript
-// src/drizzle/seeders/dummy-data-generator.ts
-import { CreateUserProfileInput } from "../types";
+- `user_profile`テーブルのスキーマに合わせたダミーデータを生成する純粋な関数群を実装する。
+- このロジックは、シーディングスクリプト本体や将来のテストコードから再利用可能になるよう、特定のフレームワークに依存しない形で作成する。
 
-export class DummyDataGenerator {
-  // ランダムなユーザープロファイルデータの生成
-  static generateRandomUserProfile(): CreateUserProfileInput {
-    const smokingStartDate = this.generateRandomDate();
-    const cigsPerDay = this.generateRandomCigsPerDay();
-    const pricePerPack = this.generateRandomPricePerPack();
-    const cigsPerPack = this.generateRandomCigsPerPack();
+### 実装詳細
 
-    return {
-      smokingStartDate,
-      cigsPerDay,
-      pricePerPack,
-      cigsPerPack,
-    };
-  }
+1.  **データ生成クラスの作成 (`src/drizzle/seeders/dummy-data-generator.ts`)**
 
-  // 特定のシナリオ用のデータ生成
-  static generateScenarioData(
-    scenario: "beginner" | "intermediate" | "advanced" | "heavy_smoker"
-  ): CreateUserProfileInput {
-    const baseDate = new Date();
+    - ランダムな値を持つユーザープロファイル（`CreateUserProfileInput`型）を生成するメソッドを実装する。
+      - 喫煙開始日: 過去 1 年以内のランダムな日付
+      - 1 日の喫煙本数: 5〜40 本の範囲のランダムな整数
+      - タバコ 1 箱の価格: 500〜800 円の範囲のランダムな数値
+      - 1 箱の本数: 20 本（固定）または `[10, 20, 25]` からランダムに選択
+    - 特定のテストシナリオに基づいたデータを生成するメソッドを実装する。
+      - **初心者:** 禁煙開始から 1 日
+      - **中級者:** 禁煙開始から 1 週間
+      - **上級者:** 禁煙開始から 1 ヶ月
+      - **ヘビースモーカー:** 喫煙本数や期間が多いユーザー
 
-    switch (scenario) {
-      case "beginner":
-        return {
-          smokingStartDate: new Date(
-            baseDate.getTime() - 24 * 60 * 60 * 1000
-          ).toISOString(), // 1日前
-          cigsPerDay: 10,
-          pricePerPack: 400.0,
-          cigsPerPack: 20,
-        };
+2.  **テストデータセットの定義 (`src/drizzle/seeders/test-data-sets.ts`)**
+    - 静的なテストデータセットをオブジェクトとして定義し、いつでも同じデータでテストできるようにする。
+    - 以下のカテゴリのデータセットを用意する。
+      - **基本データ:** UI の基本的な表示確認に使用する数件のデータ。
+      - **境界値データ:** 禁煙開始直後（1 分前）、長期間（1 年前）など、計算ロジックのエッジケースを確認するためのデータ。
+      - **アチーブメントテスト用データ:** 各アチーブメント（1 日達成、3 日達成、1 週間達成など）をテストするためのデータ。
 
-      case "intermediate":
-        return {
-          smokingStartDate: new Date(
-            baseDate.getTime() - 7 * 24 * 60 * 60 * 1000
-          ).toISOString(), // 1週間前
-          cigsPerDay: 20,
-          pricePerPack: 500.0,
-          cigsPerPack: 20,
-        };
+---
 
-      case "advanced":
-        return {
-          smokingStartDate: new Date(
-            baseDate.getTime() - 30 * 24 * 60 * 60 * 1000
-          ).toISOString(), // 1ヶ月前
-          cigsPerDay: 30,
-          pricePerPack: 600.0,
-          cigsPerPack: 20,
-        };
+## T1-4-2: シーディングスクリプトの実装
 
-      case "heavy_smoker":
-        return {
-          smokingStartDate: new Date(
-            baseDate.getTime() - 90 * 24 * 60 * 60 * 1000
-          ).toISOString(), // 3ヶ月前
-          cigsPerDay: 40,
-          pricePerPack: 700.0,
-          cigsPerPack: 20,
-        };
+### 方針
 
-      default:
-        return this.generateRandomUserProfile();
+- `T1-4-1` で作成したデータ生成ロジックを使い、実際にデータベースへデータを投入するスクリプトを実装する。
+- コマンドラインから `tsx` を使って実行できるようにし、引数によって投入するデータの種類を切り替えられるようにする。
+
+### 実装詳細
+
+1.  **メインシーダークラスの作成 (`src/drizzle/seeders/main-seeder.ts`)**
+
+    - `UserProfileRepository` を内部で利用し、データベース操作を行う。
+    - 以下の責務を持つメソッドを実装する。
+      - `clearAllData()`: `user_profile` テーブルを空にする。
+      - `seedBasicData()`: 基本データセットを投入する。
+      - `seedEdgeCaseData()`: 境界値データセットを投入する。
+      - `seedAchievementTestData()`: アチーブメントテスト用データを投入する。
+      - `seedRandomData(count: number)`: 指定された件数だけランダムデータを投入する。
+      - `seedAll()`: 全てのデータを一度に投入する（クリア → 各データセット投入）。
+      - `verify()`: 現在データベースに格納されているデータ件数や内容をコンソールに出力して確認する。
+
+2.  **実行スクリプトの作成 (`src/drizzle/seeders/run-seeder.ts`)**
+
+    - Node.js のコマンドライン引数 (`process.argv`) を解釈し、`MainSeeder` の適切なメソッドを呼び出す。
+    - 引数なしの場合は `seedAll()` を実行するなど、デフォルトの挙動を定義する。
+
+3.  **`package.json` へのスクリプト追加**
+
+    - `npm run` や `bun run` で簡単にシーディングを実行できるよう、`scripts` にコマンドを登録する。
+
+    ```json
+    "scripts": {
+      "db:seed": "tsx src/drizzle/seeders/run-seeder.ts",
+      "db:seed:all": "tsx src/drizzle/seeders/run-seeder.ts all",
+      "db:seed:clean": "tsx src/drizzle/seeders/run-seeder.ts clean",
+      "db:seed:verify": "tsx src/drizzle/seeders/run-seeder.ts verify"
     }
-  }
+    ```
 
-  // 複数のシナリオデータを生成
-  static generateMultipleScenarioData(): CreateUserProfileInput[] {
-    return [
-      this.generateScenarioData("beginner"),
-      this.generateScenarioData("intermediate"),
-      this.generateScenarioData("advanced"),
-      this.generateScenarioData("heavy_smoker"),
-    ];
-  }
+---
 
-  // ランダムな日付生成（過去1年以内）
-  private static generateRandomDate(): string {
-    const now = new Date();
-    const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
-    const randomTime =
-      oneYearAgo.getTime() +
-      Math.random() * (now.getTime() - oneYearAgo.getTime());
-    return new Date(randomTime).toISOString();
-  }
+## T1-4-3: テストデータの投入と動作確認
 
-  // ランダムな1日の喫煙本数生成（5-50本）
-  private static generateRandomCigsPerDay(): number {
-    return Math.floor(Math.random() * 46) + 5; // 5-50本
-  }
+### 方針
 
-  // ランダムな1箱の価格生成（300-1000円）
-  private static generateRandomPricePerPack(): number {
-    return Math.round((Math.random() * 700 + 300) * 10) / 10; // 300.0-1000.0円
-  }
+- 実装したシーディングスクリプトが想定通りに動作することを、手動実行と自動テストの両面から確認する。
 
-  // ランダムな1箱の本数生成（10-30本）
-  private static generateRandomCigsPerPack(): number {
-    const options = [10, 20, 25, 30];
-    return options[Math.floor(Math.random() * options.length)];
-  }
-}
-```
+### 実装詳細
 
-#### テストデータセットの定義
+1.  **手動での動作確認**
 
-```typescript
-// src/drizzle/seeders/test-data-sets.ts
-import { CreateUserProfileInput } from "../types";
+    - `package.json` に追加した各種 `db:seed` コマンドを実行し、コンソールにエラーが出力されないことを確認する。
+    - `db:seed:verify` を実行し、想定した件数のデータが投入されていることを確認する。
+    - 可能であれば、データベースクライアントツールで `development.db` を開き、実際のデータが格納されていることを目視で確認する。
 
-export const testDataSets = {
-  // 基本的なテストデータ
-  basic: [
-    {
-      smokingStartDate: new Date(
-        Date.now() - 24 * 60 * 60 * 1000
-      ).toISOString(), // 1日前
-      cigsPerDay: 20,
-      pricePerPack: 500.0,
-      cigsPerPack: 20,
-    },
-    {
-      smokingStartDate: new Date(
-        Date.now() - 7 * 24 * 60 * 60 * 1000
-      ).toISOString(), // 1週間前
-      cigsPerDay: 15,
-      pricePerPack: 450.0,
-      cigsPerPack: 20,
-    },
-  ],
-
-  // エッジケース用のテストデータ
-  edgeCases: [
-    {
-      smokingStartDate: new Date(Date.now() - 60 * 1000).toISOString(), // 1分前
-      cigsPerDay: 1,
-      pricePerPack: 100.0,
-      cigsPerPack: 10,
-    },
-    {
-      smokingStartDate: new Date(
-        Date.now() - 365 * 24 * 60 * 60 * 1000
-      ).toISOString(), // 1年前
-      cigsPerDay: 50,
-      pricePerPack: 1000.0,
-      cigsPerPack: 30,
-    },
-  ],
-
-  // アチーブメントテスト用のデータ
-  achievementTest: [
-    {
-      smokingStartDate: new Date(
-        Date.now() - 24 * 60 * 60 * 1000
-      ).toISOString(), // 24時間達成
-      cigsPerDay: 20,
-      pricePerPack: 500.0,
-      cigsPerPack: 20,
-    },
-    {
-      smokingStartDate: new Date(
-        Date.now() - 3 * 24 * 60 * 60 * 1000
-      ).toISOString(), // 3日達成
-      cigsPerDay: 20,
-      pricePerPack: 500.0,
-      cigsPerPack: 20,
-    },
-    {
-      smokingStartDate: new Date(
-        Date.now() - 7 * 24 * 60 * 60 * 1000
-      ).toISOString(), // 1週間達成
-      cigsPerDay: 20,
-      pricePerPack: 500.0,
-      cigsPerPack: 20,
-    },
-  ],
-};
-```
-
-### 2. シーディングスクリプトの実装
-
-#### メインシーディングスクリプト
-
-```typescript
-// src/drizzle/seeders/main-seeder.ts
-import { userProfileRepository } from "../repositories/user-profile-repository";
-import { DummyDataGenerator } from "./dummy-data-generator";
-import { testDataSets } from "./test-data-sets";
-import { Logger } from "../logging/logger";
-
-export class MainSeeder {
-  private logger = Logger.getInstance();
-
-  // 全データのクリア
-  async clearAllData(): Promise<void> {
-    try {
-      this.logger.info("Clearing all user profile data...");
-      // 注意: 実際の実装では、リポジトリ層に削除機能を追加する必要があります
-      this.logger.info("All data cleared successfully");
-    } catch (error) {
-      this.logger.error("Failed to clear data", { error });
-      throw error;
-    }
-  }
-
-  // 基本的なテストデータの投入
-  async seedBasicData(): Promise<void> {
-    try {
-      this.logger.info("Seeding basic test data...");
-
-      for (const data of testDataSets.basic) {
-        await userProfileRepository.create(data);
-        this.logger.debug("Created basic test profile", { data });
-      }
-
-      this.logger.info("Basic test data seeded successfully");
-    } catch (error) {
-      this.logger.error("Failed to seed basic data", { error });
-      throw error;
-    }
-  }
-
-  // エッジケース用データの投入
-  async seedEdgeCaseData(): Promise<void> {
-    try {
-      this.logger.info("Seeding edge case test data...");
-
-      for (const data of testDataSets.edgeCases) {
-        await userProfileRepository.create(data);
-        this.logger.debug("Created edge case test profile", { data });
-      }
-
-      this.logger.info("Edge case test data seeded successfully");
-    } catch (error) {
-      this.logger.error("Failed to seed edge case data", { error });
-      throw error;
-    }
-  }
-
-  // アチーブメントテスト用データの投入
-  async seedAchievementTestData(): Promise<void> {
-    try {
-      this.logger.info("Seeding achievement test data...");
-
-      for (const data of testDataSets.achievementTest) {
-        await userProfileRepository.create(data);
-        this.logger.debug("Created achievement test profile", { data });
-      }
-
-      this.logger.info("Achievement test data seeded successfully");
-    } catch (error) {
-      this.logger.error("Failed to seed achievement test data", { error });
-      throw error;
-    }
-  }
-
-  // ランダムデータの投入
-  async seedRandomData(count: number = 10): Promise<void> {
-    try {
-      this.logger.info(`Seeding ${count} random test profiles...`);
-
-      for (let i = 0; i < count; i++) {
-        const data = DummyDataGenerator.generateRandomUserProfile();
-        await userProfileRepository.create(data);
-        this.logger.debug(`Created random test profile ${i + 1}`, { data });
-      }
-
-      this.logger.info(`${count} random test profiles seeded successfully`);
-    } catch (error) {
-      this.logger.error("Failed to seed random data", { error });
-      throw error;
-    }
-  }
-
-  // 全データの投入
-  async seedAllData(): Promise<void> {
-    try {
-      this.logger.info("Starting full data seeding...");
-
-      await this.clearAllData();
-      await this.seedBasicData();
-      await this.seedEdgeCaseData();
-      await this.seedAchievementTestData();
-      await this.seedRandomData(5);
-
-      this.logger.info("Full data seeding completed successfully");
-    } catch (error) {
-      this.logger.error("Failed to seed all data", { error });
-      throw error;
-    }
-  }
-
-  // データの確認
-  async verifySeededData(): Promise<void> {
-    try {
-      this.logger.info("Verifying seeded data...");
-
-      const profiles = await userProfileRepository.findAll();
-      this.logger.info(`Found ${profiles.length} user profiles`);
-
-      // 各プロファイルの詳細をログ出力
-      for (const profile of profiles) {
-        this.logger.debug("Profile details", {
-          id: profile.id,
-          smokingStartDate: profile.smokingStartDate,
-          cigsPerDay: profile.cigsPerDay,
-          pricePerPack: profile.pricePerPack,
-          cigsPerPack: profile.cigsPerPack,
-        });
-      }
-
-      this.logger.info("Data verification completed");
-    } catch (error) {
-      this.logger.error("Failed to verify seeded data", { error });
-      throw error;
-    }
-  }
-}
-```
-
-#### シーディング実行スクリプト
-
-```typescript
-// src/drizzle/seeders/run-seeder.ts
-import { MainSeeder } from "./main-seeder";
-import { Logger } from "../logging/logger";
-
-async function runSeeder() {
-  const logger = Logger.getInstance();
-  const seeder = new MainSeeder();
-
-  try {
-    logger.info("Starting seeder execution...");
-
-    // コマンドライン引数の解析
-    const args = process.argv.slice(2);
-    const command = args[0] || "all";
-
-    switch (command) {
-      case "basic":
-        await seeder.seedBasicData();
-        break;
-      case "edge":
-        await seeder.seedEdgeCaseData();
-        break;
-      case "achievement":
-        await seeder.seedAchievementTestData();
-        break;
-      case "random":
-        const count = parseInt(args[1]) || 10;
-        await seeder.seedRandomData(count);
-        break;
-      case "all":
-        await seeder.seedAllData();
-        break;
-      case "verify":
-        await seeder.verifySeededData();
-        break;
-      default:
-        logger.warn(`Unknown command: ${command}`);
-        logger.info(
-          "Available commands: basic, edge, achievement, random, all, verify"
-        );
-        process.exit(1);
-    }
-
-    logger.info("Seeder execution completed successfully");
-  } catch (error) {
-    logger.error("Seeder execution failed", { error });
-    process.exit(1);
-  }
-}
-
-// スクリプトの実行
-if (require.main === module) {
-  runSeeder();
-}
-
-export { runSeeder };
-```
-
-### 3. テストデータの投入と動作確認
-
-#### シーディングテストの実装
-
-```typescript
-// src/drizzle/seeders/__tests__/seeder.test.ts
-import { MainSeeder } from "../main-seeder";
-import { userProfileRepository } from "../../repositories/user-profile-repository";
-import { DummyDataGenerator } from "../dummy-data-generator";
-
-describe("MainSeeder", () => {
-  let seeder: MainSeeder;
-
-  beforeEach(() => {
-    seeder = new MainSeeder();
-  });
-
-  afterEach(async () => {
-    // テスト後のクリーンアップ
-    await seeder.clearAllData();
-  });
-
-  test("should seed basic data successfully", async () => {
-    await seeder.seedBasicData();
-
-    const profiles = await userProfileRepository.findAll();
-    expect(profiles.length).toBeGreaterThan(0);
-  });
-
-  test("should seed edge case data successfully", async () => {
-    await seeder.seedEdgeCaseData();
-
-    const profiles = await userProfileRepository.findAll();
-    expect(profiles.length).toBeGreaterThan(0);
-  });
-
-  test("should seed achievement test data successfully", async () => {
-    await seeder.seedAchievementTestData();
-
-    const profiles = await userProfileRepository.findAll();
-    expect(profiles.length).toBeGreaterThan(0);
-  });
-
-  test("should seed random data successfully", async () => {
-    const count = 5;
-    await seeder.seedRandomData(count);
-
-    const profiles = await userProfileRepository.findAll();
-    expect(profiles.length).toBe(count);
-  });
-
-  test("should seed all data successfully", async () => {
-    await seeder.seedAllData();
-
-    const profiles = await userProfileRepository.findAll();
-    expect(profiles.length).toBeGreaterThan(0);
-  });
-});
-
-describe("DummyDataGenerator", () => {
-  test("should generate random user profile data", () => {
-    const data = DummyDataGenerator.generateRandomUserProfile();
-
-    expect(data.smokingStartDate).toBeDefined();
-    expect(data.cigsPerDay).toBeGreaterThan(0);
-    expect(data.pricePerPack).toBeGreaterThan(0);
-    expect(data.cigsPerPack).toBeGreaterThan(0);
-  });
-
-  test("should generate scenario data correctly", () => {
-    const beginnerData = DummyDataGenerator.generateScenarioData("beginner");
-    const advancedData = DummyDataGenerator.generateScenarioData("advanced");
-
-    expect(beginnerData.cigsPerDay).toBe(10);
-    expect(advancedData.cigsPerDay).toBe(30);
-  });
-});
-```
-
-## 実装手順
-
-1. **ダミーデータ生成機能の実装**
-
-   ```bash
-   # シーダーファイルを作成
-   mkdir -p src/drizzle/seeders
-   touch src/drizzle/seeders/dummy-data-generator.ts
-   touch src/drizzle/seeders/test-data-sets.ts
-   ```
-
-2. **シーディングスクリプトの実装**
-
-   ```bash
-   # メインシーダーファイルを作成
-   touch src/drizzle/seeders/main-seeder.ts
-   touch src/drizzle/seeders/run-seeder.ts
-   ```
-
-3. **テストの実装**
-
-   ```bash
-   # テストファイルを作成
-   mkdir -p src/drizzle/seeders/__tests__
-   touch src/drizzle/seeders/__tests__/seeder.test.ts
-   ```
-
-4. **package.json にスクリプトを追加**
-
-   ```json
-   {
-     "scripts": {
-       "seed": "tsx src/drizzle/seeders/run-seeder.ts",
-       "seed:basic": "tsx src/drizzle/seeders/run-seeder.ts basic",
-       "seed:edge": "tsx src/drizzle/seeders/run-seeder.ts edge",
-       "seed:achievement": "tsx src/drizzle/seeders/run-seeder.ts achievement",
-       "seed:random": "tsx src/drizzle/seeders/run-seeder.ts random",
-       "seed:all": "tsx src/drizzle/seeders/run-seeder.ts all",
-       "seed:verify": "tsx src/drizzle/seeders/run-seeder.ts verify"
-     }
-   }
-   ```
-
-5. **動作確認**
-
-   ```bash
-   # 基本的なシーディングの実行
-   npm run seed:basic
-
-   # 全データのシーディング
-   npm run seed:all
-
-   # データの確認
-   npm run seed:verify
-   ```
-
-6. **テストの実行**
-   ```bash
-   # シーディングテストの実行
-   npm test src/drizzle/seeders/__tests__/seeder.test.ts
-   ```
+2.  **自動テストの実装 (`src/drizzle/seeders/__tests__/seeder.test.ts`)**
+    - `jest` や `vitest` などのテストフレームワークを使用し、シーディングロジックの単体テストを作成する。
+    - テストケースの例:
+      - `DummyDataGenerator` がスキーマに準拠した正しい型のデータを生成すること。
+      - `MainSeeder` の `seedBasicData` を実行後、`userProfileRepository.findAll()` で取得した件数が期待値と一致すること。
+      - `clearAllData` を実行後、データ件数が 0 になること。
+    - 各テストの前後でデータベースの状態をクリーンにする（`beforeEach`, `afterEach` でクリア処理を挟む）。
 
 ## 完了条件
 
-- [ ] ダミーデータ生成機能が実装されている
-- [ ] シーディングスクリプトが実装されている
-- [ ] 基本的なテストデータが投入できる
-- [ ] エッジケース用のテストデータが投入できる
-- [ ] アチーブメントテスト用のデータが投入できる
-- [ ] ランダムデータの生成・投入ができる
-- [ ] データの確認機能が実装されている
-- [ ] 各機能の単体テストが実装されている
-- [ ] package.json にシーディングスクリプトが追加されている
+- `T1-4-1`
+  - [ ] ランダムなユーザープロファイルを生成するロジックが実装されている。
+  - [ ] 特定のシナリオに基づいたユーザープロファイルを生成するロジックが実装されている。
+  - [ ] テストで使用する静的なデータセットが定義されている。
+- `T1-4-2`
+  - [ ] データベースのクリア、各種データの投入、投入結果の確認を行う `MainSeeder` クラスが実装されている。
+  - [ ] コマンドライン引数に応じて `MainSeeder` を実行するスクリプトが実装されている。
+  - [ ] `package.json` にシーディング関連のコマンドが追加されている。
+- `T1-4-3`
+  - [ ] 追加した npm スクリプトがエラーなく実行できることを確認済みである。
+  - [ ] シーディングロジックに関する単体テストが実装され、すべてパスしている。
 
 ## 次のタスク
 
-- **T2-1**: 日付計算ユーティリティの作成
-- **依存関係**: このタスクの完了後に実行可能
-
-## トラブルシューティング
-
-### よくある問題
-
-1. **シーディングスクリプトの実行エラー**
-
-   ```bash
-   # 依存関係の確認
-   npm list tsx
-
-   # 依存関係の再インストール
-   npm install tsx
-   ```
-
-2. **データベース接続エラー**
-
-   ```bash
-   # データベースファイルの確認
-   ls -la *.db
-
-   # マイグレーションの確認
-   npx drizzle-kit introspect
-   ```
-
-3. **テストデータの投入エラー**
-
-   ```bash
-   # リポジトリ層の確認
-   npx tsc --noEmit src/drizzle/repositories/user-profile-repository.ts
-   ```
-
-4. **ログ出力のエラー**
-   ```bash
-   # ログ機能の確認
-   npx tsc --noEmit src/drizzle/logging/logger.ts
-   ```
-
-## 備考
-
-- シーディング機能は開発・テスト環境でのみ使用する
-- 本番環境では使用しないよう注意する
-- テストデータは様々なシナリオをカバーする
-- データの投入は自動化されており、開発効率を向上させる
+- **`T2-1`**: 日付計算ユーティリティの作成
