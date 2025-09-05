@@ -1,7 +1,12 @@
 import { db, userProfile } from "@/drizzle";
 import {
+  UserProfileNotFoundError,
+  UserProfileValidationError,
+} from "@/drizzle/errors";
+import {
   CreateUserProfileInput,
   UpdateUserProfileInput,
+  userProfileInputSchema,
 } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 
@@ -9,13 +14,16 @@ export const userProfileRepository = {
   /**
    * ID に基づいてユーザープロファイルを 1 件取得する
    * @param id - ユーザープロファイルの ID
-   * @returns ユーザープロファイルオブジェクト、または null
+   * @returns ユーザープロファイルオブジェクト
    */
   async findById(id: number) {
     const result = await db.query.userProfile.findFirst({
       where: eq(userProfile.id, id),
     });
-    return result || null;
+    if (!result) {
+      throw new UserProfileNotFoundError(id);
+    }
+    return result;
   },
 
   /**
@@ -34,6 +42,11 @@ export const userProfileRepository = {
    * @returns 更新後のユーザープロファイルオブジェクト、または null
    */
   async update(id: number, input: UpdateUserProfileInput) {
+    const validationResult = userProfileInputSchema.partial().safeParse(input);
+    if (!validationResult.success) {
+      throw new UserProfileValidationError(validationResult.error.issues);
+    }
+
     // 最初にユーザーが存在するか確認
     const existingProfile = await this.findById(id);
     if (!existingProfile) {
@@ -60,6 +73,11 @@ export const userProfileRepository = {
    * @returns 作成されたユーザープロファイルオブジェクト
    */
   async create(input: CreateUserProfileInput) {
+    const validationResult = userProfileInputSchema.safeParse(input);
+    if (!validationResult.success) {
+      throw new UserProfileValidationError(validationResult.error.issues);
+    }
+
     const now = new Date().toISOString();
 
     const [newUserProfile] = await db
