@@ -3,6 +3,4 @@ const { withNativeWind } = require("nativewind/metro");
 
 const config = getDefaultConfig(__dirname);
 
-config.resolver.sourceExts.push("sql"); // SQLファイルの解決
-
 module.exports = withNativeWind(config, { input: "./src/global.css" });

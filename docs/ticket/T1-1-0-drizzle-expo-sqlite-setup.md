@@ -45,7 +45,14 @@
 │   ├── drizzle/
 │   │   ├── index.ts      # データベース接続設定
 │   │   ├── schema.ts     # テーブルスキーマ定義
+│   │   ├── seed.ts       # シードデータ定義
 │   │   └── migrations/   # マイグレーションファイル（自動生成）
+│   ├── utils/
+│   │   └── database-manager.ts  # データベース管理ユーティリティ
+│   ├── components/
+│   │   └── DatabaseManager.tsx  # データベース管理UI
+│   ├── app/
+│   │   └── database-manager.tsx # データベース管理画面
 │   └── ...
 └── ...
 ```
@@ -136,9 +143,42 @@ module.exports = config;
     // 既存のスクリプトに追加
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "bun run scripts/seed.ts",
+    "db:reset": "bun run scripts/seed.ts"
   }
 }
+```
+
+#### 3-7. データベース管理ユーティリティ（新機能）
+
+```typescript
+// src/utils/database-manager.ts
+export class DatabaseManager {
+  static async seedTestData() {
+    /* テストデータ投入 */
+  }
+  static async clearAllData() {
+    /* データ削除 */
+  }
+  static async resetDatabase() {
+    /* DB完全リセット */
+  }
+  static async getDatabaseStatus() {
+    /* 状態確認 */
+  }
+  static async executeCustomQuery(query: string) {
+    /* カスタムSQL実行 */
+  }
+}
+```
+
+#### 3-8. データベース管理 UI（新機能）
+
+```typescript
+// src/components/DatabaseManager.tsx
+// データベース管理用のUIコンポーネント
+// テストデータ投入・削除・リセット・カスタムクエリ実行機能
 ```
 
 ### 4. マイグレーション機能の実装
@@ -209,12 +249,16 @@ const MyComponent = () => {
 
    ```bash
    mkdir -p src/drizzle
+   mkdir -p scripts
    ```
 
 4. **ファイルの作成**
 
    - ルートディレクトリに`drizzle.config.ts`を作成
    - `src/drizzle/`内に他のファイルを作成
+   - `src/utils/database-manager.ts`を作成
+   - `src/components/DatabaseManager.tsx`を作成
+   - `src/app/database-manager.tsx`を作成
 
 5. **マイグレーションの生成**
 
@@ -223,7 +267,12 @@ const MyComponent = () => {
    ```
 
 6. **アプリケーションでのマイグレーション実行**
+
    - `useMigrations`フックを使用してアプリ起動時に実行
+
+7. **データベース管理 UI の統合**
+   - 設定画面に開発者向けボタンを追加
+   - データベース管理画面へのナビゲーションを実装
 
 ## 機能要件との整合性
 
@@ -241,6 +290,7 @@ const MyComponent = () => {
 - スキーマ定義が完了することで、T1-2 のリポジトリ層実装が可能
 - 型安全性を確保したデータベース操作の基盤が整う
 - マイグレーション機能により、スキーマ変更の管理が可能
+- テストデータの投入により、アプリケーションの動作確認が可能
 
 ## 参考資料
 
@@ -249,13 +299,17 @@ const MyComponent = () => {
 
 ## 完了条件
 
-- [ ] 依存関係のインストール完了
-- [ ] 設定ファイルの更新完了
-- [ ] ディレクトリ構造の作成完了
-- [ ] データベース接続設定の実装完了
-- [ ] スキーマ定義の実装完了
-- [ ] マイグレーション機能の実装完了
-- [ ] 動作確認完了
+- [x] 依存関係のインストール完了
+- [x] 設定ファイルの更新完了
+- [x] ディレクトリ構造の作成完了
+- [x] データベース接続設定の実装完了
+- [x] スキーマ定義の実装完了
+- [x] マイグレーション機能の実装完了
+- [x] アプリケーション統合完了
+- [x] テストデータの投入完了
+- [x] データベース管理 UI の実装完了
+- [x] 設定画面への統合完了
+- [x] 動作確認完了
 
 ## 備考
 
@@ -263,3 +317,7 @@ const MyComponent = () => {
 - Live Queries 機能によりリアルタイム更新が可能
 - 型安全性を確保したデータベース操作
 - マイグレーション機能によりスキーマ変更の管理が可能
+- アプリ内 UI からデータベース管理が可能
+- カスタム SQL クエリの実行が可能
+- データベースの完全リセット機能
+- 開発者向けの専用管理画面
