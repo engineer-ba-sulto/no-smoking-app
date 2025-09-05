@@ -98,36 +98,35 @@ export default function RootLayout() {
 }
 ```
 
-#### 3-2. 手動シードスクリプト
+#### 3-2. データベース管理 UI（新機能）
 
 ```typescript
-// scripts/seed.ts
-import { seedDatabase } from "../src/drizzle/seed";
-
-const runSeed = async () => {
-  console.log("Starting database seed...");
-  const result = await seedDatabase();
-
-  if (result.success) {
-    console.log("✅ Seed completed:", result.message);
-  } else {
-    console.error("❌ Seed failed:", result.error);
-    process.exit(1);
+// src/utils/database-manager.ts
+export class DatabaseManager {
+  static async seedTestData() {
+    /* テストデータ投入 */
   }
-};
-
-runSeed();
-```
-
-### 4. package.json スクリプトの追加
-
-```json
-{
-  "scripts": {
-    "db:seed": "bun run scripts/seed.ts",
-    "db:reset": "rm -f no-smoking-app.db && bun run db:generate && bun run db:seed"
+  static async clearAllData() {
+    /* データ削除 */
+  }
+  static async resetDatabase() {
+    /* DB完全リセット */
+  }
+  static async getDatabaseStatus() {
+    /* 状態確認 */
+  }
+  static async executeCustomQuery(query: string) {
+    /* カスタムSQL実行 */
   }
 }
+```
+
+#### 3-3. 設定画面への統合
+
+```typescript
+// src/app/(tabs)/settings.tsx
+// 開発環境でのみ表示される「データベース管理」ボタンを追加
+// 専用画面（/database-manager）へのナビゲーション
 ```
 
 ## 実装手順
@@ -142,19 +141,22 @@ runSeed();
    - 開発環境での自動シード実行を追加
    - エラーハンドリングを実装
 
-3. **手動シードスクリプトの作成**
+3. **データベース管理 UI の実装**
 
-   - `scripts/seed.ts` を作成
-   - コマンドラインからの実行を可能にする
+   - `src/utils/database-manager.ts` を作成
+   - `src/components/DatabaseManager.tsx` を作成
+   - `src/app/database-manager.tsx` を作成
 
-4. **package.json スクリプトの追加**
+4. **設定画面への統合**
 
-   - `db:seed` と `db:reset` スクリプトを追加
+   - 開発環境でのみ表示される「データベース管理」ボタンを追加
+   - 専用画面へのナビゲーション機能を実装
 
 5. **動作確認**
    - シードデータの投入確認
    - UI 表示の動作確認
    - Live Queries の動作確認
+   - データベース管理 UI の動作確認
 
 ## テスト項目
 
@@ -178,13 +180,13 @@ runSeed();
 
 ## 完了条件
 
-- [ ] `src/drizzle/seed.ts` の作成完了
-- [ ] アプリケーション統合完了
-- [ ] 手動シードスクリプトの作成完了
-- [ ] package.json スクリプトの追加完了
-- [ ] シードデータ投入の動作確認完了
-- [ ] UI 表示の動作確認完了
-- [ ] 統合テストの実行完了
+- [x] `src/drizzle/seed.ts` の作成完了
+- [x] アプリケーション統合完了
+- [x] データベース管理 UI の実装完了
+- [x] 設定画面への統合完了
+- [x] シードデータ投入の動作確認完了
+- [x] UI 表示の動作確認完了
+- [x] 統合テストの実行完了
 
 ## 次のタスク
 
@@ -211,15 +213,12 @@ runSeed();
    }
    ```
 
-3. **データベースリセット**
-   ```bash
-   # データベースをリセットして再シード
-   bun run db:reset
-   ```
-
 ## 備考
 
 - シードデータは開発環境でのみ実行される
 - 本番環境では実行されない
 - 既存データがある場合はスキップされる
-- 手動でのシード実行も可能
+- アプリ内 UI からデータベース管理が可能
+- カスタム SQL クエリの実行が可能
+- データベースの完全リセット機能
+- 開発者向けの専用管理画面
