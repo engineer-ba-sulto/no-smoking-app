@@ -7,12 +7,20 @@ import { useEffect } from "react";
 import { Text, View } from "react-native";
 import { db } from "../drizzle";
 import migrations from "../drizzle/migrations";
+import { seedDatabase } from "../drizzle/seed";
 import "../global.css";
 
 export default function RootLayout() {
   useFrameworkReady();
   const { smokerData, loading } = useSmokerData();
   const { success, error } = useMigrations(db, migrations);
+
+  // 開発環境でのみシード実行
+  useEffect(() => {
+    if (success && __DEV__) {
+      seedDatabase();
+    }
+  }, [success]);
 
   useEffect(() => {
     if (!loading && smokerData) {
@@ -47,6 +55,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="settings/cigarettes-setting" />
         <Stack.Screen name="settings/price-setting" />
+        <Stack.Screen name="settings/database-manager" />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
