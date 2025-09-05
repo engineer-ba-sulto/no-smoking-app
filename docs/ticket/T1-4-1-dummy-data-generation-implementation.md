@@ -68,10 +68,60 @@
 
 ## 完了条件
 
-- [ ] `src/drizzle/seeders/dummy-data-generator.ts` が作成され、ランダムおよびシナリオベースのデータ生成ロジックが実装されている。
-- [ ] `src/drizzle/seeders/test-data-sets.ts` が作成され、静的なテストデータセットが定義されている。
-- [ ] すべてのデータ生成ロジックは副作用を持たない純粋な関数として実装されている。
-- [ ] TypeScript の型エラーが発生しない。
+- [x] `src/drizzle/seeders/dummy-data-generator.ts` が作成され、ランダムおよびシナリオベースのデータ生成ロジックが実装されている。
+- [x] `src/drizzle/seeders/test-data-sets.ts` が作成され、静的なテストデータセットが定義されている。
+- [x] すべてのデータ生成ロジックは副作用を持たない純粋な関数として実装されている。
+- [x] TypeScript の型エラーが発生しない。
+
+## 追加実装内容
+
+### 3. 既存のシーディング機能との統合
+
+`src/drizzle/seeders/seed.ts` を更新し、新しく実装したダミーデータ生成機能を統合した。
+
+#### 更新内容
+
+- **複数のシーディングモード**をサポート：
+
+  - `basic`: 従来の基本的なシーディング（後方互換性維持）
+  - `random`: ランダムなダミーデータを指定件数生成
+  - `scenario`: 特定のシナリオ（beginner、intermediate、advanced、heavySmoker）のデータを生成
+  - `test-set`: 静的テストデータセット（basicSet、edgeCaseSet、achievementTestSet）を使用
+
+- **柔軟なオプション**：
+  - `count`: ランダムモードでの生成件数を指定
+  - `clearExisting`: 既存データをクリアしてからシーディング
+  - `scenario`: シナリオモードでの具体的なシナリオ指定
+  - `testSet`: テストセットモードでの具体的なデータセット指定
+
+#### 使用例
+
+```typescript
+// 基本的なシーディング（従来通り）
+await seedDatabase();
+
+// ランダムデータを10件生成
+await seedDatabase({ mode: "random", count: 10 });
+
+// 禁煙1週間経過のシナリオデータを生成
+await seedDatabase({ mode: "scenario", scenario: "intermediate" });
+
+// アチーブメントテスト用データセットを使用
+await seedDatabase({ mode: "test-set", testSet: "achievementTestSet" });
+
+// 既存データをクリアしてからランダムデータを5件生成
+await seedDatabase({
+  mode: "random",
+  count: 5,
+  clearExisting: true,
+});
+```
+
+#### ファイル構造の整理
+
+- `src/drizzle/seed.ts` を `src/drizzle/seeders/seed.ts` に移動
+- シーディング関連のファイルを `seeders` ディレクトリに集約
+- 関連するインポートパスを適切に更新
 
 ## 次のタスク
 

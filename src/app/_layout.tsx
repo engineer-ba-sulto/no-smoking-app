@@ -7,7 +7,7 @@ import { useEffect } from "react";
 import { Text, View } from "react-native";
 import { db } from "../drizzle";
 import migrations from "../drizzle/migrations";
-import { seedDatabase } from "../drizzle/seed";
+import { seedDatabase } from "../drizzle/seeders/seed";
 import "../global.css";
 
 export default function RootLayout() {
