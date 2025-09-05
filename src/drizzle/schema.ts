@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const userProfile = sqliteTable("user_profile", {
@@ -6,6 +7,10 @@ export const userProfile = sqliteTable("user_profile", {
   cigsPerDay: integer("cigs_per_day").notNull(),
   pricePerPack: real("price_per_pack").notNull(),
   cigsPerPack: integer("cigs_per_pack").notNull(),
-  createdAt: text("created_at").notNull().default("CURRENT_TIMESTAMP"),
-  updatedAt: text("updated_at").notNull().default("CURRENT_TIMESTAMP"),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at")
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
