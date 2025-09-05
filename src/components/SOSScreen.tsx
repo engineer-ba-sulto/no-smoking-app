@@ -1,5 +1,13 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { Droplet, Music, Play, Users, X, Zap } from "lucide-react-native";
+import {
+  Droplet,
+  Music,
+  Play,
+  Sparkles,
+  Users,
+  X,
+  Zap,
+} from "lucide-react-native";
 import { useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { BreathingTimer } from "./BreathingTimer";
@@ -31,6 +39,11 @@ export function SOSScreen({ onClose }: Props) {
       icon: <Music size={24} color="#8B5CF6" strokeWidth={2} />,
       title: "好きな音楽を1曲きく",
       onPress: () => console.log("Music suggestion"),
+    },
+    {
+      icon: <Sparkles size={24} color="#10B981" strokeWidth={2} />,
+      title: "歯を磨く",
+      onPress: () => console.log("Brush teeth reminder"),
     },
   ];
 
