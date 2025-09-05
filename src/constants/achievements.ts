@@ -1,7 +1,8 @@
 import { Achievement } from "../types/achievement";
 
 export const ACHIEVEMENTS: Achievement[] = [
-  // 時間系 (goalは秒単位)
+  // 最も達成しやすい順序に並べ替え
+  // 1時間達成 (最も早く達成可能)
   {
     id: "duration_1h",
     title: "1時間達成",
@@ -11,52 +12,37 @@ export const ACHIEVEMENTS: Achievement[] = [
     tier: "bronze",
     unit: "時間",
   },
+  // 3時間達成 (最初の壁を越える)
   {
-    id: "duration_24h",
-    title: "24時間達成",
-    description: "最初の大きな壁を突破！",
+    id: "duration_3h",
+    title: "3時間達成",
+    description: "最初の壁を越えました。",
     category: "duration",
-    goal: 86400,
+    goal: 10800,
     tier: "bronze",
-    unit: "日",
+    unit: "時間",
   },
+  // 6時間達成 (半日を乗り越える)
   {
-    id: "duration_7d",
-    title: "禁煙1週間",
-    description: "7日間の継続、素晴らしいです。",
+    id: "duration_6h",
+    title: "6時間達成",
+    description: "半日を乗り越えました。",
     category: "duration",
-    goal: 604800,
-    tier: "silver",
-    unit: "日",
+    goal: 21600,
+    tier: "bronze",
+    unit: "時間",
   },
+  // 12時間達成 (半日達成)
   {
-    id: "duration_30d",
-    title: "禁煙1ヶ月",
-    description: "大きな節目を迎えました。",
+    id: "duration_12h",
+    title: "12時間達成",
+    description: "半日達成！順調です。",
     category: "duration",
-    goal: 2592000,
-    tier: "gold",
-    unit: "日",
+    goal: 43200,
+    tier: "bronze",
+    unit: "時間",
   },
-  {
-    id: "duration_2m",
-    title: "禁煙2ヶ月",
-    description: "2ヶ月継続、素晴らしい成果です。",
-    category: "duration",
-    goal: 5184000,
-    tier: "gold",
-    unit: "日",
-  },
-  {
-    id: "duration_100d",
-    title: "禁煙100日",
-    description: "もう習慣は過去のもの。",
-    category: "duration",
-    goal: 8640000,
-    tier: "platinum",
-    unit: "日",
-  },
-  // 本数系 (goalは本数)
+  // 10本我慢 (1時間程度で達成可能)
   {
     id: "cigarettes_10",
     title: "10本我慢",
@@ -66,34 +52,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     tier: "bronze",
     unit: "本",
   },
-  {
-    id: "cigarettes_20",
-    title: "20本我慢",
-    description: "タバコを1箱分我慢しました。",
-    category: "cigarettes",
-    goal: 20,
-    tier: "bronze",
-    unit: "本",
-  },
-  {
-    id: "cigarettes_50",
-    title: "50本我慢",
-    description: "着実に成果が出ています。",
-    category: "cigarettes",
-    goal: 50,
-    tier: "bronze",
-    unit: "本",
-  },
-  {
-    id: "cigarettes_100",
-    title: "100本我慢",
-    description: "健康への大きな投資です。",
-    category: "cigarettes",
-    goal: 100,
-    tier: "silver",
-    unit: "本",
-  },
-  // 金額系 (goalは円)
+  // 500円節約 (1時間程度で達成可能)
   {
     id: "money_500",
     title: "500円節約",
@@ -103,6 +62,27 @@ export const ACHIEVEMENTS: Achievement[] = [
     tier: "bronze",
     unit: "円",
   },
+  // 20本我慢 (1日程度で達成可能)
+  {
+    id: "cigarettes_20",
+    title: "20本我慢",
+    description: "タバコを1箱分我慢しました。",
+    category: "cigarettes",
+    goal: 20,
+    tier: "bronze",
+    unit: "本",
+  },
+  // 24時間達成 (1日で達成)
+  {
+    id: "duration_24h",
+    title: "24時間達成",
+    description: "最初の大きな壁を突破！",
+    category: "duration",
+    goal: 86400,
+    tier: "bronze",
+    unit: "日",
+  },
+  // 1000円節約 (1-2日程度で達成可能)
   {
     id: "money_1000",
     title: "1000円節約",
@@ -112,6 +92,37 @@ export const ACHIEVEMENTS: Achievement[] = [
     tier: "silver",
     unit: "円",
   },
+  // 50本我慢 (2-3日程度で達成可能)
+  {
+    id: "cigarettes_50",
+    title: "50本我慢",
+    description: "着実に成果が出ています。",
+    category: "cigarettes",
+    goal: 50,
+    tier: "bronze",
+    unit: "本",
+  },
+  // 禁煙1週間 (7日で達成)
+  {
+    id: "duration_7d",
+    title: "禁煙1週間",
+    description: "7日間の継続、素晴らしいです。",
+    category: "duration",
+    goal: 604800,
+    tier: "silver",
+    unit: "日",
+  },
+  // 100本我慢 (5-7日程度で達成可能)
+  {
+    id: "cigarettes_100",
+    title: "100本我慢",
+    description: "健康への大きな投資です。",
+    category: "cigarettes",
+    goal: 100,
+    tier: "silver",
+    unit: "本",
+  },
+  // 5000円節約 (1-2週間程度で達成可能)
   {
     id: "money_5000",
     title: "5000円節約",
@@ -121,6 +132,17 @@ export const ACHIEVEMENTS: Achievement[] = [
     tier: "silver",
     unit: "円",
   },
+  // 禁煙1ヶ月 (30日で達成)
+  {
+    id: "duration_30d",
+    title: "禁煙1ヶ月",
+    description: "大きな節目を迎えました。",
+    category: "duration",
+    goal: 2592000,
+    tier: "gold",
+    unit: "日",
+  },
+  // 1万円節約 (1-2ヶ月程度で達成可能)
   {
     id: "money_10000",
     title: "1万円節約",
@@ -129,5 +151,25 @@ export const ACHIEVEMENTS: Achievement[] = [
     goal: 10000,
     tier: "gold",
     unit: "円",
+  },
+  // 禁煙2ヶ月 (60日で達成)
+  {
+    id: "duration_2m",
+    title: "禁煙2ヶ月",
+    description: "2ヶ月継続、素晴らしい成果です。",
+    category: "duration",
+    goal: 5184000,
+    tier: "gold",
+    unit: "日",
+  },
+  // 禁煙100日 (100日で達成 - 最も困難)
+  {
+    id: "duration_100d",
+    title: "禁煙100日",
+    description: "もう習慣は過去のもの。",
+    category: "duration",
+    goal: 8640000,
+    tier: "platinum",
+    unit: "日",
   },
 ];
