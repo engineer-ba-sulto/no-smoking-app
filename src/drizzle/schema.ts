@@ -25,10 +25,7 @@ export const userProfileInputSchema = z.object({
     .number()
     .int()
     .min(0, { message: "0以上の数値を入力してください" }),
-  pricePerPack: z
-    .number()
-    .int()
-    .min(0, { message: "0以上の数値を入力してください" }),
+  pricePerPack: z.number().min(0, { message: "0以上の数値を入力してください" }),
   cigsPerPack: z
     .number()
     .int()

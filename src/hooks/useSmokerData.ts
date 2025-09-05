@@ -16,18 +16,6 @@ export interface SmokerData {
   hasCompletedOnboarding: boolean;
 }
 
-const defaultData: SmokerData = {
-  name: "あなた",
-  motivations: [],
-  cigarettesPerDay: 20,
-  pricePerPack: 600,
-  cigarettesPerPack: 20,
-  quitDate: new Date().toISOString(),
-  motivationNotifications: true,
-  achievementNotifications: true,
-  hasCompletedOnboarding: false,
-};
-
 export function useSmokerData() {
   const [smokerData, setSmokerData] = useState<SmokerData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,12 +49,13 @@ export function useSmokerData() {
         if (stored) {
           setSmokerData(JSON.parse(stored));
         } else {
-          setSmokerData(defaultData);
+          // データがない場合はnullを設定（表示しない）
+          setSmokerData(null);
         }
       }
     } catch (error) {
       console.error("Error loading smoker data:", error);
-      setSmokerData(defaultData);
+      setSmokerData(null);
     } finally {
       setLoading(false);
     }
@@ -91,20 +80,10 @@ export function useSmokerData() {
           .where(eq(userProfile.id, profiles[0].id));
       }
 
-      // AsyncStorageも更新（フォールバック用）
-      await AsyncStorage.setItem("smokerData", JSON.stringify(updatedData));
+      // AsyncStorageの更新は削除
       setSmokerData(updatedData);
     } catch (error) {
       console.error("Error updating smoker data:", error);
-    }
-  };
-
-  const resetData = async () => {
-    try {
-      await AsyncStorage.removeItem("smokerData");
-      setSmokerData(defaultData);
-    } catch (error) {
-      console.error("Error resetting data:", error);
     }
   };
 
@@ -112,6 +91,5 @@ export function useSmokerData() {
     smokerData,
     loading,
     updateSmokerData,
-    resetData,
   };
 }
