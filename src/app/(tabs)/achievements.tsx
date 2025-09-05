@@ -141,7 +141,7 @@ export default function AchievementsScreen() {
         }}
       >
         <Text className="text-2xl font-bold text-white text-center">
-          あなたのせいか
+          あなたの成果
         </Text>
       </LinearGradient>
 

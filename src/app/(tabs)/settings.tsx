@@ -7,14 +7,30 @@ import {
   Cigarette,
   DollarSign,
   FileText,
+  Play,
   Shield,
 } from "lucide-react-native";
 import { ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
 
+// 設定項目の型定義
+interface SettingItem {
+  icon: React.ReactElement;
+  label: string;
+  value?: string | boolean;
+  toggle?: boolean;
+  onPress?: () => void;
+  onToggle?: (value: boolean) => void;
+}
+
+interface SettingSection {
+  title: string;
+  items: SettingItem[];
+}
+
 export default function SettingsScreen() {
   const { smokerData, updateSmokerData } = useSmokerData();
 
-  const settingSections = [
+  const settingSections: SettingSection[] = [
     {
       title: "あなたの禁煙情報",
       items: [
@@ -22,13 +38,13 @@ export default function SettingsScreen() {
           icon: <Cigarette size={20} color="#6B7280" strokeWidth={2} />,
           label: "1日の喫煙本数",
           value: `${smokerData?.cigarettesPerDay || 20}本`,
-          onPress: () => router.push("/"),
+          onPress: () => router.push("/settings/cigarettes-setting"),
         },
         {
           icon: <DollarSign size={20} color="#6B7280" strokeWidth={2} />,
           label: "タバコの価格",
           value: `${smokerData?.pricePerPack || 600}円`,
-          onPress: () => router.push("/"),
+          onPress: () => router.push("/settings/price-setting"),
         },
       ],
     },
@@ -70,6 +86,22 @@ export default function SettingsScreen() {
     },
   ];
 
+  // 開発環境でのみ表示するセクション
+  const devSections: SettingSection[] = __DEV__
+    ? [
+        {
+          title: "開発者向け",
+          items: [
+            {
+              icon: <Play size={20} color="#EF4444" strokeWidth={2} />,
+              label: "オンボーディングを確認",
+              onPress: () => router.push("/onboarding"),
+            },
+          ],
+        },
+      ]
+    : [];
+
   return (
     <View className="flex-1 bg-gray-50">
       {/* Header */}
@@ -83,9 +115,7 @@ export default function SettingsScreen() {
           borderBottomRightRadius: 20,
         }}
       >
-        <Text className="text-2xl font-bold text-white text-center">
-          せってい
-        </Text>
+        <Text className="text-2xl font-bold text-white text-center">設定</Text>
       </LinearGradient>
 
       <ScrollView
@@ -135,6 +165,41 @@ export default function SettingsScreen() {
                         />
                       </>
                     )}
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        ))}
+
+        {/* 開発環境でのみ表示されるセクション */}
+        {devSections.map((section, sectionIndex) => (
+          <View key={`dev-${sectionIndex}`} className="mb-6">
+            <Text className="text-base font-semibold text-gray-800 mb-3">
+              ▼ {section.title}
+            </Text>
+            <View className="bg-white rounded-xl shadow-sm border-2 border-red-100">
+              {section.items.map((item, itemIndex) => (
+                <TouchableOpacity
+                  key={itemIndex}
+                  className={`flex-row items-center justify-between px-4 py-4 ${
+                    itemIndex === section.items.length - 1
+                      ? ""
+                      : "border-b border-gray-100"
+                  }`}
+                  onPress={item.onPress}
+                >
+                  <View className="flex-row items-center flex-1">
+                    {item.icon}
+                    <Text className="text-sm font-medium text-gray-800 ml-3">
+                      {item.label}
+                    </Text>
+                  </View>
+                  <View className="flex-row items-center">
+                    <Text className="text-xs text-red-500 mr-2 font-medium">
+                      DEV
+                    </Text>
+                    <ChevronRight size={16} color="#9CA3AF" strokeWidth={2} />
                   </View>
                 </TouchableOpacity>
               ))}

@@ -24,6 +24,8 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="settings/cigarettes-setting" />
+        <Stack.Screen name="settings/price-setting" />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
