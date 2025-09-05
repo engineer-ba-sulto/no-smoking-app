@@ -62,11 +62,13 @@ export default function AchievementsScreen() {
       id: status.id,
       title: status.title,
       description: status.description,
-      achieved: status.isUnlocked,
+      category: status.category,
+      goal: status.goal,
       tier: status.tier,
+      unit: status.unit,
+      isUnlocked: status.isUnlocked,
       targetValue,
       currentValue,
-      unit: status.unit,
     };
   });
 
