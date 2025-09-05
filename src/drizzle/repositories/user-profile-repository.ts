@@ -1,5 +1,8 @@
 import { db, userProfile } from "@/drizzle";
-import { UpdateUserProfileInput } from "@/drizzle/schema";
+import {
+  CreateUserProfileInput,
+  UpdateUserProfileInput,
+} from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 
 export const userProfileRepository = {
@@ -49,5 +52,25 @@ export const userProfileRepository = {
     // 更新後のデータを再取得して返す
     const updatedProfile = await this.findById(id);
     return updatedProfile;
+  },
+
+  /**
+   * 新規ユーザープロファイルを作成する
+   * @param input - 作成データ
+   * @returns 作成されたユーザープロファイルオブジェクト
+   */
+  async create(input: CreateUserProfileInput) {
+    const now = new Date().toISOString();
+
+    const [newUserProfile] = await db
+      .insert(userProfile)
+      .values({
+        ...input,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .returning();
+
+    return newUserProfile;
   },
 };

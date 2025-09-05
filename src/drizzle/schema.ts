@@ -18,11 +18,14 @@ export const userProfile = sqliteTable("user_profile", {
 
 // バリデーション用のスキーマ
 export const userProfileInputSchema = z.object({
-  smokingStartDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  smokingStartDate: z.string().datetime(),
   cigsPerDay: z.number().int().min(0),
   pricePerPack: z.number().int().min(0),
   cigsPerPack: z.number().int().min(0),
 });
 
+// 新規作成用の型定義
+export type CreateUserProfileInput = z.infer<typeof userProfileInputSchema>;
+
 // 更新用の型定義
-export type UpdateUserProfileInput = z.infer<typeof userProfileInputSchema>;
+export type UpdateUserProfileInput = CreateUserProfileInput;
