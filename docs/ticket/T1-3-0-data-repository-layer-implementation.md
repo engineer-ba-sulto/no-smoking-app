@@ -42,21 +42,37 @@ export interface UserProfile {
   updatedAt: string;
 }
 
-// 新規作成用の型定義
-export interface CreateUserProfileInput {
-  smokingStartDate: string;
-  cigsPerDay: number;
-  pricePerPack: number;
-  cigsPerPack: number;
-}
+// zod を使用して入力データ用のスキーマと型を定義
+import { z } from "zod";
 
-// 更新用の型定義
-export interface UpdateUserProfileInput {
-  smokingStartDate?: string;
-  cigsPerDay?: number;
-  pricePerPack?: number;
-  cigsPerPack?: number;
-}
+export const userProfileInputSchema = z.object({
+  smokingStartDate: z
+    .string()
+    .datetime({ message: "有効なISO形式の日付文字列である必要があります" }),
+  cigsPerDay: z
+    .number()
+    .int()
+    .min(0, { message: "0から100の間の数値を入力してください" })
+    .max(100, { message: "0から100の間の数値を入力してください" }),
+  pricePerPack: z
+    .number()
+    .int()
+    .min(0, { message: "0から10000の間の数値を入力してください" })
+    .max(10000, { message: "0から10000の間の数値を入力してください" }),
+  cigsPerPack: z
+    .number()
+    .int()
+    .min(0, { message: "0から50の間の数値を入力してください" })
+    .max(50, { message: "0から50の間の数値を入力してください" }),
+});
+
+// 新規作成用の型定義
+export type CreateUserProfileInput = z.infer<typeof userProfileInputSchema>;
+
+// 更新用の型定義 (全プロパティをオプショナルに)
+export type UpdateUserProfileInput = z.infer<
+  typeof userProfileInputSchema.partial()
+>;
 ```
 
 #### リポジトリ関数の設計
@@ -128,32 +144,30 @@ export class UserProfileValidationError extends UserProfileError {
 #### バリデーション機能
 
 ```typescript
+import { z } from "zod";
+import { userProfileInputSchema } from "./schemas"; // スキーマ定義の場所を想定
+import { UserProfileValidationError } from "./errors";
+
+// バリデーションを実行する関数
 export const validateUserProfileInput = (
-  input: CreateUserProfileInput | UpdateUserProfileInput
+  input: CreateUserProfileInput | UpdateUserProfileInput,
+  isUpdate: boolean = false
 ) => {
-  const errors: string[] = [];
-
-  if (input.smokingStartDate && !isValidISODate(input.smokingStartDate)) {
-    errors.push("smokingStartDate must be a valid ISO date string");
-  }
-
-  if (input.cigsPerDay && (input.cigsPerDay < 0 || input.cigsPerDay > 100)) {
-    errors.push("cigsPerDay must be between 0 and 100");
-  }
-
-  if (
-    input.pricePerPack &&
-    (input.pricePerPack < 0 || input.pricePerPack > 10000)
-  ) {
-    errors.push("pricePerPack must be between 0 and 10000");
-  }
-
-  if (input.cigsPerPack && (input.cigsPerPack < 0 || input.cigsPerPack > 50)) {
-    errors.push("cigsPerPack must be between 0 and 50");
-  }
-
-  if (errors.length > 0) {
-    throw new UserProfileValidationError(errors.join(", "));
+  try {
+    if (isUpdate) {
+      // 更新時は一部のプロパティのみを許容
+      userProfileInputSchema.partial().parse(input);
+    } else {
+      // 作成時は全てのプロパティが必要
+      userProfileInputSchema.parse(input);
+    }
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new UserProfileValidationError(
+        error.errors.map((e) => e.message).join(", ")
+      );
+    }
+    throw error;
   }
 };
 ```
