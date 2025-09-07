@@ -3,6 +3,7 @@ import { StatsCard } from "@/components/StatsCard";
 import { useQuitTimer } from "@/hooks/useQuitTimer";
 import { useSmokerData } from "@/hooks/useSmokerData";
 import { LinearGradient } from "expo-linear-gradient";
+import { useFocusEffect } from "expo-router";
 import {
   CircleAlert as AlertCircle,
   Clock,
@@ -10,12 +11,12 @@ import {
   Heart,
   Target,
 } from "lucide-react-native";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Modal, Text, TouchableOpacity, View } from "react-native";
 
 export default function HomeScreen() {
   const [showSOS, setShowSOS] = useState(false);
-  const { smokerData } = useSmokerData();
+  const { smokerData, loadData } = useSmokerData();
   const { quitStats } = useQuitTimer(
     smokerData?.quitDate,
     smokerData?.cigarettesPerDay,
@@ -24,6 +25,13 @@ export default function HomeScreen() {
   );
 
   const userName = smokerData?.name || "あなた";
+
+  // 画面がフォーカスされた時にデータを再読み込み
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
+  );
 
   return (
     <View className="flex-1 bg-gray-100">

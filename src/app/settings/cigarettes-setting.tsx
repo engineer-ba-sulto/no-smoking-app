@@ -3,22 +3,34 @@ import { useSmokerData } from "@/hooks/useSmokerData";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { ArrowLeft, Cigarette, Save } from "lucide-react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 export default function CigarettesSettingScreen() {
   const { smokerData, updateSmokerData } = useSmokerData();
-  const [cigarettesPerDay, setCigarettesPerDay] = useState(
-    smokerData?.cigarettesPerDay || 20
-  );
+  const [cigarettesPerDay, setCigarettesPerDay] = useState<number>(20);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // smokerDataが変更された時にcigarettesPerDayを更新
+  useEffect(() => {
+    if (smokerData?.cigarettesPerDay !== undefined) {
+      setCigarettesPerDay(smokerData.cigarettesPerDay);
+    }
+  }, [smokerData?.cigarettesPerDay]);
 
   const handleSave = async () => {
+    if (isSaving) return;
+
+    setIsSaving(true);
     try {
       await updateSmokerData({ cigarettesPerDay });
-      Alert.alert("保存完了", "1日の喫煙本数を更新しました");
-      router.back();
+      Alert.alert("保存完了", "1日の喫煙本数を更新しました", [
+        { text: "OK", onPress: () => router.back() },
+      ]);
     } catch (error) {
       Alert.alert("エラー", "保存に失敗しました");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -63,6 +75,7 @@ export default function CigarettesSettingScreen() {
             onPress={handleSave}
             className="w-10 h-10 rounded-full bg-white/20 items-center justify-center"
             activeOpacity={0.7}
+            disabled={isSaving}
           >
             <Save size={20} color="white" strokeWidth={2} />
           </TouchableOpacity>
@@ -129,11 +142,14 @@ export default function CigarettesSettingScreen() {
         {/* 保存ボタン */}
         <TouchableOpacity
           onPress={handleSave}
-          className="bg-green-500 rounded-xl py-4 mb-8 shadow-sm"
+          className={`rounded-xl py-4 mb-8 shadow-sm ${
+            isSaving ? "bg-gray-400" : "bg-green-500"
+          }`}
           activeOpacity={0.8}
+          disabled={isSaving}
         >
           <Text className="text-white text-center font-semibold text-lg">
-            設定を保存
+            {isSaving ? "保存中..." : "設定を保存"}
           </Text>
         </TouchableOpacity>
       </ScrollView>

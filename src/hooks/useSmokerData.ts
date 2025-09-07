@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { eq } from "drizzle-orm";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { db } from "../drizzle";
 import { userProfile } from "../drizzle/schema";
 
@@ -20,18 +20,16 @@ export function useSmokerData() {
   const [smokerData, setSmokerData] = useState<SmokerData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
+      setLoading(true);
+
       // データベースからユーザープロフィールを取得
       const profiles = await db.select().from(userProfile);
 
       if (profiles.length > 0) {
         const profile = profiles[0];
-        const smokerData: SmokerData = {
+        const newSmokerData: SmokerData = {
           name: "あなた",
           motivations: [],
           cigarettesPerDay: profile.cigsPerDay,
@@ -42,14 +40,14 @@ export function useSmokerData() {
           achievementNotifications: true,
           hasCompletedOnboarding: true,
         };
-        setSmokerData(smokerData);
+        setSmokerData(newSmokerData);
       } else {
         // データベースにデータがない場合はAsyncStorageから読み込み
         const stored = await AsyncStorage.getItem("smokerData");
         if (stored) {
-          setSmokerData(JSON.parse(stored));
+          const parsedData = JSON.parse(stored);
+          setSmokerData(parsedData);
         } else {
-          // データがない場合はnullを設定（表示しない）
           setSmokerData(null);
         }
       }
@@ -59,37 +57,54 @@ export function useSmokerData() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const updateSmokerData = async (updates: Partial<SmokerData>) => {
-    try {
-      const updatedData = { ...smokerData, ...updates } as SmokerData;
+  useEffect(() => {
+    loadData();
+  }, []);
 
-      // データベースにプロフィールが存在する場合は更新
-      const profiles = await db.select().from(userProfile);
-      if (profiles.length > 0) {
-        await db
-          .update(userProfile)
-          .set({
-            cigsPerDay: updatedData.cigarettesPerDay,
-            pricePerPack: updatedData.pricePerPack,
-            cigsPerPack: updatedData.cigarettesPerPack,
-            smokingStartDate: updatedData.quitDate,
-            updatedAt: new Date().toISOString(),
-          })
-          .where(eq(userProfile.id, profiles[0].id));
+  const updateSmokerData = useCallback(
+    async (updates: Partial<SmokerData>) => {
+      try {
+        if (!smokerData) {
+          throw new Error("No smoker data available");
+        }
+
+        const updatedData = { ...smokerData, ...updates } as SmokerData;
+
+        // データベースにプロフィールが存在する場合は更新
+        const profiles = await db.select().from(userProfile);
+
+        if (profiles.length > 0) {
+          await db
+            .update(userProfile)
+            .set({
+              cigsPerDay: updatedData.cigarettesPerDay,
+              pricePerPack: updatedData.pricePerPack,
+              cigsPerPack: updatedData.cigarettesPerPack,
+              smokingStartDate: updatedData.quitDate,
+              updatedAt: new Date().toISOString(),
+            })
+            .where(eq(userProfile.id, profiles[0].id));
+
+          // データベース更新後にローカル状態を更新
+          setSmokerData(updatedData);
+        } else {
+          // プロフィールがない場合はローカル状態のみ更新
+          setSmokerData(updatedData);
+        }
+      } catch (error) {
+        console.error("Error updating smoker data:", error);
+        throw error;
       }
-
-      // AsyncStorageの更新は削除
-      setSmokerData(updatedData);
-    } catch (error) {
-      console.error("Error updating smoker data:", error);
-    }
-  };
+    },
+    [smokerData]
+  );
 
   return {
     smokerData,
     loading,
     updateSmokerData,
+    loadData,
   };
 }

@@ -22,7 +22,8 @@
         {
           "root": "./src/app"
         }
-      ]
+      ],
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true
