@@ -91,4 +91,23 @@ export const userProfileRepository = {
 
     return newUserProfile;
   },
+
+  /**
+   * ユーザーの1日の喫煙本数を更新する
+   * @param newCount - 新しい1日の喫煙本数
+   * @returns Promise<void>
+   */
+  async updateCigarettesPerDay(newCount: number): Promise<void> {
+    try {
+      await db
+        .update(userProfile)
+        .set({
+          cigsPerDay: newCount,
+          updatedAt: new Date().toISOString(),
+        })
+        .where(eq(userProfile.id, 1)); // ユーザーは1人しかいない想定なのでID=1を対象
+    } catch (error) {
+      throw new Error(`Failed to update cigarettes per day: ${error}`);
+    }
+  },
 };
