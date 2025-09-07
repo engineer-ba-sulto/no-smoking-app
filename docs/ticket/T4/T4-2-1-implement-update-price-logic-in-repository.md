@@ -62,7 +62,7 @@ export const userProfileRepository = {
 
       await db
         .update(userProfiles)
-        .set({ packagePrice: newPrice, updatedAt: new Date() })
+        .set({ pricePerPack: newPrice, updatedAt: new Date() })
         .where(eq(userProfiles.id, 1)); // ユーザーは1人の想定
 
       return { success: true };
