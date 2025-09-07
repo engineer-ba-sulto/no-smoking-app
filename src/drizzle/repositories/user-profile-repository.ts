@@ -110,4 +110,35 @@ export const userProfileRepository = {
       throw new Error(`Failed to update cigarettes per day: ${error}`);
     }
   },
+
+  /**
+   * ユーザーのタバコ一箱あたりの価格（pricePerPack）を更新する
+   * @param newPrice - 新しいタバコ価格
+   * @returns Promise<{ success: boolean; message?: string }>
+   */
+  async updatePackagePrice(
+    newPrice: number
+  ): Promise<{ success: boolean; message?: string }> {
+    try {
+      if (typeof newPrice !== "number" || newPrice < 0) {
+        throw new Error("価格は 0 以上の数値を入力してください。");
+      }
+
+      await db
+        .update(userProfile)
+        .set({ pricePerPack: newPrice, updatedAt: new Date().toISOString() })
+        .where(eq(userProfile.id, 1)); // ユーザーは1人の想定
+
+      return { success: true };
+    } catch (error) {
+      console.error("価格の更新に失敗しました:", error);
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "不明なエラーが発生しました。",
+      };
+    }
+  },
 };
