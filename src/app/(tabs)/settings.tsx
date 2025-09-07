@@ -1,6 +1,6 @@
 import { useSmokerData } from "@/hooks/useSmokerData";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import {
   Bell,
   ChevronRight,
@@ -11,6 +11,7 @@ import {
   Play,
   Shield,
 } from "lucide-react-native";
+import { useCallback } from "react";
 import { ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
 
 // 設定項目の型定義
@@ -29,7 +30,14 @@ interface SettingSection {
 }
 
 export default function SettingsScreen() {
-  const { smokerData, updateSmokerData } = useSmokerData();
+  const { smokerData, updateSmokerData, loadData } = useSmokerData();
+
+  // 画面がフォーカスされた時にデータを再読み込み
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
+  );
 
   const settingSections: SettingSection[] = [
     {
