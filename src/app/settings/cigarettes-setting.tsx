@@ -121,24 +121,6 @@ export default function CigarettesSettingScreen() {
           </View>
         </View>
 
-        {/* 参考情報セクション */}
-        <View className="bg-blue-50 rounded-xl p-6 mb-6 border border-blue-200">
-          <Text className="text-base font-semibold text-blue-800 mb-3">
-            💡 参考情報
-          </Text>
-          <View className="space-y-2">
-            <Text className="text-sm text-blue-700">
-              • 一般的な喫煙者は1日20-30本程度
-            </Text>
-            <Text className="text-sm text-blue-700">
-              • 1本あたり約3-5分の喫煙時間
-            </Text>
-            <Text className="text-sm text-blue-700">
-              • 1日20本の場合、月額約18,000円の支出
-            </Text>
-          </View>
-        </View>
-
         {/* 保存ボタン */}
         <TouchableOpacity
           onPress={handleSave}
