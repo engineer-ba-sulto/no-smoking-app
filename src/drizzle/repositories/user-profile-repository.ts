@@ -141,4 +141,38 @@ export const userProfileRepository = {
       };
     }
   },
+
+  /**
+   * ユーザーのタバコ一箱あたりの本数（cigarettesPerPackage）を更新する
+   * @param newCount - 新しい一箱あたりの本数
+   * @returns Promise<{ success: boolean; message?: string }>
+   */
+  async updateCigarettesPerPackage(
+    newCount: number
+  ): Promise<{ success: boolean; message?: string }> {
+    try {
+      if (typeof newCount !== "number" || newCount <= 0) {
+        throw new Error("本数は 1 以上の数値を入力してください。");
+      }
+
+      await db
+        .update(userProfile)
+        .set({
+          cigsPerPack: newCount,
+          updatedAt: new Date().toISOString(),
+        })
+        .where(eq(userProfile.id, 1)); // ユーザーは1人の想定
+
+      return { success: true };
+    } catch (error) {
+      console.error("一箱あたりの本数の更新に失敗しました:", error);
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "不明なエラーが発生しました。",
+      };
+    }
+  },
 };
