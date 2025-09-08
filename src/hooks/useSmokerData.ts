@@ -1,8 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { eq } from "drizzle-orm";
 import { useCallback, useEffect, useState } from "react";
-import { db } from "../drizzle";
-import { userProfile } from "../drizzle/schema";
+import { userProfileRepository } from "../drizzle/repositories/user-profile-repository";
 
 export interface SmokerData {
   name?: string;
@@ -25,7 +23,7 @@ export function useSmokerData() {
       setLoading(true);
 
       // データベースからユーザープロフィールを取得
-      const profiles = await db.select().from(userProfile);
+      const profiles = await userProfileRepository.findAll();
 
       if (profiles.length > 0) {
         const profile = profiles[0];
@@ -73,19 +71,15 @@ export function useSmokerData() {
         const updatedData = { ...smokerData, ...updates } as SmokerData;
 
         // データベースにプロフィールが存在する場合は更新
-        const profiles = await db.select().from(userProfile);
+        const profiles = await userProfileRepository.findAll();
 
         if (profiles.length > 0) {
-          await db
-            .update(userProfile)
-            .set({
-              cigsPerDay: updatedData.cigarettesPerDay,
-              pricePerPack: updatedData.pricePerPack,
-              cigsPerPack: updatedData.cigarettesPerPack,
-              smokingStartDate: updatedData.quitDate,
-              updatedAt: new Date().toISOString(),
-            })
-            .where(eq(userProfile.id, profiles[0].id));
+          await userProfileRepository.update(profiles[0].id, {
+            cigsPerDay: updatedData.cigarettesPerDay,
+            pricePerPack: updatedData.pricePerPack,
+            cigsPerPack: updatedData.cigarettesPerPack,
+            smokingStartDate: updatedData.quitDate,
+          });
 
           // データベース更新後にローカル状態を更新
           setSmokerData(updatedData);

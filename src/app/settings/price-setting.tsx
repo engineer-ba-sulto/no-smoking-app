@@ -37,28 +37,23 @@ export default function PriceSettingScreen() {
 
     setIsSaving(true);
     try {
-      // 価格の更新
-      const priceResult = await userProfileRepository.updatePackagePrice(
-        pricePerPack
+      // 価格と本数を同時に更新
+      const result = await userProfileRepository.updatePackageSettings(
+        pricePerPack,
+        cigarettesPerPackage
       );
 
-      if (priceResult.success) {
-        // 本数の更新（既存のupdateメソッドを使用）
-        await userProfileRepository.update(1, {
-          cigsPerPack: cigarettesPerPackage,
-          smokingStartDate: smokerData?.quitDate || new Date().toISOString(),
-          cigsPerDay: smokerData?.cigarettesPerDay || 20,
-          pricePerPack: pricePerPack,
-        });
-
+      if (result.success) {
+        // データを再読み込みしてから画面を閉じる
+        await loadData();
         Alert.alert("成功", "設定を更新しました。", [
           { text: "OK", onPress: () => router.back() },
         ]);
-        loadData(); // データを再読み込み
       } else {
-        Alert.alert("エラー", priceResult.message || "更新に失敗しました。");
+        Alert.alert("エラー", result.message || "更新に失敗しました。");
       }
     } catch (e) {
+      console.error("設定更新エラー:", e);
       Alert.alert("エラー", "予期せぬエラーが発生しました。");
     } finally {
       setIsSaving(false);
