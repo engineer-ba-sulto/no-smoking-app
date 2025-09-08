@@ -27,6 +27,8 @@ export const initialStartupPatterns: TestDataPattern[] = [
       cigsPerDay: 20,
       pricePerPack: 650,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約"]),
+      hasCompletedOnboarding: true,
     },
   },
   {
@@ -39,6 +41,8 @@ export const initialStartupPatterns: TestDataPattern[] = [
       cigsPerDay: 10,
       pricePerPack: 600,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["家族のため", "健康のため"]),
+      hasCompletedOnboarding: true,
     },
   },
   {
@@ -51,6 +55,8 @@ export const initialStartupPatterns: TestDataPattern[] = [
       cigsPerDay: 30,
       pricePerPack: 700,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約", "家族のため"]),
+      hasCompletedOnboarding: true,
     },
   },
 ];
@@ -71,6 +77,8 @@ export const testDataPatterns: TestDataPattern[] = [
       cigsPerDay: 15,
       pricePerPack: 600,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約"]),
+      hasCompletedOnboarding: true,
     },
   },
   {
@@ -83,6 +91,8 @@ export const testDataPatterns: TestDataPattern[] = [
       cigsPerDay: 20,
       pricePerPack: 650,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約"]),
+      hasCompletedOnboarding: true,
     },
   },
   {
@@ -95,6 +105,8 @@ export const testDataPatterns: TestDataPattern[] = [
       cigsPerDay: 25,
       pricePerPack: 700,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約"]),
+      hasCompletedOnboarding: true,
     },
   },
 
@@ -109,6 +121,8 @@ export const testDataPatterns: TestDataPattern[] = [
       cigsPerDay: 15,
       pricePerPack: 550,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため"]),
+      hasCompletedOnboarding: true,
     },
   },
   {
@@ -121,6 +135,8 @@ export const testDataPatterns: TestDataPattern[] = [
       cigsPerDay: 30,
       pricePerPack: 750,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約", "家族のため"]),
+      hasCompletedOnboarding: true,
     },
   },
   {
@@ -133,6 +149,8 @@ export const testDataPatterns: TestDataPattern[] = [
       cigsPerDay: 0,
       pricePerPack: 600,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため"]),
+      hasCompletedOnboarding: true,
     },
   },
   {
@@ -145,6 +163,8 @@ export const testDataPatterns: TestDataPattern[] = [
       cigsPerDay: 15,
       pricePerPack: 0,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため"]),
+      hasCompletedOnboarding: true,
     },
   },
 
@@ -159,6 +179,8 @@ export const testDataPatterns: TestDataPattern[] = [
       cigsPerDay: 20,
       pricePerPack: 650,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約"]),
+      hasCompletedOnboarding: true,
     },
   },
   {
@@ -171,6 +193,8 @@ export const testDataPatterns: TestDataPattern[] = [
       cigsPerDay: 20,
       pricePerPack: 650,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約"]),
+      hasCompletedOnboarding: true,
     },
   },
   {
@@ -183,6 +207,8 @@ export const testDataPatterns: TestDataPattern[] = [
       cigsPerDay: 20,
       pricePerPack: 650,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約"]),
+      hasCompletedOnboarding: true,
     },
   },
   {
@@ -195,6 +221,8 @@ export const testDataPatterns: TestDataPattern[] = [
       cigsPerDay: 25,
       pricePerPack: 700,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約"]),
+      hasCompletedOnboarding: true,
     },
   },
   {
@@ -207,6 +235,8 @@ export const testDataPatterns: TestDataPattern[] = [
       cigsPerDay: 30,
       pricePerPack: 750,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約", "家族のため"]),
+      hasCompletedOnboarding: true,
     },
   },
   {
@@ -219,6 +249,8 @@ export const testDataPatterns: TestDataPattern[] = [
       cigsPerDay: 35,
       pricePerPack: 800,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約", "家族のため"]),
+      hasCompletedOnboarding: true,
     },
   },
 ];

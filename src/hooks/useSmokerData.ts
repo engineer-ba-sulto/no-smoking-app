@@ -29,14 +29,16 @@ export function useSmokerData() {
         const profile = profiles[0];
         const newSmokerData: SmokerData = {
           name: "あなた",
-          motivations: [],
+          motivations: profile.motivations
+            ? JSON.parse(profile.motivations)
+            : [],
           cigarettesPerDay: profile.cigsPerDay,
           pricePerPack: profile.pricePerPack,
           cigarettesPerPack: profile.cigsPerPack,
           quitDate: profile.smokingStartDate,
           motivationNotifications: true,
           achievementNotifications: true,
-          hasCompletedOnboarding: true,
+          hasCompletedOnboarding: profile.hasCompletedOnboarding,
         };
         setSmokerData(newSmokerData);
       } else {
@@ -64,10 +66,6 @@ export function useSmokerData() {
   const updateSmokerData = useCallback(
     async (updates: Partial<SmokerData>) => {
       try {
-        if (!smokerData) {
-          throw new Error("No smoker data available");
-        }
-
         const updatedData = { ...smokerData, ...updates } as SmokerData;
 
         // データベースにプロフィールが存在する場合は更新
@@ -79,12 +77,26 @@ export function useSmokerData() {
             pricePerPack: updatedData.pricePerPack,
             cigsPerPack: updatedData.cigarettesPerPack,
             smokingStartDate: updatedData.quitDate,
+            motivations: JSON.stringify(updatedData.motivations),
+            hasCompletedOnboarding: updatedData.hasCompletedOnboarding,
           });
 
           // データベース更新後にローカル状態を更新
           setSmokerData(updatedData);
         } else {
-          // プロフィールがない場合はローカル状態のみ更新
+          // プロフィールがない場合は新規作成
+          if (updatedData.hasCompletedOnboarding) {
+            await userProfileRepository.create({
+              smokingStartDate: updatedData.quitDate,
+              cigsPerDay: updatedData.cigarettesPerDay,
+              pricePerPack: updatedData.pricePerPack,
+              cigsPerPack: updatedData.cigarettesPerPack,
+              motivations: JSON.stringify(updatedData.motivations),
+              hasCompletedOnboarding: updatedData.hasCompletedOnboarding,
+            });
+          }
+
+          // ローカル状態を更新
           setSmokerData(updatedData);
         }
       } catch (error) {

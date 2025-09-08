@@ -1,3 +1,4 @@
+import { db } from "@/drizzle";
 import { MainSeeder } from "@/drizzle/seeders/main-seeder";
 import {
   initialStartupPatterns,
@@ -8,6 +9,7 @@ import {
   AlertTriangle,
   Database,
   Play,
+  RefreshCw,
   Smartphone,
   Trash2,
   Trophy,
@@ -59,6 +61,29 @@ export const DatabaseManagerComponent = ({
       Alert.alert("❌ エラー", `${errorMessage}\n\n詳細: ${errorDetails}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const runMigrations = async () => {
+    try {
+      // テーブル作成（存在しない場合）
+      await db.run(`
+        CREATE TABLE IF NOT EXISTS user_profile (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          smoking_start_date TEXT NOT NULL,
+          cigs_per_day INTEGER NOT NULL,
+          price_per_pack REAL NOT NULL,
+          cigs_per_pack INTEGER NOT NULL,
+          motivations TEXT NOT NULL DEFAULT '[]',
+          has_completed_onboarding INTEGER NOT NULL DEFAULT 0,
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      console.log("テーブル作成が完了しました");
+    } catch (error) {
+      console.error("マイグレーションエラー:", error);
+      throw error;
     }
   };
 
@@ -214,6 +239,28 @@ export const DatabaseManagerComponent = ({
               >
                 {hasData ? "タップ" : "データなし"}
               </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className={`flex-row items-center justify-between p-4 rounded-lg border bg-blue-50 border-blue-200 ${
+                loading ? "opacity-50" : ""
+              }`}
+              onPress={() =>
+                handleAction(
+                  runMigrations,
+                  "データベーステーブルが作成されました",
+                  "テーブル作成中にエラーが発生しました"
+                )
+              }
+              disabled={loading}
+            >
+              <View className="flex-row items-center">
+                <RefreshCw size={20} color="#3B82F6" strokeWidth={2} />
+                <Text className="text-sm font-medium ml-3 text-gray-800">
+                  データベーステーブル作成
+                </Text>
+              </View>
+              <Text className="text-xs text-gray-500">タップ</Text>
             </TouchableOpacity>
           </View>
         </View>
