@@ -15,24 +15,13 @@ export const calculateAchievementProgress = (
 ): { currentValue: number; targetValue: number } => {
   switch (category) {
     case "duration":
-      // 時間系のアチーブメント
-      if (goal <= 86400) {
-        // 24時間以下の場合（時間単位）
-        const currentHours = Math.floor(outcomes.durationInSeconds / 3600);
-        const targetHours = Math.floor(goal / 3600);
-        return {
-          currentValue: currentHours,
-          targetValue: targetHours,
-        };
-      } else {
-        // 24時間以上の場合（日単位）
-        const currentDays = Math.floor(outcomes.durationInSeconds / 86400);
-        const targetDays = Math.floor(goal / 86400);
-        return {
-          currentValue: currentDays,
-          targetValue: targetDays,
-        };
-      }
+      // 時間系のアチーブメント（1分単位で表示）
+      const currentMinutes = Math.floor(outcomes.durationInSeconds / 60);
+      const targetMinutes = Math.floor(goal / 60);
+      return {
+        currentValue: currentMinutes,
+        targetValue: targetMinutes,
+      };
 
     case "cigarettes":
       // タバコ本数のアチーブメント
@@ -81,4 +70,63 @@ export const calculateRemainingValue = (
   targetValue: number
 ): number => {
   return Math.max(targetValue - currentValue, 0);
+};
+
+/**
+ * 分単位の時間を「何日何時間何分」の形式でフォーマットします。
+ * @param minutes - 分単位の時間
+ * @returns フォーマットされた時間文字列
+ */
+export const formatTimeRemaining = (minutes: number): string => {
+  if (minutes <= 0) return "0分";
+
+  const days = Math.floor(minutes / (24 * 60));
+  const hours = Math.floor((minutes % (24 * 60)) / 60);
+  const remainingMinutes = minutes % 60;
+
+  const parts: string[] = [];
+
+  if (days > 0) {
+    parts.push(`${days}日`);
+  }
+  if (hours > 0) {
+    parts.push(`${hours}時間`);
+  }
+  if (remainingMinutes > 0) {
+    parts.push(`${remainingMinutes}分`);
+  }
+
+  return parts.join("");
+};
+
+/**
+ * 秒単位の時間を「何日何時間何分何秒」の形式でフォーマットします。
+ * 1分未満の場合は秒単位で表示します。
+ * @param seconds - 秒単位の時間
+ * @returns フォーマットされた時間文字列
+ */
+export const formatTimeRemainingWithSeconds = (seconds: number): string => {
+  if (seconds <= 0) return "0秒";
+
+  const days = Math.floor(seconds / (24 * 60 * 60));
+  const hours = Math.floor((seconds % (24 * 60 * 60)) / (60 * 60));
+  const minutes = Math.floor((seconds % (60 * 60)) / 60);
+  const remainingSeconds = seconds % 60;
+
+  const parts: string[] = [];
+
+  if (days > 0) {
+    parts.push(`${days}日`);
+  }
+  if (hours > 0) {
+    parts.push(`${hours}時間`);
+  }
+  if (minutes > 0) {
+    parts.push(`${minutes}分`);
+  }
+  if (remainingSeconds > 0 || parts.length === 0) {
+    parts.push(`${remainingSeconds}秒`);
+  }
+
+  return parts.join("");
 };

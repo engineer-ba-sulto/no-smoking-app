@@ -2,6 +2,8 @@ import { AchievementStatus } from "@/types/achievement";
 import {
   calculateProgressPercentage,
   calculateRemainingValue,
+  formatTimeRemaining,
+  formatTimeRemainingWithSeconds,
 } from "@/utils/achievement-progress";
 import { Award, Lock } from "lucide-react-native";
 import React from "react";
@@ -12,6 +14,8 @@ interface Props {
     targetValue: number;
     currentValue: number;
   };
+  // 秒単位の残り時間を計算するための追加プロパティ
+  remainingSeconds?: number;
 }
 
 const tierColors = {
@@ -21,7 +25,7 @@ const tierColors = {
   platinum: "#E5E4E2",
 };
 
-export function AchievementBadge({ achievement }: Props) {
+export function AchievementBadge({ achievement, remainingSeconds }: Props) {
   const tierColor = tierColors[achievement.tier];
   const isAchieved = achievement.isUnlocked;
   const progress = calculateProgressPercentage(
@@ -81,8 +85,11 @@ export function AchievementBadge({ achievement }: Props) {
           <Text className="text-xs text-center mb-1.5">
             <Text className="text-gray-400">目標まであと </Text>
             <Text className="text-primary-500 font-semibold">
-              {remaining.toLocaleString()}
-              {achievement.unit}
+              {achievement.category === "duration"
+                ? remainingSeconds !== undefined && remainingSeconds < 60
+                  ? formatTimeRemainingWithSeconds(remainingSeconds)
+                  : formatTimeRemaining(remaining)
+                : `${remaining.toLocaleString()}${achievement.unit}`}
             </Text>
           </Text>
           <View className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">

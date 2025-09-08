@@ -160,12 +160,24 @@ export default function AchievementsScreen() {
               ■ 獲得したバッジ一覧
             </Text>
             <View className="flex-row flex-wrap justify-between">
-              {achievements.map((achievement) => (
-                <AchievementBadge
-                  key={achievement.id}
-                  achievement={achievement}
-                />
-              ))}
+              {achievements.map((achievement) => {
+                // 時間系バッジの場合、秒単位の残り時間を計算
+                const remainingSeconds =
+                  achievement.category === "duration"
+                    ? Math.max(
+                        0,
+                        achievement.targetValue * 60 - quitStats.totalSeconds
+                      )
+                    : undefined;
+
+                return (
+                  <AchievementBadge
+                    key={achievement.id}
+                    achievement={achievement}
+                    remainingSeconds={remainingSeconds}
+                  />
+                );
+              })}
             </View>
           </View>
         )}

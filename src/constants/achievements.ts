@@ -10,7 +10,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "duration",
     goal: 3600,
     tier: "bronze",
-    unit: "時間",
+    unit: "分",
   },
   // 3時間達成 (最初の壁を越える)
   {
@@ -20,7 +20,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "duration",
     goal: 10800,
     tier: "bronze",
-    unit: "時間",
+    unit: "分",
   },
   // 6時間達成 (半日を乗り越える)
   {
@@ -30,7 +30,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "duration",
     goal: 21600,
     tier: "bronze",
-    unit: "時間",
+    unit: "分",
   },
   // 12時間達成 (半日達成)
   {
@@ -40,7 +40,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "duration",
     goal: 43200,
     tier: "bronze",
-    unit: "時間",
+    unit: "分",
   },
   // 10本我慢 (1時間程度で達成可能)
   {
@@ -80,7 +80,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "duration",
     goal: 86400,
     tier: "bronze",
-    unit: "日",
+    unit: "分",
   },
   // 1000円節約 (1-2日程度で達成可能)
   {
@@ -110,7 +110,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "duration",
     goal: 604800,
     tier: "silver",
-    unit: "日",
+    unit: "分",
   },
   // 100本我慢 (5-7日程度で達成可能)
   {
@@ -140,7 +140,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "duration",
     goal: 2592000,
     tier: "gold",
-    unit: "日",
+    unit: "分",
   },
   // 1万円節約 (1-2ヶ月程度で達成可能)
   {
@@ -160,7 +160,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "duration",
     goal: 5184000,
     tier: "gold",
-    unit: "日",
+    unit: "分",
   },
   // 禁煙100日 (100日で達成 - 最も困難)
   {
@@ -170,6 +170,6 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "duration",
     goal: 8640000,
     tier: "platinum",
-    unit: "日",
+    unit: "分",
   },
 ];
