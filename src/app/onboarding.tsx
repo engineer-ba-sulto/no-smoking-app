@@ -23,12 +23,13 @@ import {
   WantsHobbiesStep,
   WelcomeStep,
 } from "@/components/onboarding";
+import { DEFAULT_BACKGROUND } from "@/constants/backgrounds";
 import { ONBOARDING_CONFIG, OnboardingStep } from "@/constants/onboarding";
 import { useSmokerData } from "@/hooks/useSmokerData";
 import { router } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { TouchableOpacity, View } from "react-native";
+import { ImageBackground, TouchableOpacity, View } from "react-native";
 import {
   Easing,
   useAnimatedStyle,
@@ -301,22 +302,35 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white pt-14 android:pt-8">
+    <ImageBackground
+      source={DEFAULT_BACKGROUND.source}
+      className="flex-1 pt-14 android:pt-8"
+      resizeMode="cover"
+    >
+      {/* 半透明のオーバーレイ */}
+      <View className="absolute inset-0 bg-white/80" />
+
       {/* 戻るボタン */}
       {currentStep > ONBOARDING_CONFIG.STEPS.WELCOME && (
         <TouchableOpacity
           onPress={prevStep}
-          className="absolute top-12 left-4 z-10 bg-gray-100 rounded-full p-2 android:top-8"
+          className="absolute top-12 left-4 z-50 bg-white/90 rounded-full p-2 android:top-8 shadow-sm"
           activeOpacity={0.7}
         >
           <ArrowLeft size={20} color="#374151" strokeWidth={2} />
         </TouchableOpacity>
       )}
-      <OnboardingProgress
-        currentStep={currentStep}
-        totalSteps={ONBOARDING_CONFIG.TOTAL_STEPS}
-      />
-      <View className="flex-1 px-5 justify-center">{renderStepContent()}</View>
-    </View>
+
+      {/* コンテンツ */}
+      <View className="flex-1 relative z-10">
+        <OnboardingProgress
+          currentStep={currentStep}
+          totalSteps={ONBOARDING_CONFIG.TOTAL_STEPS}
+        />
+        <View className="flex-1 px-5 justify-center">
+          {renderStepContent()}
+        </View>
+      </View>
+    </ImageBackground>
   );
 }
