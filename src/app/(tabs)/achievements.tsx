@@ -4,6 +4,7 @@ import { ProgressChart } from "@/components/ProgressChart";
 import { useQuitTimer } from "@/hooks/useQuitTimer";
 import { useSmokerData } from "@/hooks/useSmokerData";
 import { checkAllAchievements } from "@/utils/achievement-logic";
+import { calculateAchievementProgress } from "@/utils/achievement-progress";
 import { LinearGradient } from "expo-linear-gradient";
 import { Award, Heart, TrendingUp } from "lucide-react-native";
 import { useState } from "react";
@@ -37,26 +38,12 @@ export default function AchievementsScreen() {
 
   // AchievementStatusをAchievementBadgeが期待する型に変換
   const achievements = achievementStatuses.map((status) => {
-    let currentValue: number;
-    let targetValue: number;
-
-    switch (status.category) {
-      case "duration":
-        currentValue = Math.floor(status.goal / (24 * 3600)); // 日数に変換
-        targetValue = Math.floor(status.goal / (24 * 3600));
-        break;
-      case "cigarettes":
-        currentValue = quitStats.cigarettesNotSmoked;
-        targetValue = status.goal;
-        break;
-      case "money":
-        currentValue = quitStats.moneySaved;
-        targetValue = status.goal;
-        break;
-      default:
-        currentValue = 0;
-        targetValue = status.goal;
-    }
+    // 新しいプログレス計算ロジックを使用
+    const { currentValue, targetValue } = calculateAchievementProgress(
+      status.category,
+      status.goal,
+      outcomeData
+    );
 
     return {
       id: status.id,

@@ -1,4 +1,8 @@
 import { AchievementStatus } from "@/types/achievement";
+import {
+  calculateProgressPercentage,
+  calculateRemainingValue,
+} from "@/utils/achievement-progress";
 import { Award, Lock } from "lucide-react-native";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
@@ -20,13 +24,13 @@ const tierColors = {
 export function AchievementBadge({ achievement }: Props) {
   const tierColor = tierColors[achievement.tier];
   const isAchieved = achievement.isUnlocked;
-  const progress = Math.min(
-    achievement.currentValue / achievement.targetValue,
-    1
+  const progress = calculateProgressPercentage(
+    achievement.currentValue,
+    achievement.targetValue
   );
-  const remaining = Math.max(
-    achievement.targetValue - achievement.currentValue,
-    0
+  const remaining = calculateRemainingValue(
+    achievement.currentValue,
+    achievement.targetValue
   );
 
   return (
