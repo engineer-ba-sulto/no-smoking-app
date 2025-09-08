@@ -1,4 +1,4 @@
-import { SOSScreen } from "@/components/SOSScreen";
+import { BreathingTimer } from "@/components/BreathingTimer";
 import { StatsCard } from "@/components/StatsCard";
 import { useQuitTimer } from "@/hooks/useQuitTimer";
 import { useSmokerData } from "@/hooks/useSmokerData";
@@ -15,7 +15,7 @@ import { useCallback, useState } from "react";
 import { Modal, Text, TouchableOpacity, View } from "react-native";
 
 export default function HomeScreen() {
-  const [showSOS, setShowSOS] = useState(false);
+  const [showBreathingTimer, setShowBreathingTimer] = useState(false);
   const { smokerData, loadData } = useSmokerData();
   const { quitStats } = useQuitTimer(
     smokerData?.quitDate,
@@ -103,7 +103,7 @@ export default function HomeScreen() {
       {/* SOS FAB */}
       <TouchableOpacity
         className="absolute bottom-5 right-5 w-15 h-15 rounded-full shadow-lg"
-        onPress={() => setShowSOS(true)}
+        onPress={() => setShowBreathingTimer(true)}
         activeOpacity={0.8}
       >
         <LinearGradient
@@ -121,14 +121,17 @@ export default function HomeScreen() {
         </LinearGradient>
       </TouchableOpacity>
 
-      {/* SOS Modal */}
+      {/* Breathing Timer Modal */}
       <Modal
-        visible={showSOS}
+        visible={showBreathingTimer}
         animationType="slide"
         presentationStyle="formSheet"
-        onRequestClose={() => setShowSOS(false)}
+        onRequestClose={() => setShowBreathingTimer(false)}
       >
-        <SOSScreen onClose={() => setShowSOS(false)} />
+        <BreathingTimer
+          onClose={() => setShowBreathingTimer(false)}
+          onComplete={() => setShowBreathingTimer(false)}
+        />
       </Modal>
     </View>
   );
