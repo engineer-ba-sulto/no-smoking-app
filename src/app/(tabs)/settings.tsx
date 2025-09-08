@@ -51,8 +51,10 @@ export default function SettingsScreen() {
         },
         {
           icon: <DollarSign size={20} color="#6B7280" strokeWidth={2} />,
-          label: "タバコの価格",
-          value: `${smokerData?.pricePerPack || 600}円`,
+          label: "タバコの設定",
+          value: `${smokerData?.pricePerPack || 600}円 / ${
+            smokerData?.cigarettesPerPack || 20
+          }本`,
           onPress: () => router.push("/settings/price-setting"),
         },
       ],

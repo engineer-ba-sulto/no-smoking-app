@@ -1,4 +1,5 @@
 import { NumberStepper } from "@/components/NumberStepper";
+import { userProfileRepository } from "@/drizzle/repositories/user-profile-repository";
 import { useSmokerData } from "@/hooks/useSmokerData";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -7,35 +8,63 @@ import { useEffect, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 export default function PriceSettingScreen() {
-  const { smokerData, updateSmokerData } = useSmokerData();
+  const { smokerData, loadData } = useSmokerData();
   const [pricePerPack, setPricePerPack] = useState<number>(600);
+  const [cigarettesPerPackage, setCigarettesPerPackage] = useState<number>(20);
   const [isSaving, setIsSaving] = useState(false);
 
-  // smokerDataが変更された時にpricePerPackを更新
+  // smokerDataが変更された時にpricePerPackとcigarettesPerPackageを更新
   useEffect(() => {
     if (smokerData?.pricePerPack !== undefined) {
       setPricePerPack(smokerData.pricePerPack);
     }
-  }, [smokerData?.pricePerPack]);
+    if (smokerData?.cigarettesPerPack !== undefined) {
+      setCigarettesPerPackage(smokerData.cigarettesPerPack);
+    }
+  }, [smokerData?.pricePerPack, smokerData?.cigarettesPerPack]);
 
   const handleSave = async () => {
     if (isSaving) return;
 
+    if (pricePerPack < 0) {
+      Alert.alert("エラー", "有効な価格を入力してください。");
+      return;
+    }
+    if (cigarettesPerPackage <= 0) {
+      Alert.alert("エラー", "本数は1以上の有効な数値を入力してください。");
+      return;
+    }
+
     setIsSaving(true);
     try {
-      await updateSmokerData({ pricePerPack });
-      Alert.alert("保存完了", "タバコの価格を更新しました", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
-    } catch (error) {
-      Alert.alert("エラー", "保存に失敗しました");
+      // 価格と本数を同時に更新
+      const result = await userProfileRepository.updatePackageSettings(
+        pricePerPack,
+        cigarettesPerPackage
+      );
+
+      if (result.success) {
+        // データを再読み込みしてから画面を閉じる
+        await loadData();
+        Alert.alert("成功", "設定を更新しました。", [
+          { text: "OK", onPress: () => router.back() },
+        ]);
+      } else {
+        Alert.alert("エラー", result.message || "更新に失敗しました。");
+      }
+    } catch (e) {
+      console.error("設定更新エラー:", e);
+      Alert.alert("エラー", "予期せぬエラーが発生しました。");
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleBack = () => {
-    if (pricePerPack !== smokerData?.pricePerPack) {
+    if (
+      pricePerPack !== smokerData?.pricePerPack ||
+      cigarettesPerPackage !== smokerData?.cigarettesPerPack
+    ) {
       Alert.alert(
         "変更を破棄",
         "変更内容が保存されていません。本当に戻りますか？",
@@ -52,7 +81,7 @@ export default function PriceSettingScreen() {
   // 月額・年額の計算
   const monthlyCost =
     (pricePerPack * (smokerData?.cigarettesPerDay || 20) * 30) /
-    (smokerData?.cigarettesPerPack || 20);
+    cigarettesPerPackage;
   const yearlyCost = monthlyCost * 12;
 
   return (
@@ -97,11 +126,11 @@ export default function PriceSettingScreen() {
           <View className="flex-row items-center mb-4">
             <DollarSign size={24} color="#10B981" strokeWidth={2} />
             <Text className="text-lg font-semibold text-gray-800 ml-3">
-              タバコの価格
+              タバコの設定
             </Text>
           </View>
           <Text className="text-gray-600 leading-6">
-            1箱あたりのタバコの価格を設定してください。この情報は、禁煙による経済的効果の計算に使用されます。
+            1箱あたりのタバコの価格と本数を設定してください。これらの情報は、禁煙による経済的効果の計算に使用されます。
           </Text>
         </View>
 
@@ -116,15 +145,25 @@ export default function PriceSettingScreen() {
             onChange={setPricePerPack}
             min={100}
             max={2000}
-            step={50}
+            step={10}
             suffix="円"
           />
+        </View>
 
-          <View className="mt-6 bg-green-50 rounded-lg p-4 border border-green-200">
-            <Text className="text-sm text-green-800 text-center">
-              設定値: <Text className="font-bold">{pricePerPack}円</Text>
-            </Text>
-          </View>
+        {/* 本数設定セクション */}
+        <View className="bg-white rounded-xl p-6 mb-6 shadow-sm">
+          <Text className="text-base font-medium text-gray-800 mb-6 text-center">
+            1箱あたりの本数を選択
+          </Text>
+
+          <NumberStepper
+            value={cigarettesPerPackage}
+            onChange={setCigarettesPerPackage}
+            min={1}
+            max={50}
+            step={1}
+            suffix="本"
+          />
         </View>
 
         {/* 経済効果の計算セクション */}
@@ -155,26 +194,8 @@ export default function PriceSettingScreen() {
 
           <Text className="text-xs text-gray-500 text-center mt-3">
             ※ 1日{smokerData?.cigarettesPerDay || 20}本、1箱
-            {smokerData?.cigarettesPerPack || 20}本で計算
+            {cigarettesPerPackage}本で計算
           </Text>
-        </View>
-
-        {/* 参考情報セクション */}
-        <View className="bg-yellow-50 rounded-xl p-6 mb-6 border border-yellow-200">
-          <Text className="text-base font-semibold text-yellow-800 mb-3">
-            💡 価格の参考情報
-          </Text>
-          <View className="space-y-2">
-            <Text className="text-sm text-yellow-700">
-              • 一般的なタバコ: 500-700円/箱
-            </Text>
-            <Text className="text-sm text-yellow-700">
-              • プレミアムタバコ: 800-1200円/箱
-            </Text>
-            <Text className="text-sm text-yellow-700">
-              • 1本あたり約25-60円のコスト
-            </Text>
-          </View>
         </View>
 
         {/* 保存ボタン */}

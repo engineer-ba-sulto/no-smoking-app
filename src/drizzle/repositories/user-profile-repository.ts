@@ -112,26 +112,62 @@ export const userProfileRepository = {
   },
 
   /**
-   * ユーザーのタバコ一箱あたりの価格（pricePerPack）を更新する
-   * @param newPrice - 新しいタバコ価格
+   * ユーザーのタバコ一箱あたりの価格と本数を同時に更新する
+   * @param newPrice - 新しいタバコ価格（オプション）
+   * @param newCount - 新しい一箱あたりの本数（オプション）
    * @returns Promise<{ success: boolean; message?: string }>
    */
-  async updatePackagePrice(
-    newPrice: number
+  async updatePackageSettings(
+    newPrice?: number,
+    newCount?: number
   ): Promise<{ success: boolean; message?: string }> {
     try {
-      if (typeof newPrice !== "number" || newPrice < 0) {
+      // バリデーション
+      if (
+        newPrice !== undefined &&
+        (typeof newPrice !== "number" || newPrice < 0)
+      ) {
         throw new Error("価格は 0 以上の数値を入力してください。");
+      }
+      if (
+        newCount !== undefined &&
+        (typeof newCount !== "number" || newCount <= 0)
+      ) {
+        throw new Error("本数は 1 以上の数値を入力してください。");
+      }
+
+      // まず、存在するユーザープロファイルを取得
+      const allProfiles = await this.findAll();
+
+      if (allProfiles.length === 0) {
+        throw new Error(
+          "ユーザープロファイルが存在しません。まずオンボーディングを完了してください。"
+        );
+      }
+
+      const targetProfile = allProfiles[0]; // 最初のプロファイルを使用
+      const userId = targetProfile.id;
+
+      // 更新するフィールドを動的に構築
+      const updateFields: any = {
+        updatedAt: new Date().toISOString(),
+      };
+
+      if (newPrice !== undefined) {
+        updateFields.pricePerPack = newPrice;
+      }
+      if (newCount !== undefined) {
+        updateFields.cigsPerPack = newCount;
       }
 
       await db
         .update(userProfile)
-        .set({ pricePerPack: newPrice, updatedAt: new Date().toISOString() })
-        .where(eq(userProfile.id, 1)); // ユーザーは1人の想定
+        .set(updateFields)
+        .where(eq(userProfile.id, userId));
 
       return { success: true };
     } catch (error) {
-      console.error("価格の更新に失敗しました:", error);
+      console.error("タバコ設定の更新に失敗しました:", error);
       return {
         success: false,
         message:
