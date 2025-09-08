@@ -1,6 +1,7 @@
 import { db, userProfile } from "@/drizzle";
 import { userProfileRepository } from "@/drizzle/repositories/user-profile-repository";
 import { CreateUserProfileInput } from "@/drizzle/schema";
+import { initialStartupPatterns } from "./test-data-sets";
 
 /**
  * メインシーダークラス
@@ -52,6 +53,43 @@ export class MainSeeder {
       console.log("New data created:", result);
     } catch (error) {
       console.error("Error in seedSinglePattern:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * 初回起動用のテストデータパターンを取得する
+   * @returns 初回起動用のテストデータパターン配列
+   */
+  getInitialStartupPatterns() {
+    return initialStartupPatterns;
+  }
+
+  /**
+   * 初回起動用のデフォルトパターンを投入する
+   * 最も一般的な「初回起動パターン」を自動選択して投入
+   */
+  async seedInitialStartupDefault(): Promise<void> {
+    try {
+      console.log("Starting seedInitialStartupDefault");
+
+      // 既存データを削除
+      await this.clearAllData();
+      console.log("Existing data cleared");
+
+      // デフォルトの初回起動パターンを取得（最初のパターン）
+      const defaultPattern = initialStartupPatterns[0];
+      if (!defaultPattern) {
+        throw new Error("初期起動パターンが見つかりません");
+      }
+
+      // 新しいデータを投入
+      const result = await this.userProfileRepository.create(
+        defaultPattern.data
+      );
+      console.log("Initial startup data created:", result);
+    } catch (error) {
+      console.error("Error in seedInitialStartupDefault:", error);
       throw error;
     }
   }

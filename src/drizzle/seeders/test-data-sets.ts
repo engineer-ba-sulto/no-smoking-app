@@ -8,9 +8,52 @@ export interface TestDataPattern {
   id: string;
   name: string;
   description: string;
-  category: "basic" | "edgeCase" | "achievement";
+  category: "basic" | "edgeCase" | "achievement" | "initial";
   data: CreateUserProfileInput;
 }
+
+/**
+ * 初回起動用のテストデータパターン
+ * スマホを初ダウンロードして使う時点の典型的なユーザー
+ */
+export const initialStartupPatterns: TestDataPattern[] = [
+  {
+    id: "initial-fresh-start",
+    name: "初回起動パターン",
+    description: "今から禁煙を始める新規ユーザー（禁煙開始時刻は現在時刻）",
+    category: "initial",
+    data: {
+      smokingStartDate: new Date().toISOString(),
+      cigsPerDay: 20,
+      pricePerPack: 650,
+      cigsPerPack: 20,
+    },
+  },
+  {
+    id: "initial-light-smoker",
+    name: "軽度喫煙者パターン",
+    description: "1日10本程度の軽度喫煙者が今から禁煙を始める",
+    category: "initial",
+    data: {
+      smokingStartDate: new Date().toISOString(),
+      cigsPerDay: 10,
+      pricePerPack: 600,
+      cigsPerPack: 20,
+    },
+  },
+  {
+    id: "initial-heavy-smoker",
+    name: "重度喫煙者パターン",
+    description: "1日30本以上の重度喫煙者が今から禁煙を始める",
+    category: "initial",
+    data: {
+      smokingStartDate: new Date().toISOString(),
+      cigsPerDay: 30,
+      pricePerPack: 700,
+      cigsPerPack: 20,
+    },
+  },
+];
 
 /**
  * 11種類の個別テストデータパターン
