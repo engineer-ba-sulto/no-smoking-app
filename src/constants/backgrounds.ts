@@ -19,7 +19,7 @@ export const ONBOARDING_BACKGROUNDS = {
 
 // 背景画像の選択（ここを変更して背景を切り替え可能）
 // BG01, BG02, BG03 から選択
-const SELECTED_BACKGROUND = "BG02";
+const SELECTED_BACKGROUND = "BG01";
 
 // デフォルトの背景画像
 export const DEFAULT_BACKGROUND = ONBOARDING_BACKGROUNDS[SELECTED_BACKGROUND];

@@ -1,7 +1,7 @@
 import React from "react";
 import { Text } from "react-native";
-import { MotivationSelector } from "./MotivationSelector";
 import { OnboardingStepWrapper } from "./OnboardingStepWrapper";
+import { MotivationSelector } from "./ui/MotivationSelector";
 
 interface MotivationStepProps {
   onNext: () => void;

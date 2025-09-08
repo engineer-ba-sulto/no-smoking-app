@@ -1,5 +1,3 @@
-import { LinearGradient } from "expo-linear-gradient";
-import { Calendar } from "lucide-react-native";
 import React from "react";
 import { Text, View } from "react-native";
 import { OnboardingStepWrapper } from "./OnboardingStepWrapper";
@@ -18,20 +16,6 @@ export const AnnualCostNewStep = ({
     animatedStyle={animatedStyle}
     buttonTitle="詳しく知る"
   >
-    <View className="mb-8">
-      <LinearGradient
-        colors={["#10B981", "#059669"]}
-        style={{
-          width: 120,
-          height: 120,
-          borderRadius: 60,
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Calendar size={40} color="#ffffff" strokeWidth={2} />
-      </LinearGradient>
-    </View>
     <Text className="text-3xl font-bold text-gray-800 text-center mb-4">
       年間コスト
     </Text>

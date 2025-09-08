@@ -1,7 +1,7 @@
 import React from "react";
 import { Text } from "react-native";
 import Animated from "react-native-reanimated";
-import { StepButton } from "../StepButton";
+import { GlassmorphismButton } from "./ui/GlassmorphismButton";
 
 interface OnboardingStepWrapperProps {
   children: React.ReactNode;
@@ -30,7 +30,7 @@ export const OnboardingStepWrapper = ({
       </Text>
     )}
     {children}
-    <StepButton
+    <GlassmorphismButton
       title={buttonTitle}
       onPress={onNext}
       disabled={disabled}
