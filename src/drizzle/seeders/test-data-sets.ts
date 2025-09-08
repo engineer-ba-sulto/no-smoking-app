@@ -56,7 +56,7 @@ export const initialStartupPatterns: TestDataPattern[] = [
 ];
 
 /**
- * 11種類の個別テストデータパターン
+ * 14種類の個別テストデータパターン
  * 各パターンを個別に選択して登録できる
  */
 export const testDataPatterns: TestDataPattern[] = [
@@ -98,16 +98,16 @@ export const testDataPatterns: TestDataPattern[] = [
     },
   },
 
-  // 境界値テストパターン (4件)
+  // 境界値テストパターン (5件)
   {
-    id: "edge-1minute",
-    name: "1分前パターン",
-    description: "1分前に禁煙を開始した極短期間のユーザー",
+    id: "edge-1hour",
+    name: "1時間前パターン",
+    description: "1時間前に禁煙を開始した短期間のユーザー",
     category: "edgeCase",
     data: {
-      smokingStartDate: subMinutes(new Date(), 1).toISOString(),
-      cigsPerDay: 10,
-      pricePerPack: 500,
+      smokingStartDate: subMinutes(new Date(), 59).toISOString(),
+      cigsPerDay: 15,
+      pricePerPack: 550,
       cigsPerPack: 20,
     },
   },
@@ -148,7 +148,31 @@ export const testDataPatterns: TestDataPattern[] = [
     },
   },
 
-  // アチーブメントテストパターン (4件)
+  // アチーブメントテストパターン (6件)
+  {
+    id: "achievement-6hours",
+    name: "6時間経過パターン",
+    description: "6時間前に禁煙を開始したユーザー",
+    category: "achievement",
+    data: {
+      smokingStartDate: subHours(new Date(), 6).toISOString(),
+      cigsPerDay: 20,
+      pricePerPack: 650,
+      cigsPerPack: 20,
+    },
+  },
+  {
+    id: "achievement-12hours",
+    name: "12時間経過パターン",
+    description: "12時間前に禁煙を開始したユーザー",
+    category: "achievement",
+    data: {
+      smokingStartDate: subHours(new Date(), 12).toISOString(),
+      cigsPerDay: 20,
+      pricePerPack: 650,
+      cigsPerPack: 20,
+    },
+  },
   {
     id: "achievement-1day",
     name: "1日達成直前パターン",
