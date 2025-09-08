@@ -9,7 +9,10 @@ interface Props {
 export function OnboardingProgress({ currentStep, totalSteps }: Props) {
   return (
     <View className="items-center py-4">
-      <View className="flex-row items-center mb-2">
+      <Text className="text-xs text-gray-400 font-medium mb-2">
+        ({currentStep}/{totalSteps})
+      </Text>
+      <View className="flex-row items-center">
         {Array.from({ length: totalSteps }, (_, index) => (
           <View
             key={index}
@@ -19,9 +22,6 @@ export function OnboardingProgress({ currentStep, totalSteps }: Props) {
           />
         ))}
       </View>
-      <Text className="text-xs text-gray-400 font-medium">
-        ({currentStep}/{totalSteps})
-      </Text>
     </View>
   );
 }

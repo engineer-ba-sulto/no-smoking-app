@@ -23,11 +23,11 @@ const motivationOptions = [
     label: '家族や大切な人のため',
     icon: <Users size={20} color="#3B82F6" strokeWidth={2} />,
   },
-  {
-    id: 'other',
-    label: 'その他...',
-    icon: <Plus size={20} color="#6B7280" strokeWidth={2} />,
-  },
+  // {
+  //   id: 'other',
+  //   label: 'その他...',
+  //   icon: <Plus size={20} color="#6B7280" strokeWidth={2} />,
+  // },
 ];
 
 export function MotivationSelector({ selectedMotivations, onSelectionChange }: Props) {
