@@ -1,4 +1,5 @@
 import { useSmokerData } from "@/hooks/useSmokerData";
+import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
 import {
@@ -36,6 +37,15 @@ export default function SettingsScreen() {
       loadData();
     }, [loadData])
   );
+
+  // 設定項目がタップされた時のハンドラー
+  const handleSettingPress = (onPress?: () => void) => {
+    // 選択フィードバック
+    Haptics.selectionAsync();
+    if (onPress) {
+      onPress();
+    }
+  };
 
   const settingSections: SettingSection[] = [
     {
@@ -158,7 +168,7 @@ export default function SettingsScreen() {
                       ? ""
                       : "border-b border-gray-100"
                   }`}
-                  onPress={item.onPress}
+                  onPress={() => handleSettingPress(item.onPress)}
                   disabled={item.toggle}
                 >
                   <View className="flex-row items-center flex-1">
@@ -209,7 +219,7 @@ export default function SettingsScreen() {
                       ? ""
                       : "border-b border-gray-100"
                   }`}
-                  onPress={item.onPress}
+                  onPress={() => handleSettingPress(item.onPress)}
                 >
                   <View className="flex-row items-center flex-1">
                     {item.icon}
