@@ -18,6 +18,7 @@ import { useCallback, useState } from "react";
 import {
   ImageBackground,
   Modal,
+  ScrollView,
   Text,
   TouchableOpacity,
   View,
@@ -61,7 +62,7 @@ export default function HomeScreen() {
       />
 
       {/* Main content */}
-      <View className="flex-1 px-5 pt-8 relative z-10">
+      <ScrollView className="flex-1 px-5 pt-8 relative z-10">
         <Text className="text-base text-gray-600 text-center mb-5 font-medium">
           あなたが禁煙をはじめてから...
         </Text>
@@ -120,7 +121,7 @@ export default function HomeScreen() {
             color="#F97316"
           />
         </View>
-      </View>
+      </ScrollView>
 
       {/* SOS FAB */}
       <TouchableOpacity
