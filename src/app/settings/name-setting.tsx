@@ -1,5 +1,6 @@
 import { SaveButton } from "@/components/SaveButton";
 import { useSmokerData } from "@/hooks/useSmokerData";
+import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { ArrowLeft, Save, User } from "lucide-react-native";
@@ -44,13 +45,20 @@ export default function NameSettingScreen() {
   const handleSave = async () => {
     if (isSaving || !isValid) return;
 
+    // 保存開始時の軽い振動
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
     setIsSaving(true);
     try {
       await updateSmokerData({ userName: userName.trim() });
+      // 保存成功時の成功フィードバック
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert("保存完了", "お名前を更新しました", [
         { text: "OK", onPress: () => router.back() },
       ]);
     } catch (error) {
+      // 保存エラー時のエラーフィードバック
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert("エラー", "保存に失敗しました");
     } finally {
       setIsSaving(false);

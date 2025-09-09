@@ -1,6 +1,7 @@
 import { NumberStepper } from "@/components/NumberStepper";
 import { SaveButton } from "@/components/SaveButton";
 import { useSmokerData } from "@/hooks/useSmokerData";
+import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { ArrowLeft, Cigarette, Save } from "lucide-react-native";
@@ -22,13 +23,20 @@ export default function CigarettesSettingScreen() {
   const handleSave = async () => {
     if (isSaving) return;
 
+    // 保存開始時の軽い振動
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
     setIsSaving(true);
     try {
       await updateSmokerData({ cigarettesPerDay });
+      // 保存成功時の成功フィードバック
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert("保存完了", "1日の喫煙本数を更新しました", [
         { text: "OK", onPress: () => router.back() },
       ]);
     } catch (error) {
+      // 保存エラー時のエラーフィードバック
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert("エラー", "保存に失敗しました");
     } finally {
       setIsSaving(false);
