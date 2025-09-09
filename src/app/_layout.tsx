@@ -4,7 +4,8 @@ import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { Text, View } from "react-native";
+import { ActivityIndicator, Text } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { db } from "../drizzle";
 import migrations from "../drizzle/migrations";
 import "../global.css";
@@ -26,17 +27,18 @@ export default function RootLayout() {
 
   if (error) {
     return (
-      <View>
+      <SafeAreaView className="flex-1 items-center justify-center">
         <Text>Migration error: {error.message}</Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (!success) {
     return (
-      <View>
+      <SafeAreaView className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" />
         <Text>Migration is in progress...</Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
