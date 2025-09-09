@@ -1,4 +1,5 @@
 import { BlurView } from "expo-blur";
+import * as Haptics from "expo-haptics";
 import React from "react";
 import { Text, TouchableOpacity, ViewStyle } from "react-native";
 
@@ -21,11 +22,23 @@ export function GlassmorphismButton({
   blurIntensity = 20,
   tint = "light",
 }: GlassmorphismButtonProps) {
+  // ボタンが押された時のハンドラー
+  const handlePress = () => {
+    if (variant === "primary") {
+      // primaryボタン：中程度の振動
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    } else {
+      // secondaryボタン：選択フィードバック
+      Haptics.selectionAsync();
+    }
+    onPress();
+  };
+
   if (variant === "secondary") {
     return (
       <TouchableOpacity
         className={`py-4 items-center ${className}`}
-        onPress={onPress}
+        onPress={handlePress}
         disabled={disabled}
         activeOpacity={0.7}
       >
@@ -52,7 +65,7 @@ export function GlassmorphismButton({
   return (
     <TouchableOpacity
       className={`${disabled ? "opacity-50" : ""} ${className}`}
-      onPress={onPress}
+      onPress={handlePress}
       disabled={disabled}
       activeOpacity={0.8}
       style={buttonStyle}
