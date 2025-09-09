@@ -12,7 +12,7 @@ interface Props {
 export function StatsCard({ icon, label, value, color }: Props) {
   return (
     <View
-      className="w-[48%] mb-4"
+      className="w-[48%] mb-4 rounded-xl overflow-hidden"
       style={{
         shadowColor: "#000",
         shadowOffset: {
@@ -27,7 +27,8 @@ export function StatsCard({ icon, label, value, color }: Props) {
       <BlurView
         intensity={20}
         tint="light"
-        className="rounded-xl p-5 items-center"
+        className="p-5 items-center"
+        style={{ backgroundColor: "rgba(255, 255, 255, 0.5)" }}
       >
         <View
           className="w-12 h-12 rounded-full items-center justify-center mb-3"
