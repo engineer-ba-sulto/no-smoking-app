@@ -3,6 +3,7 @@ import { StatsCard } from "@/components/home/ui/StatsCard";
 import { DEFAULT_BACKGROUND } from "@/constants/backgrounds";
 import { useQuitTimer } from "@/hooks/useQuitTimer";
 import { useSmokerData } from "@/hooks/useSmokerData";
+import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from "expo-router";
 import {
@@ -78,11 +79,29 @@ export default function HomeScreen() {
         </Text>
 
         {/* Main timer display */}
-        <View className="bg-white rounded-2xl p-8 mb-8 items-center shadow-sm">
-          <Text className="text-2xl font-bold text-gray-800 text-center leading-8">
-            {quitStats.days}日 {quitStats.hours}時間 {quitStats.minutes}分{" "}
-            {quitStats.seconds}秒
-          </Text>
+        <View
+          className="mb-8"
+          style={{
+            shadowColor: "#000",
+            shadowOffset: {
+              width: 0,
+              height: 4,
+            },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 8,
+          }}
+        >
+          <BlurView
+            intensity={20}
+            tint="light"
+            className="rounded-2xl p-8 items-center"
+          >
+            <Text className="text-2xl font-bold text-gray-800 text-center leading-8">
+              {quitStats.days}日 {quitStats.hours}時間 {quitStats.minutes}分{" "}
+              {quitStats.seconds}秒
+            </Text>
+          </BlurView>
         </View>
 
         {/* Stats grid */}
