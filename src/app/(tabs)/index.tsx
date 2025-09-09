@@ -96,7 +96,7 @@ export default function HomeScreen() {
 
         {/* Main timer display */}
         <View
-          className="mb-8"
+          className="mb-8 rounded-2xl overflow-hidden"
           style={{
             shadowColor: "#000",
             shadowOffset: {
@@ -111,7 +111,8 @@ export default function HomeScreen() {
           <BlurView
             intensity={20}
             tint="light"
-            className="rounded-2xl p-8 items-center"
+            className="p-8 items-center"
+            style={{ backgroundColor: "rgba(255, 255, 255, 0.6)" }}
           >
             <Text className="text-2xl font-bold text-gray-800 text-center leading-8">
               {quitStats.days}日 {quitStats.hours}時間 {quitStats.minutes}分{" "}
