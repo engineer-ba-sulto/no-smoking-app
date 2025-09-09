@@ -1,7 +1,5 @@
-import { LinearGradient } from "expo-linear-gradient";
-import { ClipboardList } from "lucide-react-native";
 import React from "react";
-import { Text, View } from "react-native";
+import { Text } from "react-native";
 import { OnboardingStepWrapper } from "./OnboardingStepWrapper";
 
 interface QuestionnaireStepProps {
@@ -18,20 +16,6 @@ export const QuestionnaireStep = ({
     animatedStyle={animatedStyle}
     buttonTitle="アンケートを始める"
   >
-    <View className="mb-8">
-      <LinearGradient
-        colors={["#F59E0B", "#D97706"]}
-        style={{
-          width: 120,
-          height: 120,
-          borderRadius: 60,
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <ClipboardList size={40} color="#ffffff" strokeWidth={2} />
-      </LinearGradient>
-    </View>
     <Text className="text-3xl font-bold text-gray-800 text-center mb-4">
       禁煙記録のため
     </Text>

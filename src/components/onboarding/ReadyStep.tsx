@@ -12,7 +12,7 @@ export const ReadyStep = ({ onNext, animatedStyle }: ReadyStepProps) => (
     onNext={onNext}
     animatedStyle={animatedStyle}
     buttonTitle="今、この瞬間から始める"
-    title="準備は整いました。\n\nあなたの新しい人生は、\nいつから始まりますか？"
+    title={`準備は整いました。\n\nあなたの新しい人生は、\nいつから始まりますか？`}
   >
     <View className="w-full my-8" />
   </OnboardingStepWrapper>
