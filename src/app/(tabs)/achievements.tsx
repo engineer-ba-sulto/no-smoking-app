@@ -1,13 +1,18 @@
 import { AchievementBadge } from "@/components/AchievementBadge";
 import { HealthTimeline } from "@/components/HealthTimeline";
 import { ProgressChart } from "@/components/ProgressChart";
+import {
+  CHART_PERIODS,
+  CHART_TYPES,
+  TABS,
+  TabType,
+} from "@/constants/achievements-ui";
 import { DEFAULT_BACKGROUND } from "@/constants/backgrounds";
 import { useQuitTimer } from "@/hooks/useQuitTimer";
 import { useSmokerData } from "@/hooks/useSmokerData";
 import { checkAllAchievements } from "@/utils/achievement-logic";
 import { calculateAchievementProgress } from "@/utils/achievement-progress";
 import { BlurView } from "expo-blur";
-import { Award, Heart, TrendingUp } from "lucide-react-native";
 import { useState } from "react";
 import {
   ImageBackground,
@@ -16,8 +21,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-type TabType = "badges" | "graphs" | "health";
 
 export default function AchievementsScreen() {
   const [activeTab, setActiveTab] = useState<TabType>("badges");
@@ -66,23 +69,6 @@ export default function AchievementsScreen() {
     };
   });
 
-  const tabs = [
-    { key: "badges" as TabType, label: "バッジ", icon: Award },
-    { key: "graphs" as TabType, label: "グラフ", icon: TrendingUp },
-    { key: "health" as TabType, label: "健康", icon: Heart },
-  ];
-
-  const chartPeriods = [
-    { key: "week" as const, label: "週" },
-    { key: "month" as const, label: "月" },
-    { key: "year" as const, label: "年" },
-  ];
-
-  const chartTypes = [
-    { key: "money" as const, label: "節約金額" },
-    { key: "cigarettes" as const, label: "我慢した本数" },
-  ];
-
   const getChartSummary = () => {
     const period =
       chartPeriod === "week"
@@ -113,7 +99,6 @@ export default function AchievementsScreen() {
     >
       {/* 半透明のオーバーレイ */}
       <View className="absolute inset-0 bg-white/80" />
-
       {/* Header with gradient */}
       <View
         className="relative z-10 rounded-b-3xl overflow-hidden"
@@ -143,9 +128,9 @@ export default function AchievementsScreen() {
           </Text>
         </BlurView>
       </View>
-
       {/* Tab navigation */}
-      <View
+      // TODO グラフと健康は今後表示する = コメントを外す
+      {/* <View
         className="mx-5 mt-4 relative z-10 rounded-xl overflow-hidden"
         style={{
           shadowColor: "#000",
@@ -165,7 +150,7 @@ export default function AchievementsScreen() {
           style={{ backgroundColor: "rgba(255, 255, 255, 0.3)" }}
         >
           <View className="flex-row">
-            {tabs.map((tab) => {
+            {TABS.map((tab) => {
               const IconComponent = tab.icon;
               return (
                 <TouchableOpacity
@@ -194,8 +179,8 @@ export default function AchievementsScreen() {
             })}
           </View>
         </BlurView>
-      </View>
-
+      </View> */}
+			
       {/* Content */}
       <ScrollView
         className="flex-1 px-5 pt-5 relative z-10"
@@ -260,7 +245,7 @@ export default function AchievementsScreen() {
             <View className="mb-5">
               <View className="bg-white rounded-lg p-1 mb-3 shadow-sm">
                 <View className="flex-row">
-                  {chartPeriods.map((period) => (
+                  {CHART_PERIODS.map((period) => (
                     <TouchableOpacity
                       key={period.key}
                       className={`flex-1 py-2 items-center rounded-md ${
@@ -283,7 +268,7 @@ export default function AchievementsScreen() {
               </View>
 
               <View className="flex-row justify-end">
-                {chartTypes.map((type) => (
+                {CHART_TYPES.map((type) => (
                   <TouchableOpacity
                     key={type.key}
                     className={`px-3 py-1.5 rounded-md ml-2 ${
@@ -308,8 +293,8 @@ export default function AchievementsScreen() {
             {/* Chart display */}
             <View className="bg-white rounded-xl p-5 mb-4 shadow-sm">
               <Text className="text-base font-semibold text-gray-800 mb-4 text-center">
-                {chartPeriods.find((p) => p.key === chartPeriod)?.label}間・
-                {chartTypes.find((t) => t.key === chartType)?.label}の推移
+                {CHART_PERIODS.find((p) => p.key === chartPeriod)?.label}間・
+                {CHART_TYPES.find((t) => t.key === chartType)?.label}の推移
               </Text>
               <ProgressChart
                 period={chartPeriod}
