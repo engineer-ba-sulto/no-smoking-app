@@ -1,4 +1,3 @@
-import { useFrameworkReady } from "@/hooks/useFrameworkReady";
 import { useSmokerData } from "@/hooks/useSmokerData";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { router, Stack } from "expo-router";
@@ -11,7 +10,6 @@ import migrations from "../drizzle/migrations";
 import "../global.css";
 
 export default function RootLayout() {
-  useFrameworkReady();
   const { smokerData, loading } = useSmokerData();
   const { success, error } = useMigrations(db, migrations);
 
