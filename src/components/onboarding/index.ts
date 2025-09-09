@@ -8,6 +8,7 @@ export * from "./HeartRiskStep";
 export * from "./InvestmentStep";
 export * from "./LungRiskStep";
 export * from "./MotivationStep";
+export * from "./NameStep";
 export * from "./OtherRiskStep";
 export * from "./PackSizeStep";
 export * from "./PassiveSmokingStep";

@@ -8,6 +8,7 @@ import {
   InvestmentStep,
   LungRiskStep,
   MotivationStep,
+  NameStep,
   OnboardingProgress,
   OtherRiskStep,
   PackSizeStep,
@@ -42,6 +43,7 @@ export default function OnboardingScreen() {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>(
     ONBOARDING_CONFIG.STEPS.WELCOME
   );
+  const [userName, setUserName] = useState("");
   const [selectedMotivations, setSelectedMotivations] = useState<string[]>([]);
   const [cigarettesPerDay, setCigarettesPerDay] = useState(20);
   const [pricePerPack, setPricePerPack] = useState(600);
@@ -89,6 +91,8 @@ export default function OnboardingScreen() {
     switch (currentStep) {
       case ONBOARDING_CONFIG.STEPS.WELCOME:
         return true;
+      case ONBOARDING_CONFIG.STEPS.NAME:
+        return userName.trim().length > 0 && userName.trim().length <= 50;
       case ONBOARDING_CONFIG.STEPS.HEART_RISK:
         return true;
       case ONBOARDING_CONFIG.STEPS.LUNG_RISK:
@@ -144,6 +148,7 @@ export default function OnboardingScreen() {
           : new Date().toISOString(); // For now, both use current time
 
       await updateSmokerData({
+        userName: userName,
         motivations: selectedMotivations,
         cigarettesPerDay,
         pricePerPack,
@@ -164,6 +169,16 @@ export default function OnboardingScreen() {
     switch (currentStep) {
       case ONBOARDING_CONFIG.STEPS.WELCOME:
         return <WelcomeStep onNext={nextStep} animatedStyle={animatedStyle} />;
+
+      case ONBOARDING_CONFIG.STEPS.NAME:
+        return (
+          <NameStep
+            onNext={nextStep}
+            animatedStyle={animatedStyle}
+            userName={userName}
+            onNameChange={setUserName}
+          />
+        );
 
       case ONBOARDING_CONFIG.STEPS.HEART_RISK:
         return (
