@@ -2,14 +2,11 @@ import { useSmokerData } from "@/hooks/useSmokerData";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
 import {
-  Bell,
   ChevronRight,
   Cigarette,
   Database,
   DollarSign,
-  FileText,
   Play,
-  Shield,
   User,
 } from "lucide-react-native";
 import { useCallback } from "react";
@@ -66,42 +63,44 @@ export default function SettingsScreen() {
         },
       ],
     },
-    {
-      title: "通知設定",
-      items: [
-        {
-          icon: <Bell size={20} color="#6B7280" strokeWidth={2} />,
-          label: "応援メッセージを受け取る",
-          toggle: true,
-          value: smokerData?.motivationNotifications ?? true,
-          onToggle: (value: boolean) =>
-            updateSmokerData({ motivationNotifications: value }),
-        },
-        {
-          icon: <Bell size={20} color="#6B7280" strokeWidth={2} />,
-          label: "目標達成の通知を受け取る",
-          toggle: true,
-          value: smokerData?.achievementNotifications ?? true,
-          onToggle: (value: boolean) =>
-            updateSmokerData({ achievementNotifications: value }),
-        },
-      ],
-    },
-    {
-      title: "アプリについて",
-      items: [
-        {
-          icon: <FileText size={20} color="#6B7280" strokeWidth={2} />,
-          label: "利用規約",
-          onPress: () => console.log("Open terms"),
-        },
-        {
-          icon: <Shield size={20} color="#6B7280" strokeWidth={2} />,
-          label: "プライバシーポリシー",
-          onPress: () => console.log("Open privacy policy"),
-        },
-      ],
-    },
+    // TODO 通知設定については今後実装する = コメントを外す
+    // {
+    //   title: "通知設定",
+    //   items: [
+    //     {
+    //       icon: <Bell size={20} color="#6B7280" strokeWidth={2} />,
+    //       label: "応援メッセージを受け取る",
+    //       toggle: true,
+    //       value: smokerData?.motivationNotifications ?? true,
+    //       onToggle: (value: boolean) =>
+    //         updateSmokerData({ motivationNotifications: value }),
+    //     },
+    //     {
+    //       icon: <Bell size={20} color="#6B7280" strokeWidth={2} />,
+    //       label: "目標達成の通知を受け取る",
+    //       toggle: true,
+    //       value: smokerData?.achievementNotifications ?? true,
+    //       onToggle: (value: boolean) =>
+    //         updateSmokerData({ achievementNotifications: value }),
+    //     },
+    //   ],
+    // },
+    // TODO アプリについては今後実装する = コメントを外す
+    // {
+    //   title: "アプリについて",
+    //   items: [
+    //     {
+    //       icon: <FileText size={20} color="#6B7280" strokeWidth={2} />,
+    //       label: "利用規約",
+    //       onPress: () => console.log("Open terms"),
+    //     },
+    //     {
+    //       icon: <Shield size={20} color="#6B7280" strokeWidth={2} />,
+    //       label: "プライバシーポリシー",
+    //       onPress: () => console.log("Open privacy policy"),
+    //     },
+    //   ],
+    // },
   ];
 
   // 開発環境でのみ表示するセクション
