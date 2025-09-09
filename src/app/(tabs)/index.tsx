@@ -1,3 +1,4 @@
+import { AppHeader } from "@/components/AppHeader";
 import { BreathingTimer } from "@/components/BreathingTimer";
 import { StatsCard } from "@/components/home/ui/StatsCard";
 import { DEFAULT_BACKGROUND } from "@/constants/backgrounds";
@@ -50,43 +51,14 @@ export default function HomeScreen() {
       {/* 半透明のオーバーレイ */}
       <View className="absolute inset-0 bg-white/80" />
 
-      {/* Header with gradient */}
-      <View
-        className="relative z-10"
-        style={{
-          shadowColor: "#000",
-          shadowOffset: {
-            width: 0,
-            height: 4,
-          },
-          shadowOpacity: 0.1,
-          shadowRadius: 8,
-          elevation: 8,
+      {/* Header */}
+      <AppHeader
+        title={`こんにちは、${userName}さん！`}
+        healthStatus={{
+          icon: <Heart size={16} color="#065f46" strokeWidth={2} />,
+          text: "血圧が正常値に近づいています",
         }}
-      >
-        <BlurView
-          intensity={20}
-          tint="light"
-          style={{
-            paddingTop: 60,
-            paddingBottom: 10,
-            paddingHorizontal: 20,
-            borderBottomLeftRadius: 20,
-            borderBottomRightRadius: 20,
-            backgroundColor: "rgba(16, 185, 129, 0.3)",
-          }}
-        >
-          <Text className="text-lg font-semibold text-emerald-800 mb-2">
-            こんにちは、{userName}さん！
-          </Text>
-          <View className="flex-row items-center bg-emerald-100/50 px-3 py-1.5 rounded-xl self-start">
-            <Heart size={16} color="#065f46" strokeWidth={2} />
-            <Text className="text-xs text-emerald-800 ml-1.5 font-medium">
-              血圧が正常値に近づいています
-            </Text>
-          </View>
-        </BlurView>
-      </View>
+      />
 
       {/* Main content */}
       <View className="flex-1 px-5 pt-8 relative z-10">
