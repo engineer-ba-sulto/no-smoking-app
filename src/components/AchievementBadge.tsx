@@ -5,6 +5,7 @@ import {
   formatTimeRemaining,
   formatTimeRemainingWithSeconds,
 } from "@/utils/achievement-progress";
+import { BlurView } from "expo-blur";
 import { Award, Lock } from "lucide-react-native";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
@@ -38,74 +39,95 @@ export function AchievementBadge({ achievement, remainingSeconds }: Props) {
   );
 
   return (
-    <TouchableOpacity
-      className={`w-[48%] bg-white rounded-xl p-4 mb-4 items-center shadow-sm ${
-        isAchieved ? "border border-primary-500" : "opacity-80"
-      }`}
-      activeOpacity={0.8}
+    <View
+      className="w-[48%] mb-4 rounded-xl overflow-hidden"
+      style={{
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 4,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 8,
+      }}
     >
-      <View
-        className="w-12 h-12 rounded-full items-center justify-center mb-2"
-        style={{
-          backgroundColor: isAchieved ? `${tierColor}20` : "#f3f4f6",
-        }}
+      <TouchableOpacity
+        activeOpacity={0.8}
+        className={`${!isAchieved ? "opacity-80" : ""}`}
       >
-        {isAchieved ? (
-          <Award size={24} color={tierColor} strokeWidth={2} />
-        ) : (
-          <Lock size={24} color="#9CA3AF" strokeWidth={2} />
-        )}
-      </View>
-
-      <Text
-        className="text-xs font-bold mb-1"
-        style={{ color: isAchieved ? tierColor : "#9CA3AF" }}
-      >
-        [{achievement.tier.toUpperCase()}]
-      </Text>
-
-      <Text
-        className={`text-sm font-semibold text-center mb-1 ${
-          isAchieved ? "text-gray-800" : "text-gray-400"
-        }`}
-      >
-        {achievement.title}
-      </Text>
-
-      <Text
-        className={`text-xs text-center leading-4 mb-2 ${
-          isAchieved ? "text-gray-600" : "text-gray-300"
-        }`}
-      >
-        {achievement.description}
-      </Text>
-
-      {!isAchieved && (
-        <View className="w-full items-center">
-          <Text className="text-xs text-center mb-1.5">
-            <Text className="text-gray-400">目標まであと </Text>
-            <Text className="text-primary-500 font-semibold">
-              {achievement.category === "duration"
-                ? remainingSeconds !== undefined && remainingSeconds < 60
-                  ? formatTimeRemainingWithSeconds(remainingSeconds)
-                  : formatTimeRemaining(remaining)
-                : `${remaining.toLocaleString()}${achievement.unit}`}
-            </Text>
-          </Text>
-          <View className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
-            <View
-              className="h-full bg-primary-500 rounded-full"
-              style={{ width: `${progress * 100}%` }}
-            />
+        <BlurView
+          intensity={20}
+          tint="light"
+          className="p-4 items-center"
+          style={{ backgroundColor: "rgba(255, 255, 255, 0.6)" }}
+        >
+          <View
+            className="w-12 h-12 rounded-full items-center justify-center mb-3"
+            style={{
+              backgroundColor: isAchieved
+                ? `${tierColor}25`
+                : "rgba(243, 244, 246, 0.5)",
+            }}
+          >
+            {isAchieved ? (
+              <Award size={24} color={tierColor} strokeWidth={2} />
+            ) : (
+              <Lock size={24} color="#9CA3AF" strokeWidth={2} />
+            )}
           </View>
-        </View>
-      )}
 
-      {isAchieved && (
-        <Text className="text-xs text-primary-500 text-center mt-1">
-          タップして詳細を見る
-        </Text>
-      )}
-    </TouchableOpacity>
+          <Text
+            className="text-sm font-bold mb-1"
+            style={{ color: isAchieved ? tierColor : "#9CA3AF" }}
+          >
+            [{achievement.tier.toUpperCase()}]
+          </Text>
+
+          <Text
+            className={`text-base font-semibold text-center mb-1 ${
+              isAchieved ? "text-gray-800" : "text-gray-500"
+            }`}
+          >
+            {achievement.title}
+          </Text>
+
+          {isAchieved && (
+            <Text className="text-sm text-center leading-4 mb-2 text-gray-700">
+              {achievement.description}
+            </Text>
+          )}
+
+          {!isAchieved && (
+            <View className="w-full items-center">
+              <View className="w-full items-center mb-1.5">
+                <Text className="text-sm text-gray-500 text-center mb-1">
+                  目標まであと
+                </Text>
+                <Text className="text-ms text-emerald-600 font-semibold text-center">
+                  {achievement.category === "duration"
+                    ? remainingSeconds !== undefined && remainingSeconds < 60
+                      ? formatTimeRemainingWithSeconds(remainingSeconds)
+                      : formatTimeRemaining(remaining)
+                    : `${remaining.toLocaleString()}${achievement.unit}`}
+                </Text>
+              </View>
+              <View className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
+                <View
+                  className="h-full bg-emerald-500 rounded-full"
+                  style={{ width: `${progress * 100}%` }}
+                />
+              </View>
+            </View>
+          )}
+
+          {/* {isAchieved && (
+            <Text className="text-sm text-emerald-600 text-center mt-1">
+              タップして詳細を見る
+            </Text>
+          )} */}
+        </BlurView>
+      </TouchableOpacity>
+    </View>
   );
 }

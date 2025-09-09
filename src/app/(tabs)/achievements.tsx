@@ -1,16 +1,26 @@
 import { AchievementBadge } from "@/components/AchievementBadge";
 import { HealthTimeline } from "@/components/HealthTimeline";
 import { ProgressChart } from "@/components/ProgressChart";
+import {
+  CHART_PERIODS,
+  CHART_TYPES,
+  TABS,
+  TabType,
+} from "@/constants/achievements-ui";
+import { DEFAULT_BACKGROUND } from "@/constants/backgrounds";
 import { useQuitTimer } from "@/hooks/useQuitTimer";
 import { useSmokerData } from "@/hooks/useSmokerData";
 import { checkAllAchievements } from "@/utils/achievement-logic";
 import { calculateAchievementProgress } from "@/utils/achievement-progress";
-import { LinearGradient } from "expo-linear-gradient";
-import { Award, Heart, TrendingUp } from "lucide-react-native";
+import { BlurView } from "expo-blur";
 import { useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
-
-type TabType = "badges" | "graphs" | "health";
+import {
+  ImageBackground,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function AchievementsScreen() {
   const [activeTab, setActiveTab] = useState<TabType>("badges");
@@ -59,23 +69,6 @@ export default function AchievementsScreen() {
     };
   });
 
-  const tabs = [
-    { key: "badges" as TabType, label: "バッジ", icon: Award },
-    { key: "graphs" as TabType, label: "グラフ", icon: TrendingUp },
-    { key: "health" as TabType, label: "健康", icon: Heart },
-  ];
-
-  const chartPeriods = [
-    { key: "week" as const, label: "週" },
-    { key: "month" as const, label: "月" },
-    { key: "year" as const, label: "年" },
-  ];
-
-  const chartTypes = [
-    { key: "money" as const, label: "節約金額" },
-    { key: "cigarettes" as const, label: "我慢した本数" },
-  ];
-
   const getChartSummary = () => {
     const period =
       chartPeriod === "week"
@@ -99,66 +92,126 @@ export default function AchievementsScreen() {
   };
 
   return (
-    <View className="flex-1 bg-gray-50">
-      {/* Header */}
-      <LinearGradient
-        colors={["#10B981", "#059669"]}
+    <ImageBackground
+      source={DEFAULT_BACKGROUND.source}
+      className="flex-1"
+      resizeMode="cover"
+    >
+      {/* 半透明のオーバーレイ */}
+      <View className="absolute inset-0 bg-white/80" />
+      {/* Header with gradient */}
+      <View
+        className="relative z-10 rounded-b-3xl overflow-hidden"
         style={{
-          paddingTop: 60,
-          paddingBottom: 10,
-          paddingHorizontal: 20,
-          borderBottomLeftRadius: 20,
-          borderBottomRightRadius: 20,
+          shadowColor: "#000",
+          shadowOffset: {
+            width: 0,
+            height: 4,
+          },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          elevation: 8,
         }}
       >
-        <Text className="text-2xl font-bold text-white text-center">
-          あなたの成果
-        </Text>
-      </LinearGradient>
-
-      {/* Tab navigation */}
-      <View className="bg-white mx-5 mt-4 rounded-xl p-1 shadow-sm">
-        <View className="flex-row">
-          {tabs.map((tab) => {
-            const IconComponent = tab.icon;
-            return (
-              <TouchableOpacity
-                key={tab.key}
-                className={`flex-1 flex-row items-center justify-center py-3 px-2 rounded-lg ${
-                  activeTab === tab.key ? "bg-primary-50" : ""
-                }`}
-                onPress={() => setActiveTab(tab.key)}
-              >
-                <IconComponent
-                  size={18}
-                  color={activeTab === tab.key ? "#10B981" : "#9CA3AF"}
-                  strokeWidth={2}
-                />
-                <Text
-                  className={`text-sm ml-1.5 font-medium ${
-                    activeTab === tab.key
-                      ? "text-primary-500 font-semibold"
-                      : "text-gray-400"
-                  }`}
-                >
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+        <BlurView
+          intensity={20}
+          tint="light"
+          style={{
+            paddingTop: 60,
+            paddingBottom: 10,
+            paddingHorizontal: 20,
+            backgroundColor: "rgba(16, 185, 129, 0.3)",
+          }}
+        >
+          <Text className="text-2xl font-bold text-emerald-800 text-center">
+            あなたの成果
+          </Text>
+        </BlurView>
       </View>
-
+      {/* Tab navigation */}
+      // TODO グラフと健康は今後表示する = コメントを外す
+      {/* <View
+        className="mx-5 mt-4 relative z-10 rounded-xl overflow-hidden"
+        style={{
+          shadowColor: "#000",
+          shadowOffset: {
+            width: 0,
+            height: 4,
+          },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          elevation: 8,
+        }}
+      >
+        <BlurView
+          intensity={20}
+          tint="light"
+          className="p-1"
+          style={{ backgroundColor: "rgba(255, 255, 255, 0.3)" }}
+        >
+          <View className="flex-row">
+            {TABS.map((tab) => {
+              const IconComponent = tab.icon;
+              return (
+                <TouchableOpacity
+                  key={tab.key}
+                  className={`flex-1 flex-row items-center justify-center py-3 px-2 rounded-lg ${
+                    activeTab === tab.key ? "bg-emerald-100/50" : ""
+                  }`}
+                  onPress={() => setActiveTab(tab.key)}
+                >
+                  <IconComponent
+                    size={18}
+                    color={activeTab === tab.key ? "#10B981" : "#9CA3AF"}
+                    strokeWidth={2}
+                  />
+                  <Text
+                    className={`text-sm ml-1.5 font-medium ${
+                      activeTab === tab.key
+                        ? "text-emerald-800 font-semibold"
+                        : "text-gray-600"
+                    }`}
+                  >
+                    {tab.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </BlurView>
+      </View> */}
+			
       {/* Content */}
       <ScrollView
-        className="flex-1 px-5 pt-5"
+        className="flex-1 px-5 pt-5 relative z-10"
         showsVerticalScrollIndicator={false}
       >
         {activeTab === "badges" && (
           <View className="pb-5">
-            <Text className="text-lg font-semibold text-gray-800 mb-4">
-              ■ 獲得したバッジ一覧
-            </Text>
+            <View
+              className="rounded-xl overflow-hidden"
+              style={{
+                shadowColor: "#000",
+                shadowOffset: {
+                  width: 0,
+                  height: 4,
+                },
+                shadowOpacity: 0.1,
+                shadowRadius: 8,
+                elevation: 8,
+              }}
+            >
+              <BlurView
+                intensity={20}
+                tint="light"
+                className="p-5 mb-4 rounded-xl overflow-hidden"
+                style={{ backgroundColor: "rgba(255, 255, 255, 0.3)" }}
+              >
+                <Text className="text-lg font-semibold text-gray-800 text-center">
+                  ■ 獲得したバッジ一覧
+                </Text>
+              </BlurView>
+            </View>
             <View className="flex-row flex-wrap justify-between">
               {achievements.map((achievement) => {
                 // 時間系バッジの場合、秒単位の残り時間を計算
@@ -192,7 +245,7 @@ export default function AchievementsScreen() {
             <View className="mb-5">
               <View className="bg-white rounded-lg p-1 mb-3 shadow-sm">
                 <View className="flex-row">
-                  {chartPeriods.map((period) => (
+                  {CHART_PERIODS.map((period) => (
                     <TouchableOpacity
                       key={period.key}
                       className={`flex-1 py-2 items-center rounded-md ${
@@ -215,7 +268,7 @@ export default function AchievementsScreen() {
               </View>
 
               <View className="flex-row justify-end">
-                {chartTypes.map((type) => (
+                {CHART_TYPES.map((type) => (
                   <TouchableOpacity
                     key={type.key}
                     className={`px-3 py-1.5 rounded-md ml-2 ${
@@ -240,8 +293,8 @@ export default function AchievementsScreen() {
             {/* Chart display */}
             <View className="bg-white rounded-xl p-5 mb-4 shadow-sm">
               <Text className="text-base font-semibold text-gray-800 mb-4 text-center">
-                {chartPeriods.find((p) => p.key === chartPeriod)?.label}間・
-                {chartTypes.find((t) => t.key === chartType)?.label}の推移
+                {CHART_PERIODS.find((p) => p.key === chartPeriod)?.label}間・
+                {CHART_TYPES.find((t) => t.key === chartType)?.label}の推移
               </Text>
               <ProgressChart
                 period={chartPeriod}
@@ -274,6 +327,6 @@ export default function AchievementsScreen() {
           </View>
         )}
       </ScrollView>
-    </View>
+    </ImageBackground>
   );
 }
