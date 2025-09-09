@@ -68,14 +68,16 @@ export function GlassmorphismButton({
           backgroundColor: disabled
             ? "rgba(209, 213, 219, 0.3)"
             : "rgba(16, 185, 129, 0.3)",
+          borderWidth: disabled ? 5 : 0,
+          borderColor: disabled ? "rgba(156, 163, 175, 1)" : "transparent",
         }}
       >
         <Text
           className={`text-base font-bold ${
-            disabled ? "text-gray-500" : "text-emerald-800"
+            disabled ? "text-black" : "text-emerald-800"
           }`}
         >
-          {title}
+          {disabled ? "選択してください" : title}
         </Text>
       </BlurView>
     </TouchableOpacity>
