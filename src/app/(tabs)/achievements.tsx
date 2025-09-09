@@ -146,7 +146,7 @@ export default function AchievementsScreen() {
 
       {/* Tab navigation */}
       <View
-        className="mx-5 mt-4 relative z-10"
+        className="mx-5 mt-4 relative z-10 rounded-xl overflow-hidden"
         style={{
           shadowColor: "#000",
           shadowOffset: {
@@ -161,7 +161,7 @@ export default function AchievementsScreen() {
         <BlurView
           intensity={20}
           tint="light"
-          className="rounded-xl p-1"
+          className="p-1"
           style={{ backgroundColor: "rgba(255, 255, 255, 0.3)" }}
         >
           <View className="flex-row">
@@ -204,6 +204,7 @@ export default function AchievementsScreen() {
         {activeTab === "badges" && (
           <View className="pb-5">
             <View
+              className="rounded-xl overflow-hidden"
               style={{
                 shadowColor: "#000",
                 shadowOffset: {
@@ -218,7 +219,7 @@ export default function AchievementsScreen() {
               <BlurView
                 intensity={20}
                 tint="light"
-                className="rounded-xl p-5 mb-4"
+                className="p-5 mb-4 rounded-xl overflow-hidden"
                 style={{ backgroundColor: "rgba(255, 255, 255, 0.3)" }}
               >
                 <Text className="text-lg font-semibold text-gray-800 text-center">

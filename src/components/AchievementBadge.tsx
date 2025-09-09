@@ -40,7 +40,7 @@ export function AchievementBadge({ achievement, remainingSeconds }: Props) {
 
   return (
     <View
-      className="w-[48%] mb-4"
+      className="w-[48%] mb-4 rounded-xl overflow-hidden"
       style={{
         shadowColor: "#000",
         shadowOffset: {
@@ -54,12 +54,12 @@ export function AchievementBadge({ achievement, remainingSeconds }: Props) {
     >
       <TouchableOpacity
         activeOpacity={0.8}
-        className={`rounded-xl ${!isAchieved ? "opacity-80" : ""}`}
+        className={`${!isAchieved ? "opacity-80" : ""}`}
       >
         <BlurView
           intensity={20}
           tint="light"
-          className="rounded-xl p-4 items-center"
+          className="p-4 items-center"
           style={{ backgroundColor: "rgba(255, 255, 255, 0.6)" }}
         >
           <View
