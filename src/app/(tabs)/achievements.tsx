@@ -1,14 +1,21 @@
 import { AchievementBadge } from "@/components/AchievementBadge";
 import { HealthTimeline } from "@/components/HealthTimeline";
 import { ProgressChart } from "@/components/ProgressChart";
+import { DEFAULT_BACKGROUND } from "@/constants/backgrounds";
 import { useQuitTimer } from "@/hooks/useQuitTimer";
 import { useSmokerData } from "@/hooks/useSmokerData";
 import { checkAllAchievements } from "@/utils/achievement-logic";
 import { calculateAchievementProgress } from "@/utils/achievement-progress";
-import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 import { Award, Heart, TrendingUp } from "lucide-react-native";
 import { useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  ImageBackground,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 type TabType = "badges" | "graphs" | "health";
 
@@ -99,66 +106,126 @@ export default function AchievementsScreen() {
   };
 
   return (
-    <View className="flex-1 bg-gray-50">
-      {/* Header */}
-      <LinearGradient
-        colors={["#10B981", "#059669"]}
+    <ImageBackground
+      source={DEFAULT_BACKGROUND.source}
+      className="flex-1"
+      resizeMode="cover"
+    >
+      {/* 半透明のオーバーレイ */}
+      <View className="absolute inset-0 bg-white/80" />
+
+      {/* Header with gradient */}
+      <View
+        className="relative z-10 rounded-b-3xl overflow-hidden"
         style={{
-          paddingTop: 60,
-          paddingBottom: 10,
-          paddingHorizontal: 20,
-          borderBottomLeftRadius: 20,
-          borderBottomRightRadius: 20,
+          shadowColor: "#000",
+          shadowOffset: {
+            width: 0,
+            height: 4,
+          },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          elevation: 8,
         }}
       >
-        <Text className="text-2xl font-bold text-white text-center">
-          あなたの成果
-        </Text>
-      </LinearGradient>
+        <BlurView
+          intensity={20}
+          tint="light"
+          style={{
+            paddingTop: 60,
+            paddingBottom: 10,
+            paddingHorizontal: 20,
+            backgroundColor: "rgba(16, 185, 129, 0.3)",
+          }}
+        >
+          <Text className="text-2xl font-bold text-emerald-800 text-center">
+            あなたの成果
+          </Text>
+        </BlurView>
+      </View>
 
       {/* Tab navigation */}
-      <View className="bg-white mx-5 mt-4 rounded-xl p-1 shadow-sm">
-        <View className="flex-row">
-          {tabs.map((tab) => {
-            const IconComponent = tab.icon;
-            return (
-              <TouchableOpacity
-                key={tab.key}
-                className={`flex-1 flex-row items-center justify-center py-3 px-2 rounded-lg ${
-                  activeTab === tab.key ? "bg-primary-50" : ""
-                }`}
-                onPress={() => setActiveTab(tab.key)}
-              >
-                <IconComponent
-                  size={18}
-                  color={activeTab === tab.key ? "#10B981" : "#9CA3AF"}
-                  strokeWidth={2}
-                />
-                <Text
-                  className={`text-sm ml-1.5 font-medium ${
-                    activeTab === tab.key
-                      ? "text-primary-500 font-semibold"
-                      : "text-gray-400"
+      <View
+        className="mx-5 mt-4 relative z-10"
+        style={{
+          shadowColor: "#000",
+          shadowOffset: {
+            width: 0,
+            height: 4,
+          },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          elevation: 8,
+        }}
+      >
+        <BlurView
+          intensity={20}
+          tint="light"
+          className="rounded-xl p-1"
+          style={{ backgroundColor: "rgba(255, 255, 255, 0.3)" }}
+        >
+          <View className="flex-row">
+            {tabs.map((tab) => {
+              const IconComponent = tab.icon;
+              return (
+                <TouchableOpacity
+                  key={tab.key}
+                  className={`flex-1 flex-row items-center justify-center py-3 px-2 rounded-lg ${
+                    activeTab === tab.key ? "bg-emerald-100/50" : ""
                   }`}
+                  onPress={() => setActiveTab(tab.key)}
                 >
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+                  <IconComponent
+                    size={18}
+                    color={activeTab === tab.key ? "#10B981" : "#9CA3AF"}
+                    strokeWidth={2}
+                  />
+                  <Text
+                    className={`text-sm ml-1.5 font-medium ${
+                      activeTab === tab.key
+                        ? "text-emerald-800 font-semibold"
+                        : "text-gray-600"
+                    }`}
+                  >
+                    {tab.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </BlurView>
       </View>
 
       {/* Content */}
       <ScrollView
-        className="flex-1 px-5 pt-5"
+        className="flex-1 px-5 pt-5 relative z-10"
         showsVerticalScrollIndicator={false}
       >
         {activeTab === "badges" && (
           <View className="pb-5">
-            <Text className="text-lg font-semibold text-gray-800 mb-4">
-              ■ 獲得したバッジ一覧
-            </Text>
+            <View
+              style={{
+                shadowColor: "#000",
+                shadowOffset: {
+                  width: 0,
+                  height: 4,
+                },
+                shadowOpacity: 0.1,
+                shadowRadius: 8,
+                elevation: 8,
+              }}
+            >
+              <BlurView
+                intensity={20}
+                tint="light"
+                className="rounded-xl p-5 mb-4"
+                style={{ backgroundColor: "rgba(255, 255, 255, 0.3)" }}
+              >
+                <Text className="text-lg font-semibold text-gray-800 text-center">
+                  ■ 獲得したバッジ一覧
+                </Text>
+              </BlurView>
+            </View>
             <View className="flex-row flex-wrap justify-between">
               {achievements.map((achievement) => {
                 // 時間系バッジの場合、秒単位の残り時間を計算
@@ -274,6 +341,6 @@ export default function AchievementsScreen() {
           </View>
         )}
       </ScrollView>
-    </View>
+    </ImageBackground>
   );
 }
