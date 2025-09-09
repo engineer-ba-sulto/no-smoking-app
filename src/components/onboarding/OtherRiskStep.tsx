@@ -7,6 +7,7 @@ import { RiskCardList } from "./ui/RiskCardList";
 interface OtherRiskStepProps {
   onNext: () => void;
   animatedStyle: any;
+  userName: string;
 }
 
 const otherRiskCards: RiskCardData[] = [
@@ -30,6 +31,7 @@ const otherRiskCards: RiskCardData[] = [
 export const OtherRiskStep = ({
   onNext,
   animatedStyle,
+  userName,
 }: OtherRiskStepProps) => (
   <OnboardingStepWrapper
     onNext={onNext}
@@ -37,14 +39,14 @@ export const OtherRiskStep = ({
     buttonTitle="詳しく知る"
   >
     <Text className="text-3xl font-bold text-gray-800 text-center mb-4">
-      その他の健康リスク
+      {userName}さん
     </Text>
-    <Text className="text-base text-gray-600 text-center leading-6 mb-6">
+    <Text className="text-xl font-bold text-gray-600 text-center leading-6 mb-6">
       タバコは全身の健康に影響を与えます
     </Text>
     <RiskCardList cards={otherRiskCards} color="purple" />
     <Text className="text-lg font-semibold text-gray-800 text-center">
-      全身の健康を守りましょう 🛡️
+      {userName}さんの全身の健康を守りましょう 🛡️
     </Text>
   </OnboardingStepWrapper>
 );

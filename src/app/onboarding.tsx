@@ -126,15 +126,29 @@ export default function OnboardingScreen() {
 
       case ONBOARDING_CONFIG.STEPS.HEART_RISK:
         return (
-          <HeartRiskStep onNext={nextStep} animatedStyle={animatedStyle} />
+          <HeartRiskStep
+            onNext={nextStep}
+            animatedStyle={animatedStyle}
+            userName={userName}
+          />
         );
 
       case ONBOARDING_CONFIG.STEPS.LUNG_RISK:
-        return <LungRiskStep onNext={nextStep} animatedStyle={animatedStyle} />;
+        return (
+          <LungRiskStep
+            onNext={nextStep}
+            animatedStyle={animatedStyle}
+            userName={userName}
+          />
+        );
 
       case ONBOARDING_CONFIG.STEPS.OTHER_RISK:
         return (
-          <OtherRiskStep onNext={nextStep} animatedStyle={animatedStyle} />
+          <OtherRiskStep
+            onNext={nextStep}
+            animatedStyle={animatedStyle}
+            userName={userName}
+          />
         );
 
       case ONBOARDING_CONFIG.STEPS.DAILY_COST:
