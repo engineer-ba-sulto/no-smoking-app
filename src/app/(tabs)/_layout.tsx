@@ -1,7 +1,24 @@
+import * as Haptics from "expo-haptics";
 import { Tabs } from "expo-router";
 import { Award, Home, Settings } from "lucide-react-native";
+import { TouchableOpacity } from "react-native";
 
 export default function TabLayout() {
+  // タブボタンのカスタムハンドラー
+  const TabBarButton = ({ children, onPress, ...props }: any) => (
+    <TouchableOpacity
+      {...props}
+      onPress={(e) => {
+        // 選択フィードバック
+        Haptics.selectionAsync();
+        onPress?.(e);
+      }}
+      activeOpacity={0.7}
+    >
+      {children}
+    </TouchableOpacity>
+  );
+
   return (
     <Tabs
       screenOptions={{
@@ -20,6 +37,7 @@ export default function TabLayout() {
           fontSize: 12,
           fontWeight: "600",
         },
+        tabBarButton: TabBarButton,
       }}
     >
       <Tabs.Screen

@@ -1,9 +1,10 @@
+import * as Haptics from "expo-haptics";
 import { Save } from "lucide-react-native";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
 interface SaveButtonProps {
-  onSave: () => void;
+  onSave: () => void | Promise<void>;
   isValid?: boolean;
   isSaving: boolean;
   disabled?: boolean;
@@ -12,6 +13,8 @@ interface SaveButtonProps {
   className?: string;
   showIcon?: boolean;
   variant?: "primary" | "secondary";
+  onSaveSuccess?: () => void;
+  onSaveError?: () => void;
 }
 
 export function SaveButton({
@@ -24,8 +27,28 @@ export function SaveButton({
   className = "",
   showIcon = true,
   variant = "primary",
+  onSaveSuccess,
+  onSaveError,
 }: SaveButtonProps) {
   const isDisabled = disabled || isSaving || !isValid;
+
+  // 保存ボタンが押された時のハンドラー
+  const handleSave = async () => {
+    try {
+      // 保存開始時の軽い振動
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+      await onSave();
+
+      // 保存成功時の成功フィードバック
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      onSaveSuccess?.();
+    } catch (error) {
+      // 保存エラー時のエラーフィードバック
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      onSaveError?.();
+    }
+  };
 
   const getButtonStyle = () => {
     if (variant === "secondary") {
@@ -63,7 +86,7 @@ export function SaveButton({
   return (
     <View className={`mt-6 mb-8 ${className}`}>
       <TouchableOpacity
-        onPress={onSave}
+        onPress={handleSave}
         className={getButtonStyle()}
         activeOpacity={0.8}
         disabled={isDisabled}

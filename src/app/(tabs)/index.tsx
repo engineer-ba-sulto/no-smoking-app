@@ -5,6 +5,7 @@ import { DEFAULT_BACKGROUND } from "@/constants/backgrounds";
 import { useQuitTimer } from "@/hooks/useQuitTimer";
 import { useSmokerData } from "@/hooks/useSmokerData";
 import { BlurView } from "expo-blur";
+import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from "expo-router";
 import {
@@ -42,6 +43,13 @@ export default function HomeScreen() {
       loadData();
     }, [loadData])
   );
+
+  // SOSボタンが押された時のハンドラー
+  const handleSOSPress = () => {
+    // ハプティックフィードバック（緊急時なので強い振動）
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    setShowBreathingTimer(true);
+  };
 
   return (
     <ImageBackground
@@ -126,7 +134,7 @@ export default function HomeScreen() {
       {/* SOS FAB */}
       <TouchableOpacity
         className="absolute bottom-5 right-5 w-15 h-15 rounded-full shadow-lg z-20"
-        onPress={() => setShowBreathingTimer(true)}
+        onPress={handleSOSPress}
         activeOpacity={0.8}
       >
         <LinearGradient

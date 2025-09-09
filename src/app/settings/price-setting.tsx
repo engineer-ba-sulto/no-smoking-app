@@ -2,6 +2,7 @@ import { NumberStepper } from "@/components/NumberStepper";
 import { SaveButton } from "@/components/SaveButton";
 import { userProfileRepository } from "@/drizzle/repositories/user-profile-repository";
 import { useSmokerData } from "@/hooks/useSmokerData";
+import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { ArrowLeft, DollarSign, Save } from "lucide-react-native";
@@ -36,6 +37,9 @@ export default function PriceSettingScreen() {
       return;
     }
 
+    // 保存開始時の軽い振動
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
     setIsSaving(true);
     try {
       // 価格と本数を同時に更新
@@ -45,16 +49,22 @@ export default function PriceSettingScreen() {
       );
 
       if (result.success) {
+        // 保存成功時の成功フィードバック
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         // データを再読み込みしてから画面を閉じる
         await loadData();
         Alert.alert("成功", "設定を更新しました。", [
           { text: "OK", onPress: () => router.back() },
         ]);
       } else {
+        // 保存エラー時のエラーフィードバック
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         Alert.alert("エラー", result.message || "更新に失敗しました。");
       }
     } catch (e) {
       console.error("設定更新エラー:", e);
+      // 保存エラー時のエラーフィードバック
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert("エラー", "予期せぬエラーが発生しました。");
     } finally {
       setIsSaving(false);

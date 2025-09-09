@@ -1,12 +1,13 @@
+import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { Pause, Play, X } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import Animated, {
-	Easing,
-	useAnimatedStyle,
-	useSharedValue,
-	withTiming,
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 
 interface Props {
@@ -142,6 +143,18 @@ export function BreathingTimer({ onClose, onComplete }: Props) {
     }
   };
 
+  // 開始/停止ボタンのハンドラー
+  const handleToggleTimer = () => {
+    if (isActive) {
+      // 停止時：軽い振動
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } else {
+      // 開始時：中程度の振動
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    setIsActive(!isActive);
+  };
+
   return (
     <View className="flex-1 bg-white">
       {/* Header */}
@@ -188,7 +201,7 @@ export function BreathingTimer({ onClose, onComplete }: Props) {
         {/* Control button */}
         <TouchableOpacity
           className="rounded-xl shadow-lg mb-6"
-          onPress={() => setIsActive(!isActive)}
+          onPress={handleToggleTimer}
           activeOpacity={0.8}
         >
           <LinearGradient
