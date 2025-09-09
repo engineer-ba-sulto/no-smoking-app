@@ -40,6 +40,7 @@ export const NameStep = ({
       animatedStyle={animatedStyle}
       disabled={!isValid}
       title="お名前を教えてください"
+      buttonTitle={!isValid ? "名前を入力してください" : "次へ >"}
     >
       <View className="w-full mb-6">
         <Text className="text-sm text-gray-500 text-center mb-4">

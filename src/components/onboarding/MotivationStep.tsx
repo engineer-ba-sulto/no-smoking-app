@@ -21,6 +21,9 @@ export const MotivationStep = ({
     animatedStyle={animatedStyle}
     disabled={selectedMotivations.length === 0}
     title={`あなたが禁煙を決意した、\n一番の理由は何ですか？`}
+    buttonTitle={
+      selectedMotivations.length === 0 ? "選択してください" : "次へ >"
+    }
   >
     <Text className="text-sm text-gray-400 text-center mb-8">(複数選択可)</Text>
     <MotivationSelector

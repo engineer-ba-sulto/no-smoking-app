@@ -77,7 +77,7 @@ export function GlassmorphismButton({
             disabled ? "text-black" : "text-emerald-800"
           }`}
         >
-          {disabled ? "選択してください" : title}
+          {title}
         </Text>
       </BlurView>
     </TouchableOpacity>
