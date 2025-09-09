@@ -19,7 +19,7 @@ export const PriceStep = ({
   <OnboardingStepWrapper
     onNext={onNext}
     animatedStyle={animatedStyle}
-    title="タバコ1箱の価格は\nいくらでしたか？"
+    title={`タバコ1箱の価格は\nいくらでしたか？`}
   >
     <View className="my-10">
       <NumberStepper

@@ -19,7 +19,7 @@ export const CigarettesStep = ({
   <OnboardingStepWrapper
     onNext={onNext}
     animatedStyle={animatedStyle}
-    title="1日に、およそ何本くらい\n吸っていましたか？"
+    title={`1日に、およそ何本くらい\n吸っていましたか？`}
   >
     <View className="my-10">
       <NumberStepper

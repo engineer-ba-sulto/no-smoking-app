@@ -19,7 +19,7 @@ export const PackSizeStep = ({
   <OnboardingStepWrapper
     onNext={onNext}
     animatedStyle={animatedStyle}
-    title="1箱の本数は\n何本でしたか？"
+    title={`1箱の本数は\n何本でしたか？`}
   >
     <View className="my-10">
       <NumberStepper
