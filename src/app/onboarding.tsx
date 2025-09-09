@@ -151,6 +151,27 @@ export default function OnboardingScreen() {
           />
         );
 
+      case ONBOARDING_CONFIG.STEPS.PASSIVE_SMOKING:
+        return (
+          <PassiveSmokingStep onNext={nextStep} animatedStyle={animatedStyle} />
+        );
+
+      case ONBOARDING_CONFIG.STEPS.APPEARANCE_IMPACT:
+        return (
+          <AppearanceImpactStep
+            onNext={nextStep}
+            animatedStyle={animatedStyle}
+          />
+        );
+
+      case ONBOARDING_CONFIG.STEPS.SOCIAL_CONSTRAINTS:
+        return (
+          <SocialConstraintsStep
+            onNext={nextStep}
+            animatedStyle={animatedStyle}
+          />
+        );
+
       case ONBOARDING_CONFIG.STEPS.DAILY_COST:
         return (
           <DailyCostStep onNext={nextStep} animatedStyle={animatedStyle} />
@@ -191,27 +212,6 @@ export default function OnboardingScreen() {
 
       case ONBOARDING_CONFIG.STEPS.FAMILY:
         return <FamilyStep onNext={nextStep} animatedStyle={animatedStyle} />;
-
-      case ONBOARDING_CONFIG.STEPS.PASSIVE_SMOKING:
-        return (
-          <PassiveSmokingStep onNext={nextStep} animatedStyle={animatedStyle} />
-        );
-
-      case ONBOARDING_CONFIG.STEPS.APPEARANCE_IMPACT:
-        return (
-          <AppearanceImpactStep
-            onNext={nextStep}
-            animatedStyle={animatedStyle}
-          />
-        );
-
-      case ONBOARDING_CONFIG.STEPS.SOCIAL_CONSTRAINTS:
-        return (
-          <SocialConstraintsStep
-            onNext={nextStep}
-            animatedStyle={animatedStyle}
-          />
-        );
 
       case ONBOARDING_CONFIG.STEPS.QUESTIONNAIRE:
         return (
