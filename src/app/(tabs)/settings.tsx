@@ -42,7 +42,7 @@ export default function SettingsScreen() {
 
   const settingSections: SettingSection[] = [
     {
-      title: "あなたの禁煙情報",
+      title: "あなたの情報",
       items: [
         {
           icon: <User size={20} color="#6B7280" strokeWidth={2} />,
