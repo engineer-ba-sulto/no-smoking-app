@@ -1,5 +1,6 @@
 import { BreathingTimer } from "@/components/BreathingTimer";
 import { StatsCard } from "@/components/StatsCard";
+import { DEFAULT_BACKGROUND } from "@/constants/backgrounds";
 import { useQuitTimer } from "@/hooks/useQuitTimer";
 import { useSmokerData } from "@/hooks/useSmokerData";
 import { LinearGradient } from "expo-linear-gradient";
@@ -12,7 +13,13 @@ import {
   Target,
 } from "lucide-react-native";
 import { useCallback, useState } from "react";
-import { Modal, Text, TouchableOpacity, View } from "react-native";
+import {
+  ImageBackground,
+  Modal,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function HomeScreen() {
   const [showBreathingTimer, setShowBreathingTimer] = useState(false);
@@ -34,7 +41,14 @@ export default function HomeScreen() {
   );
 
   return (
-    <View className="flex-1 bg-gray-100">
+    <ImageBackground
+      source={DEFAULT_BACKGROUND.source}
+      className="flex-1"
+      resizeMode="cover"
+    >
+      {/* 半透明のオーバーレイ */}
+      <View className="absolute inset-0 bg-white/80" />
+
       {/* Header with gradient */}
       <LinearGradient
         colors={["#10B981", "#059669"]}
@@ -58,7 +72,7 @@ export default function HomeScreen() {
       </LinearGradient>
 
       {/* Main content */}
-      <View className="flex-1 px-5 pt-8">
+      <View className="flex-1 px-5 pt-8 relative z-10">
         <Text className="text-base text-gray-600 text-center mb-5 font-medium">
           あなたが禁煙をはじめてから...
         </Text>
@@ -102,7 +116,7 @@ export default function HomeScreen() {
 
       {/* SOS FAB */}
       <TouchableOpacity
-        className="absolute bottom-5 right-5 w-15 h-15 rounded-full shadow-lg"
+        className="absolute bottom-5 right-5 w-15 h-15 rounded-full shadow-lg z-20"
         onPress={() => setShowBreathingTimer(true)}
         activeOpacity={0.8}
       >
@@ -133,6 +147,6 @@ export default function HomeScreen() {
           onComplete={() => setShowBreathingTimer(false)}
         />
       </Modal>
-    </View>
+    </ImageBackground>
   );
 }
