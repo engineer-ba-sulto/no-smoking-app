@@ -23,6 +23,7 @@ export const initialStartupPatterns: TestDataPattern[] = [
     description: "今から禁煙を始める新規ユーザー（禁煙開始時刻は現在時刻）",
     category: "initial",
     data: {
+      userName: "初回起動パターン",
       smokingStartDate: new Date().toISOString(),
       cigsPerDay: 20,
       pricePerPack: 650,
@@ -37,6 +38,7 @@ export const initialStartupPatterns: TestDataPattern[] = [
     description: "1日10本程度の軽度喫煙者が今から禁煙を始める",
     category: "initial",
     data: {
+      userName: "軽度喫煙者パターン",
       smokingStartDate: new Date().toISOString(),
       cigsPerDay: 10,
       pricePerPack: 600,
@@ -51,6 +53,7 @@ export const initialStartupPatterns: TestDataPattern[] = [
     description: "1日30本以上の重度喫煙者が今から禁煙を始める",
     category: "initial",
     data: {
+      userName: "重度喫煙者パターン",
       smokingStartDate: new Date().toISOString(),
       cigsPerDay: 30,
       pricePerPack: 700,
@@ -73,6 +76,7 @@ export const testDataPatterns: TestDataPattern[] = [
     description: "7日前に禁煙を開始した典型的なユーザー",
     category: "basic",
     data: {
+      userName: "1週間経過パターン",
       smokingStartDate: subDays(new Date(), 7).toISOString(),
       cigsPerDay: 15,
       pricePerPack: 600,
@@ -87,6 +91,7 @@ export const testDataPatterns: TestDataPattern[] = [
     description: "30日前に禁煙を開始した典型的なユーザー",
     category: "basic",
     data: {
+      userName: "1ヶ月経過パターン",
       smokingStartDate: subDays(new Date(), 30).toISOString(),
       cigsPerDay: 20,
       pricePerPack: 650,
@@ -101,6 +106,7 @@ export const testDataPatterns: TestDataPattern[] = [
     description: "90日前に禁煙を開始した典型的なユーザー",
     category: "basic",
     data: {
+      userName: "3ヶ月経過パターン",
       smokingStartDate: subDays(new Date(), 90).toISOString(),
       cigsPerDay: 25,
       pricePerPack: 700,
@@ -117,6 +123,7 @@ export const testDataPatterns: TestDataPattern[] = [
     description: "1時間前に禁煙を開始した短期間のユーザー",
     category: "edgeCase",
     data: {
+      userName: "1時間前パターン",
       smokingStartDate: subMinutes(new Date(), 59).toISOString(),
       cigsPerDay: 15,
       pricePerPack: 550,
@@ -131,6 +138,7 @@ export const testDataPatterns: TestDataPattern[] = [
     description: "1年前に禁煙を開始した長期ユーザー",
     category: "edgeCase",
     data: {
+      userName: "1年経過パターン",
       smokingStartDate: subYears(new Date(), 1).toISOString(),
       cigsPerDay: 30,
       pricePerPack: 750,
@@ -145,6 +153,7 @@ export const testDataPatterns: TestDataPattern[] = [
     description: "喫煙本数が0の特殊ケース",
     category: "edgeCase",
     data: {
+      userName: "喫煙本数0パターン",
       smokingStartDate: subDays(new Date(), 14).toISOString(),
       cigsPerDay: 0,
       pricePerPack: 600,
@@ -159,6 +168,7 @@ export const testDataPatterns: TestDataPattern[] = [
     description: "タバコ価格が0の特殊ケース",
     category: "edgeCase",
     data: {
+      userName: "タバコ価格0パターン",
       smokingStartDate: subDays(new Date(), 21).toISOString(),
       cigsPerDay: 15,
       pricePerPack: 0,
@@ -175,6 +185,7 @@ export const testDataPatterns: TestDataPattern[] = [
     description: "6時間前に禁煙を開始したユーザー",
     category: "achievement",
     data: {
+      userName: "6時間経過パターン",
       smokingStartDate: subHours(new Date(), 6).toISOString(),
       cigsPerDay: 20,
       pricePerPack: 650,
@@ -189,6 +200,7 @@ export const testDataPatterns: TestDataPattern[] = [
     description: "12時間前に禁煙を開始したユーザー",
     category: "achievement",
     data: {
+      userName: "12時間経過パターン",
       smokingStartDate: subHours(new Date(), 12).toISOString(),
       cigsPerDay: 20,
       pricePerPack: 650,
@@ -202,7 +214,8 @@ export const testDataPatterns: TestDataPattern[] = [
     name: "1日達成直前パターン",
     description: "23時間後に禁煙開始（もうすぐ1日達成）",
     category: "achievement",
-    data: {
+		data: {
+			userName: "1日達成直前パターン",
       smokingStartDate: subHours(new Date(), 23).toISOString(),
       cigsPerDay: 20,
       pricePerPack: 650,
@@ -217,6 +230,7 @@ export const testDataPatterns: TestDataPattern[] = [
     description: "6日23時間後に禁煙開始（もうすぐ1週間達成）",
     category: "achievement",
     data: {
+      userName: "1週間達成直前パターン",
       smokingStartDate: subHours(new Date(), 6 * 24 + 23).toISOString(),
       cigsPerDay: 25,
       pricePerPack: 700,
@@ -231,6 +245,7 @@ export const testDataPatterns: TestDataPattern[] = [
     description: "29日23時間後に禁煙開始（もうすぐ1ヶ月達成）",
     category: "achievement",
     data: {
+      userName: "1ヶ月達成直前パターン",
       smokingStartDate: subHours(new Date(), 29 * 24 + 23).toISOString(),
       cigsPerDay: 30,
       pricePerPack: 750,
@@ -245,6 +260,7 @@ export const testDataPatterns: TestDataPattern[] = [
     description: "364日23時間後に禁煙開始（もうすぐ1年達成）",
     category: "achievement",
     data: {
+      userName: "1年達成直前パターン",
       smokingStartDate: subHours(new Date(), 364 * 24 + 23).toISOString(),
       cigsPerDay: 35,
       pricePerPack: 800,

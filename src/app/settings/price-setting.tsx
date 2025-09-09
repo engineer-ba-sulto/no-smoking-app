@@ -1,4 +1,5 @@
 import { NumberStepper } from "@/components/NumberStepper";
+import { SaveButton } from "@/components/SaveButton";
 import { userProfileRepository } from "@/drizzle/repositories/user-profile-repository";
 import { useSmokerData } from "@/hooks/useSmokerData";
 import { LinearGradient } from "expo-linear-gradient";
@@ -199,18 +200,12 @@ export default function PriceSettingScreen() {
         </View>
 
         {/* 保存ボタン */}
-        <TouchableOpacity
-          onPress={handleSave}
-          className={`rounded-xl py-4 mb-8 shadow-sm ${
-            isSaving ? "bg-gray-400" : "bg-green-500"
-          }`}
-          activeOpacity={0.8}
-          disabled={isSaving}
-        >
-          <Text className="text-white text-center font-semibold text-lg">
-            {isSaving ? "保存中..." : "設定を保存"}
-          </Text>
-        </TouchableOpacity>
+        <SaveButton
+          onSave={handleSave}
+          isSaving={isSaving}
+          buttonText="設定を保存"
+          savingText="保存中..."
+        />
       </ScrollView>
     </View>
   );

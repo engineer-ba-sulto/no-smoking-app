@@ -10,6 +10,7 @@ import {
   FileText,
   Play,
   Shield,
+  User,
 } from "lucide-react-native";
 import { useCallback } from "react";
 import { ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
@@ -41,8 +42,14 @@ export default function SettingsScreen() {
 
   const settingSections: SettingSection[] = [
     {
-      title: "あなたの禁煙情報",
+      title: "あなたの情報",
       items: [
+        {
+          icon: <User size={20} color="#6B7280" strokeWidth={2} />,
+          label: "お名前",
+          value: smokerData?.userName || "未設定",
+          onPress: () => router.push("/settings/name-setting"),
+        },
         {
           icon: <Cigarette size={20} color="#6B7280" strokeWidth={2} />,
           label: "1日の喫煙本数",

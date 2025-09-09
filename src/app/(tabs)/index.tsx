@@ -34,7 +34,7 @@ export default function HomeScreen() {
     smokerData?.cigarettesPerPack
   );
 
-  const userName = smokerData?.name || "あなた";
+  const userName = smokerData?.userName || "あなた";
 
   // 画面がフォーカスされた時にデータを再読み込み
   useFocusEffect(

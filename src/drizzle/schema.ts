@@ -4,6 +4,7 @@ import { z } from "zod";
 
 export const userProfile = sqliteTable("user_profile", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  userName: text("user_name").notNull(),
   smokingStartDate: text("smoking_start_date").notNull(), // ISO文字列
   cigsPerDay: integer("cigs_per_day").notNull(),
   pricePerPack: real("price_per_pack").notNull(),
@@ -24,6 +25,10 @@ export const userProfile = sqliteTable("user_profile", {
 
 // zod を使用して入力データ用のスキーマを定義
 export const userProfileInputSchema = z.object({
+  userName: z
+    .string()
+    .min(1, { message: "名前を入力してください" })
+    .max(50, { message: "名前は50文字以内で入力してください" }),
   smokingStartDate: z
     .string()
     .datetime({ message: "有効なISO形式の日付文字列である必要があります" }),

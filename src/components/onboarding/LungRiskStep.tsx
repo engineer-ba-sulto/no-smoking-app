@@ -7,6 +7,7 @@ import { RiskCardList } from "./ui/RiskCardList";
 interface LungRiskStepProps {
   onNext: () => void;
   animatedStyle: any;
+  userName: string;
 }
 
 const lungRiskCards: RiskCardData[] = [
@@ -27,21 +28,25 @@ const lungRiskCards: RiskCardData[] = [
   },
 ];
 
-export const LungRiskStep = ({ onNext, animatedStyle }: LungRiskStepProps) => (
+export const LungRiskStep = ({
+  onNext,
+  animatedStyle,
+  userName,
+}: LungRiskStepProps) => (
   <OnboardingStepWrapper
     onNext={onNext}
     animatedStyle={animatedStyle}
     buttonTitle="詳しく知る"
   >
     <Text className="text-3xl font-bold text-gray-800 text-center mb-4">
-      呼吸器への影響
+      {userName}さん
     </Text>
-    <Text className="text-base text-gray-600 text-center leading-6 mb-6">
+    <Text className="text-xl font-bold text-gray-600 text-center leading-6 mb-6">
       タバコはあなたの肺と呼吸機能を破壊します
     </Text>
     <RiskCardList cards={lungRiskCards} color="blue" />
     <Text className="text-lg font-semibold text-gray-800 text-center">
-      自由な呼吸を取り戻しましょう 🌬️
+      {userName}さん、自由な呼吸を取り戻しましょう 🌬️
     </Text>
   </OnboardingStepWrapper>
 );

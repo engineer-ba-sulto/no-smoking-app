@@ -8,6 +8,7 @@ import {
   InvestmentStep,
   LungRiskStep,
   MotivationStep,
+  NameStep,
   OnboardingProgress,
   OtherRiskStep,
   PackSizeStep,
@@ -42,6 +43,7 @@ export default function OnboardingScreen() {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>(
     ONBOARDING_CONFIG.STEPS.WELCOME
   );
+  const [userName, setUserName] = useState("");
   const [selectedMotivations, setSelectedMotivations] = useState<string[]>([]);
   const [cigarettesPerDay, setCigarettesPerDay] = useState(20);
   const [pricePerPack, setPricePerPack] = useState(600);
@@ -85,65 +87,12 @@ export default function OnboardingScreen() {
     }
   };
 
-  const canProceedFromStep = () => {
-    switch (currentStep) {
-      case ONBOARDING_CONFIG.STEPS.WELCOME:
-        return true;
-      case ONBOARDING_CONFIG.STEPS.HEART_RISK:
-        return true;
-      case ONBOARDING_CONFIG.STEPS.LUNG_RISK:
-        return true;
-      case ONBOARDING_CONFIG.STEPS.OTHER_RISK:
-        return true;
-      case ONBOARDING_CONFIG.STEPS.DAILY_COST:
-        return true;
-      case ONBOARDING_CONFIG.STEPS.ANNUAL_COST:
-        return true;
-      case ONBOARDING_CONFIG.STEPS.TEN_YEAR_COST:
-        return true;
-      case ONBOARDING_CONFIG.STEPS.TWENTY_YEAR_COST:
-        return true;
-      case ONBOARDING_CONFIG.STEPS.TRAVEL_EXPERIENCE:
-        return true;
-      case ONBOARDING_CONFIG.STEPS.WANTS_HOBBIES:
-        return true;
-      case ONBOARDING_CONFIG.STEPS.INVESTMENT:
-        return true;
-      case ONBOARDING_CONFIG.STEPS.FAMILY:
-        return true;
-      case ONBOARDING_CONFIG.STEPS.PASSIVE_SMOKING:
-        return true;
-      case ONBOARDING_CONFIG.STEPS.APPEARANCE_IMPACT:
-        return true;
-      case ONBOARDING_CONFIG.STEPS.SOCIAL_CONSTRAINTS:
-        return true;
-      case ONBOARDING_CONFIG.STEPS.QUESTIONNAIRE:
-        return true;
-      case ONBOARDING_CONFIG.STEPS.MOTIVATION:
-        return selectedMotivations.length > 0;
-      case ONBOARDING_CONFIG.STEPS.CIGARETTES:
-        return cigarettesPerDay > 0;
-      case ONBOARDING_CONFIG.STEPS.PRICE:
-        return pricePerPack > 0;
-      case ONBOARDING_CONFIG.STEPS.PACK_SIZE:
-        return cigarettesPerPack > 0;
-      case ONBOARDING_CONFIG.STEPS.READY:
-        return true;
-      case ONBOARDING_CONFIG.STEPS.SUPPORT:
-        return true;
-      default:
-        return false;
-    }
-  };
-
   const completeOnboarding = async () => {
     try {
-      const quitDate =
-        startTime === "now"
-          ? new Date().toISOString()
-          : new Date().toISOString(); // For now, both use current time
+      const quitDate = new Date().toISOString();
 
       await updateSmokerData({
+        userName: userName,
         motivations: selectedMotivations,
         cigarettesPerDay,
         pricePerPack,
@@ -165,17 +114,41 @@ export default function OnboardingScreen() {
       case ONBOARDING_CONFIG.STEPS.WELCOME:
         return <WelcomeStep onNext={nextStep} animatedStyle={animatedStyle} />;
 
+      case ONBOARDING_CONFIG.STEPS.NAME:
+        return (
+          <NameStep
+            onNext={nextStep}
+            animatedStyle={animatedStyle}
+            userName={userName}
+            onNameChange={setUserName}
+          />
+        );
+
       case ONBOARDING_CONFIG.STEPS.HEART_RISK:
         return (
-          <HeartRiskStep onNext={nextStep} animatedStyle={animatedStyle} />
+          <HeartRiskStep
+            onNext={nextStep}
+            animatedStyle={animatedStyle}
+            userName={userName}
+          />
         );
 
       case ONBOARDING_CONFIG.STEPS.LUNG_RISK:
-        return <LungRiskStep onNext={nextStep} animatedStyle={animatedStyle} />;
+        return (
+          <LungRiskStep
+            onNext={nextStep}
+            animatedStyle={animatedStyle}
+            userName={userName}
+          />
+        );
 
       case ONBOARDING_CONFIG.STEPS.OTHER_RISK:
         return (
-          <OtherRiskStep onNext={nextStep} animatedStyle={animatedStyle} />
+          <OtherRiskStep
+            onNext={nextStep}
+            animatedStyle={animatedStyle}
+            userName={userName}
+          />
         );
 
       case ONBOARDING_CONFIG.STEPS.DAILY_COST:
