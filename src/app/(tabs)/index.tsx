@@ -1,5 +1,5 @@
 import { BreathingTimer } from "@/components/BreathingTimer";
-import { StatsCard } from "@/components/StatsCard";
+import { StatsCard } from "@/components/home/ui/StatsCard";
 import { DEFAULT_BACKGROUND } from "@/constants/backgrounds";
 import { useQuitTimer } from "@/hooks/useQuitTimer";
 import { useSmokerData } from "@/hooks/useSmokerData";
