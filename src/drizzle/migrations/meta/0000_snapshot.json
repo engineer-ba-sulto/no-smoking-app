@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "b94ff034-74d0-4080-9164-8ff0cd120eeb",
+  "id": "5e5fbacd-e5ac-48bc-83fa-ee8cb5fc8993",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "user_profile": {
@@ -13,6 +13,13 @@
           "primaryKey": true,
           "notNull": true,
           "autoincrement": true
+        },
+        "user_name": {
+          "name": "user_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
         },
         "smoking_start_date": {
           "name": "smoking_start_date",

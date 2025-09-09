@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { userProfileRepository } from "../drizzle/repositories/user-profile-repository";
 
 export interface SmokerData {
-  name?: string;
+  userName: string;
   motivations: string[];
   cigarettesPerDay: number;
   pricePerPack: number;
@@ -28,7 +28,7 @@ export function useSmokerData() {
       if (profiles.length > 0) {
         const profile = profiles[0];
         const newSmokerData: SmokerData = {
-          name: "あなた",
+          userName: profile.userName,
           motivations: profile.motivations
             ? JSON.parse(profile.motivations)
             : [],
@@ -72,7 +72,8 @@ export function useSmokerData() {
         const profiles = await userProfileRepository.findAll();
 
         if (profiles.length > 0) {
-          await userProfileRepository.update(profiles[0].id, {
+					await userProfileRepository.update(profiles[0].id, {
+						userName: updatedData.userName,
             cigsPerDay: updatedData.cigarettesPerDay,
             pricePerPack: updatedData.pricePerPack,
             cigsPerPack: updatedData.cigarettesPerPack,
@@ -84,9 +85,10 @@ export function useSmokerData() {
           // データベース更新後にローカル状態を更新
           setSmokerData(updatedData);
         } else {
-          // プロフィールがない場合は新規作成
+					// プロフィールがない場合は新規作成
           if (updatedData.hasCompletedOnboarding) {
-            await userProfileRepository.create({
+						await userProfileRepository.create({
+							userName: updatedData.userName,
               smokingStartDate: updatedData.quitDate,
               cigsPerDay: updatedData.cigarettesPerDay,
               pricePerPack: updatedData.pricePerPack,
