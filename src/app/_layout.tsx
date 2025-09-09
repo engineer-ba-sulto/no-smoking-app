@@ -1,8 +1,7 @@
-import { useSmokerData } from "@/hooks/useSmokerData";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { db } from "../drizzle";
@@ -10,19 +9,57 @@ import migrations from "../drizzle/migrations";
 import "../global.css";
 
 export default function RootLayout() {
-  const { smokerData, loading } = useSmokerData();
   const { success, error } = useMigrations(db, migrations);
+  const [isDbInitialized, setIsDbInitialized] = useState(false);
+  const [dbInitError, setDbInitError] = useState<Error | null>(null);
+  const [hasUserData, setHasUserData] = useState<boolean | null>(null);
 
+  // DB初期化処理
   useEffect(() => {
-    if (!loading && smokerData) {
-      if (!smokerData.hasCompletedOnboarding) {
+    const initializeDatabase = async () => {
+      try {
+        console.log("Starting database initialization...");
+
+        // データベース接続の確認（テーブルが作成されているかチェック）
+        await db.query.userProfile.findFirst();
+
+        // ユーザーデータの存在確認
+        const profiles = await db.query.userProfile.findMany();
+        setHasUserData(profiles.length > 0);
+
+        setIsDbInitialized(true);
+        console.log("Database initialization completed - tables are ready");
+      } catch (err) {
+        console.error("Database initialization error:", err);
+        setDbInitError(
+          err instanceof Error ? err : new Error("Unknown initialization error")
+        );
+      }
+    };
+
+    // マイグレーションが成功した場合のみDB初期化を実行
+    if (success) {
+      initializeDatabase();
+    }
+  }, [success]);
+
+  // ルーティング処理
+  useEffect(() => {
+    // テーブルが作成され、データの存在確認が完了した場合のみルーティング
+    if (isDbInitialized && hasUserData !== null) {
+      if (hasUserData === false) {
+        // テーブルは作成されているがデータがない場合 → オンボーディング
+        console.log("No user data found, redirecting to onboarding");
         router.replace("/onboarding");
       } else {
+        // データが存在する場合 → メインアプリ
+        console.log("User data found, redirecting to main app");
         router.replace("/(tabs)");
       }
     }
-  }, [loading, smokerData]);
+  }, [isDbInitialized, hasUserData]);
 
+  // エラーハンドリング
   if (error) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center">
@@ -31,11 +68,20 @@ export default function RootLayout() {
     );
   }
 
-  if (!success) {
+  if (dbInitError) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center">
+        <Text>Database initialization error: {dbInitError.message}</Text>
+      </SafeAreaView>
+    );
+  }
+
+  // 初期化中の表示
+  if (!success || !isDbInitialized || hasUserData === null) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" />
-        <Text>Migration is in progress...</Text>
+        <Text>Initializing database...</Text>
       </SafeAreaView>
     );
   }

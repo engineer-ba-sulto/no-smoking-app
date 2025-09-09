@@ -28,7 +28,7 @@ import { DEFAULT_BACKGROUND } from "@/constants/backgrounds";
 import { ONBOARDING_CONFIG, OnboardingStep } from "@/constants/onboarding";
 import { useSmokerData } from "@/hooks/useSmokerData";
 import { router } from "expo-router";
-import { ArrowLeft } from "lucide-react-native";
+import { ArrowLeft, Settings } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { ImageBackground, TouchableOpacity, View } from "react-native";
 import {
@@ -291,6 +291,17 @@ export default function OnboardingScreen() {
           activeOpacity={0.7}
         >
           <ArrowLeft size={20} color="#374151" strokeWidth={2} />
+        </TouchableOpacity>
+      )}
+
+      {/* 開発用設定ショートカットボタン */}
+      {__DEV__ && (
+        <TouchableOpacity
+          onPress={() => router.push("/(tabs)/settings")}
+          className="absolute top-12 right-4 z-50 bg-white/90 rounded-full p-2 android:top-8 shadow-sm border-2 border-red-200"
+          activeOpacity={0.7}
+        >
+          <Settings size={20} color="#EF4444" strokeWidth={2} />
         </TouchableOpacity>
       )}
 
