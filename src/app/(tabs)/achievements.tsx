@@ -1,10 +1,10 @@
 import { AchievementBadge } from "@/components/AchievementBadge";
+import { AppHeader } from "@/components/AppHeader";
 import { HealthTimeline } from "@/components/HealthTimeline";
 import { ProgressChart } from "@/components/ProgressChart";
 import {
   CHART_PERIODS,
   CHART_TYPES,
-  TABS,
   TabType,
 } from "@/constants/achievements-ui";
 import { DEFAULT_BACKGROUND } from "@/constants/backgrounds";
@@ -99,37 +99,10 @@ export default function AchievementsScreen() {
     >
       {/* 半透明のオーバーレイ */}
       <View className="absolute inset-0 bg-white/80" />
-      {/* Header with gradient */}
-      <View
-        className="relative z-10 rounded-b-3xl overflow-hidden"
-        style={{
-          shadowColor: "#000",
-          shadowOffset: {
-            width: 0,
-            height: 4,
-          },
-          shadowOpacity: 0.1,
-          shadowRadius: 8,
-          elevation: 8,
-        }}
-      >
-        <BlurView
-          intensity={20}
-          tint="light"
-          style={{
-            paddingTop: 60,
-            paddingBottom: 10,
-            paddingHorizontal: 20,
-            backgroundColor: "rgba(16, 185, 129, 0.3)",
-          }}
-        >
-          <Text className="text-2xl font-bold text-emerald-800 text-center">
-            あなたの成果
-          </Text>
-        </BlurView>
-      </View>
+      {/* Header */}
+      <AppHeader title="あなたの成果" />
       {/* Tab navigation */}
-      // TODO グラフと健康は今後表示する = コメントを外す
+      {/* TODO グラフと健康は今後表示する = コメントを外す */}
       {/* <View
         className="mx-5 mt-4 relative z-10 rounded-xl overflow-hidden"
         style={{
@@ -180,7 +153,6 @@ export default function AchievementsScreen() {
           </View>
         </BlurView>
       </View> */}
-			
       {/* Content */}
       <ScrollView
         className="flex-1 px-5 pt-5 relative z-10"
