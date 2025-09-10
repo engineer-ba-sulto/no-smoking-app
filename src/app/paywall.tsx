@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { CheckCircle2, X } from "lucide-react-native";
 import { useState } from "react";
@@ -43,6 +44,10 @@ export default function PaywallScreen() {
   // 年間プランをデフォルトで選択状態にする
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(MOCK_PLANS[0]);
 
+  const handleClose = () => {
+    router.push("/one-time-offer");
+  };
+
   const PlanOption = ({
     plan,
     isSelected,
@@ -79,7 +84,7 @@ export default function PaywallScreen() {
 
       {/* 閉じるボタンを追加 */}
       <View style={styles.closeButton}>
-        <TouchableOpacity className="p-1">
+        <TouchableOpacity onPress={handleClose} className="p-1">
           <X size={24} className="text-gray-400" />
         </TouchableOpacity>
       </View>
