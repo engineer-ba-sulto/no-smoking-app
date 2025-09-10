@@ -1,10 +1,11 @@
 import { StatusBar } from "expo-status-bar";
-import { CheckCircle2 } from "lucide-react-native";
+import { CheckCircle2, X } from "lucide-react-native";
 import { useState } from "react";
 import {
   Platform,
   SafeAreaView,
   ScrollView,
+  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -75,6 +76,13 @@ export default function PaywallScreen() {
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <StatusBar style="dark" />
+
+      {/* 閉じるボタンを追加 */}
+      <View style={styles.closeButton}>
+        <TouchableOpacity className="p-1">
+          <X size={24} className="text-gray-400" />
+        </TouchableOpacity>
+      </View>
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 40 }}
@@ -131,3 +139,20 @@ export default function PaywallScreen() {
     </SafeAreaView>
   );
 }
+
+// StyleSheetを追加
+const styles = StyleSheet.create({
+  closeButton: {
+    position: "absolute",
+    top: Platform.OS === "android" ? 20 : 50,
+    left: 20,
+    zIndex: 10,
+    backgroundColor: "white",
+    borderRadius: 999,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+});
