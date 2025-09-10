@@ -4,13 +4,13 @@ import { CheckCircle2, X } from "lucide-react-native";
 import { useState } from "react";
 import {
   Platform,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const MOCK_FEATURES = [
   "全ての機能への無制限アクセス",
