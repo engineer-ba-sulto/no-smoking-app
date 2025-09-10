@@ -91,6 +91,7 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="paywall" />
+        <Stack.Screen name="one-time-offer" />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="settings/cigarettes-setting" />
         <Stack.Screen name="settings/price-setting" />
