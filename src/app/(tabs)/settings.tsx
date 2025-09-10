@@ -5,6 +5,7 @@ import { router, useFocusEffect } from "expo-router";
 import {
   ChevronRight,
   Cigarette,
+  CreditCard,
   Database,
   DollarSign,
   Play,
@@ -123,6 +124,11 @@ export default function SettingsScreen() {
               icon: <Play size={20} color="#EF4444" strokeWidth={2} />,
               label: "オンボーディングを確認",
               onPress: () => router.push("/onboarding"),
+            },
+            {
+              icon: <CreditCard size={20} color="#F59E0B" strokeWidth={2} />,
+              label: "ペイウォール画面",
+              onPress: () => router.push("/paywall"),
             },
             {
               icon: <Database size={20} color="#8B5CF6" strokeWidth={2} />,
