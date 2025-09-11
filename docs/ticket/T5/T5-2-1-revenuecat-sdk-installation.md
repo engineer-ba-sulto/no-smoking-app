@@ -22,31 +22,18 @@
 bun add react-native-purchases
 ```
 
-### 2. iOS の設定
-
-- インストール後、iOS の依存関係を更新します。
-
-```bash
-npx pod-install
-```
-
 ## 実装手順
 
 1.  **ライブラリをインストールする**
     ```bash
     bun add react-native-purchases
     ```
-2.  **iOS の依存関係を更新する**
-    ```bash
-    npx pod-install
-    ```
-3.  **`package.json` を確認する**
+2.  **`package.json` を確認する**
     - `dependencies` に `react-native-purchases` が追加されていることを確認します。
 
 ## 完了条件
 
 - [ ] `react-native-purchases` が `package.json` に追加されている。
-- [ ] `npx pod-install` がエラーなく完了する。
 - [ ] `bun.lock` が更新されている。
 
 ## 次のタスク

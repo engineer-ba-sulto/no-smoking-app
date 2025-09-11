@@ -30,7 +30,15 @@
   bun add expo-dev-client
   ```
 
-### 3. EAS プロジェクトの設定
+### 3. iOS の依存関係の更新
+
+- インストール後、iOS の依存関係を更新します。
+
+```bash
+npx pod-install
+```
+
+### 4. EAS プロジェクトの設定
 
 - `app.json` または `app.config.js` に `plugins` を追加して、`expo-dev-client` を有効化します。
 
@@ -71,13 +79,18 @@
     eas build --profile development --platform android
     ```
 
-5.  **開発ビルドをインストールして起動する**
+5.  **iOS の依存関係を更新する**
+    ```bash
+    npx pod-install
+    ```
+6.  **開発ビルドをインストールして起動する**
     - ビルド完了後、生成された QR コードやリンク経由でシミュレータ/実機にアプリをインストールします。
     - `bun start --dev-client` コマンドで開発サーバーを起動します。
 
 ## 完了条件
 
 - [ ] `expo-dev-client` が `package.json` に追加されている。
+- [ ] `npx pod-install` がエラーなく完了する。
 - [ ] `app.json` に `expo-dev-client` プラグインが追加されている。
 - [ ] `eas.json` がプロジェクトルートに作成されている。
 - [ ] 開発ビルドが正常に作成できる。
