@@ -1,3 +1,4 @@
+import { PurchaseProvider } from "@/contexts/PurchaseProvider";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -87,7 +88,7 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    <PurchaseProvider>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="paywall" />
@@ -105,6 +106,6 @@ export default function RootLayout() {
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
-    </>
+    </PurchaseProvider>
   );
 }
