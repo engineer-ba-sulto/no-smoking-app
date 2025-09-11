@@ -62,11 +62,14 @@ offerings.availablePackages.map((pkg) => (
 
 ## 実装手順
 
-1.  `paywall.tsx` で `usePurchases` フックをインポートして呼び出します。
-2.  `isLoading` の状態をハンドリングし、ローディング中は `ActivityIndicator` などを表示します。
-3.  `offerings` が存在しない場合のフォールバック UI (例: "利用可能なプランがありません") を実装します。
-4.  プラン選択エリアの `MOCK_PLANS.map(...)` を `offerings.availablePackages.map(...)` に置き換えます。
-5.  各プランの表示内容を、`PurchasesPackage` オブジェクトのプロパティ (`product.title`, `product.priceString` など) を使うように修正します。
+1.  `paywall.tsx` で `usePurchases` フックを呼び出し、`offerings`, `isLoading`, `error` を取得します。
+2.  `isLoading` が `true` の間は `<ActivityIndicator />` などを表示します。
+3.  `error` が存在する場合（ネットワークエラーなど）、ユーザーにエラーメッセージを表示する UI を実装します。
+4.  `offerings` がない、または `availablePackages` が空の場合のフォールバック UI (例: "利用可能なプランがありません") を実装します。
+5.  `useState` で管理する `selectedPackage` の**初期値を `null`** に設定します。
+6.  `useEffect` を使用し、`offerings` の読み込みが完了したら、**デフォルトで選択させたいプラン**（例：`offerings.availablePackages[0]`）を `selectedPackage` にセットするロジックを実装します。
+7.  プラン選択エリアの `MOCK_PLANS.map(...)` を `offerings.availablePackages.map(...)` に置き換えます。
+8.  各プランの表示内容を、`PurchasesPackage` オブジェクトのプロパティ (`product.title`, `product.priceString` など) を使うように修正します。
 
 ## 完了条件
 

@@ -75,10 +75,15 @@ const handleRestore = async () => {
 ## 実装手順
 
 1.  `paywall.tsx` で `usePurchases` から `purchasePackage` と `restorePermissions` を取得します。
-2.  購入処理中の状態を管理する `isPurchasing` のような `useState` を追加します。
-3.  購入ボタンの `onPress` で、選択されたパッケージを引数に `purchasePackage` を呼び出すハンドラを実装します。処理中は `isPurchasing` を `true` にします。
+2.  購入処理中の状態を管理する `isPurchasing` の `useState` を追加します。
+3.  購入ボタンの `onPress` で `handlePurchase` を呼び出します。この関数は以下を実装します。
+    - 処理開始時に `setIsPurchasing(true)` を設定します。
+    - `try...catch...finally` ブロックで `await purchasePackage(selectedPackage)` を呼び出します。
+    - `try` ブロック（成功時）: Toast 通知で「購入が完了しました！」などのメッセージを表示します。
+    - `catch` ブロック（失敗時）: エラーオブジェクトを判定し、「購入がキャンセルされました」または「エラーが発生しました」のように、原因に応じたメッセージを Toast 通知で表示します。
+    - `finally` ブロック: `setIsPurchasing(false)` を設定します。
 4.  購入ボタンに `disabled={isPurchasing}` を設定し、処理中の多重タップを防ぎます。
-5.  復元リンクの `onPress` で `restorePermissions` を呼び出すハンドラを実装します。
+5.  復元リンクの `onPress` で `restorePermissions` を呼び出す `handleRestore` を実装し、成功・失敗を Toast 通知でユーザーに伝えます。
 
 ## 完了条件
 
@@ -88,4 +93,4 @@ const handleRestore = async () => {
 
 ## 次のタスク
 
-- **T5-5-1**: オンボーディングからペイウォールへの遷移
+- **T5-4-3**: ペイウォール画面のレスポンシブ対応
