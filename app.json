@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.engineerbasulto.no-smoking-app",
+      "bundleIdentifier": "com.engineer-ba-sulto.no-smoking-app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
