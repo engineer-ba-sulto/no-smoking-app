@@ -5,6 +5,7 @@ import { CheckCircle2, X } from "lucide-react-native";
 import { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Platform,
   ScrollView,
   StyleSheet,
@@ -23,7 +24,8 @@ const MOCK_FEATURES = [
 ];
 
 export default function PaywallScreen() {
-  const { offerings, isLoading } = usePurchases();
+  const { offerings, isLoading, purchasePackage, restorePermissions } =
+    usePurchases();
   // 最初の利用可能なパッケージをデフォルトで選択状態にする
   const [selectedPackage, setSelectedPackage] =
     useState<PurchasesPackage | null>(null);
@@ -32,10 +34,27 @@ export default function PaywallScreen() {
     router.push("/one-time-offer");
   };
 
-  const handleSelectPackage = (pkg: PurchasesPackage) => {
-    // T5-4-2 で実装
-    console.log("Selected:", pkg.product.identifier);
-    setSelectedPackage(pkg);
+  const handlePurchase = async (pkg: PurchasesPackage) => {
+    try {
+      await purchasePackage(pkg);
+      // 購入成功後の画面遷移は T5-3-2 の PurchaseProvider 内で処理される
+    } catch (e) {
+      // purchasePackage 内でエラーアラートが表示されるため、ここでは何もしない
+    }
+  };
+
+  const handleRestore = async () => {
+    try {
+      const customerInfo = await restorePermissions();
+      if (customerInfo.entitlements.active["premium"]) {
+        Alert.alert("成功", "購入情報が復元されました。");
+        // 復元成功後も Provider 内のリスナーが検知して自動で画面遷移する
+      } else {
+        Alert.alert("情報", "有効な購入情報が見つかりませんでした。");
+      }
+    } catch (e) {
+      Alert.alert("エラー", "復元処理中にエラーが発生しました。");
+    }
   };
 
   // ローディング中の表示
@@ -148,7 +167,7 @@ export default function PaywallScreen() {
               key={pkg.identifier}
               pkg={pkg}
               isSelected={selectedPackage?.identifier === pkg.identifier}
-              onSelect={handleSelectPackage}
+              onSelect={handlePurchase}
             />
           ))}
         </View>
@@ -170,7 +189,9 @@ export default function PaywallScreen() {
         <View className="flex-row justify-center space-x-4 mt-3">
           <Text className="text-xs text-gray-500">利用規約</Text>
           <Text className="text-xs text-gray-500">プライバシーポリシー</Text>
-          <Text className="text-xs text-gray-500">復元</Text>
+          <TouchableOpacity onPress={handleRestore}>
+            <Text className="text-xs text-gray-500">復元</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
