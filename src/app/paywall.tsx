@@ -1,8 +1,10 @@
+import { usePurchases } from "@/contexts/PurchaseProvider";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { CheckCircle2, X } from "lucide-react-native";
 import { useState } from "react";
 import {
+  ActivityIndicator,
   Platform,
   ScrollView,
   StyleSheet,
@@ -10,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { PurchasesPackage } from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const MOCK_FEATURES = [
@@ -19,62 +22,91 @@ const MOCK_FEATURES = [
   "限定コンテンツの利用",
 ];
 
-const MOCK_PLANS = [
-  {
-    id: "annual",
-    name: "年間プラン",
-    price: "¥96/週",
-    description: "最初の7日間は無料",
-    badge: "88% OFF!",
-    isBest: true,
-  },
-  {
-    id: "weekly",
-    name: "週額プラン",
-    price: "¥800/週",
-    description: "いつでもキャンセル可能",
-    badge: null,
-    isBest: false,
-  },
-];
-
-type Plan = (typeof MOCK_PLANS)[0];
-
 export default function PaywallScreen() {
-  // 年間プランをデフォルトで選択状態にする
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(MOCK_PLANS[0]);
+  const { offerings, isLoading } = usePurchases();
+  // 最初の利用可能なパッケージをデフォルトで選択状態にする
+  const [selectedPackage, setSelectedPackage] =
+    useState<PurchasesPackage | null>(null);
 
   const handleClose = () => {
     router.push("/one-time-offer");
   };
 
-  const PlanOption = ({
-    plan,
+  const handleSelectPackage = (pkg: PurchasesPackage) => {
+    // T5-4-2 で実装
+    console.log("Selected:", pkg.product.identifier);
+    setSelectedPackage(pkg);
+  };
+
+  // ローディング中の表示
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-50">
+        <StatusBar style="dark" />
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#10b981" />
+          <Text className="text-gray-600 mt-4">プランを読み込み中...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // オファリングが利用できない場合の表示
+  if (!offerings) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-50">
+        <StatusBar style="dark" />
+        <View className="flex-1 justify-center items-center px-6">
+          <Text className="text-gray-600 text-center">
+            利用可能なプランがありません。
+          </Text>
+          <TouchableOpacity
+            onPress={handleClose}
+            className="mt-4 bg-emerald-500 px-6 py-3 rounded-xl"
+          >
+            <Text className="text-white font-bold">閉じる</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const PackageOption = ({
+    pkg,
     isSelected,
     onSelect,
   }: {
-    plan: Plan;
+    pkg: PurchasesPackage;
     isSelected: boolean;
-    onSelect: (plan: Plan) => void;
+    onSelect: (pkg: PurchasesPackage) => void;
   }) => (
     <TouchableOpacity
-      onPress={() => onSelect(plan)}
+      onPress={() => onSelect(pkg)}
       className={`border-2 rounded-xl p-4 mb-4 flex-row justify-between items-center relative ${
         isSelected
           ? "border-emerald-500 bg-emerald-50"
           : "border-gray-200 bg-white"
       }`}
     >
-      {plan.badge && (
+      {/* 年間プランの場合はバッジを表示 */}
+      {pkg.packageType === "ANNUAL" && (
         <View className="absolute -top-3 right-4 bg-emerald-500 px-3 py-1 rounded-full">
-          <Text className="text-white text-xs font-bold">{plan.badge}</Text>
+          <Text className="text-white text-xs font-bold">88% OFF!</Text>
         </View>
       )}
       <View>
-        <Text className="text-lg font-bold text-gray-800">{plan.name}</Text>
-        <Text className="text-sm text-gray-500">{plan.description}</Text>
+        <Text className="text-lg font-bold text-gray-800">
+          {pkg.product.title}
+        </Text>
+        <Text className="text-sm text-gray-500">
+          {pkg.packageType === "ANNUAL"
+            ? "最初の7日間は無料"
+            : "いつでもキャンセル可能"}
+        </Text>
       </View>
-      <Text className="text-lg font-bold text-gray-800">{plan.price}</Text>
+      <Text className="text-lg font-bold text-gray-800">
+        {pkg.product.priceString}
+      </Text>
     </TouchableOpacity>
   );
 
@@ -111,12 +143,12 @@ export default function PaywallScreen() {
         </View>
 
         <View className="px-6">
-          {MOCK_PLANS.map((plan) => (
-            <PlanOption
-              key={plan.id}
-              plan={plan}
-              isSelected={selectedPlan?.id === plan.id}
-              onSelect={setSelectedPlan}
+          {offerings.availablePackages.map((pkg) => (
+            <PackageOption
+              key={pkg.identifier}
+              pkg={pkg}
+              isSelected={selectedPackage?.identifier === pkg.identifier}
+              onSelect={handleSelectPackage}
             />
           ))}
         </View>
