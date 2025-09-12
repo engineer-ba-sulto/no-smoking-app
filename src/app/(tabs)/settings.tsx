@@ -1,4 +1,8 @@
 import { useSmokerData } from "@/hooks/useSmokerData";
+import {
+  getDevelopmentInfo,
+  shouldShowDeveloperFeatures,
+} from "@/utils/dev-environment";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
@@ -8,11 +12,19 @@ import {
   CreditCard,
   Database,
   DollarSign,
+  Info,
   Play,
   User,
 } from "lucide-react-native";
-import { useCallback } from "react";
-import { ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
+import { useCallback, useState } from "react";
+import {
+  Alert,
+  ScrollView,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 // 設定項目の型定義
 interface SettingItem {
@@ -31,6 +43,7 @@ interface SettingSection {
 
 export default function SettingsScreen() {
   const { smokerData, updateSmokerData, loadData } = useSmokerData();
+  const [showDevInfo, setShowDevInfo] = useState(false);
 
   // 画面がフォーカスされた時にデータを再読み込み
   useFocusEffect(
@@ -46,6 +59,16 @@ export default function SettingsScreen() {
     if (onPress) {
       onPress();
     }
+  };
+
+  // 開発環境情報を表示するハンドラー
+  const handleShowDevInfo = () => {
+    const devInfo = getDevelopmentInfo();
+    const infoText = Object.entries(devInfo)
+      .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+      .join("\n");
+
+    Alert.alert("開発環境情報", infoText, [{ text: "OK" }]);
   };
 
   const settingSections: SettingSection[] = [
@@ -115,7 +138,7 @@ export default function SettingsScreen() {
   ];
 
   // 開発環境でのみ表示するセクション
-  const devSections: SettingSection[] = __DEV__
+  const devSections: SettingSection[] = shouldShowDeveloperFeatures()
     ? [
         {
           title: "開発者向け",
@@ -134,6 +157,11 @@ export default function SettingsScreen() {
               icon: <Database size={20} color="#8B5CF6" strokeWidth={2} />,
               label: "データベース管理",
               onPress: () => router.push("/database-manager"),
+            },
+            {
+              icon: <Info size={20} color="#3B82F6" strokeWidth={2} />,
+              label: "開発環境情報",
+              onPress: handleShowDevInfo,
             },
           ],
         },
