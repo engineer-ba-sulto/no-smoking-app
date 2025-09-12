@@ -2,95 +2,97 @@
 
 ## 概要
 
-`src/app/paywall.tsx` の購入ボタンと復元リンクに、`PurchaseProvider` が提供する `purchasePackage` および `restorePermissions` 関数を接続します。
+`paywall.tsx` のプラン選択ボタンと購入復元ボタンに、`PurchaseProvider` から取得した `purchasePackage` および `restorePermissions` 関数を接続します。
 
 ## 目的
 
-- ユーザーが選択したプランの購入処理を実行できるようにする。
-- ユーザーが過去の購入情報を復元できるようにする。
-- 処理中に適切な UI フィードバックを提供する。
+- ユーザーがプランを選択してタップした際に、RevenueCat の購入フローを開始する。
+- 「購入を復元」をタップした際に、購入情報の復元処理を実行し、結果をユーザーにフィードバックする。
 
 ## 依存関係
 
 - **依存タスク**: `T5-4-1`
-- **担当領域**: UI 開発
+- **担当領域**: 課金ロジック
 
 ## 実装詳細
 
-- **ファイル**: `src/app/paywall.tsx`
+### 1. `usePurchases` から関数を取得
 
-### 1. `usePurchases` フックから関数を取得
+`paywall.tsx` の `usePurchases` フックから、`purchasePackage` と `restorePermissions` を追加で取得します。
 
 ```tsx
 // ...
-export default function PaywallScreen() {
-  const { purchasePackage, restorePermissions } = usePurchases();
-  const [selectedPackage, setSelectedPackage] = useState(null);
-  const [isPurchasing, setIsPurchasing] = useState(false);
-  // ...
-}
+const { offerings, isLoading, purchasePackage, restorePermissions } =
+  usePurchases();
+// ...
 ```
 
-### 2. 購入ボタンの `onPress` ハンドラ
+### 2. 購入処理の実装
+
+`T5-4-1` で作成した `handleSelectPackage` を `handlePurchase` にリネームし、`purchasePackage` を呼び出すように変更します。
 
 ```tsx
-const handlePurchase = async () => {
-  if (!selectedPackage) return;
+// ...
+import { Alert } from "react-native";
+import { PurchasesPackage } from "react-native-purchases";
 
-  setIsPurchasing(true);
+// ...
+
+const handlePurchase = async (pkg: PurchasesPackage) => {
   try {
-    await purchasePackage(selectedPackage);
-    // 成功後の画面遷移は T5-5-2 で実装
+    await purchasePackage(pkg);
+    // 購入成功後の画面遷移は T5-3-2 の PurchaseProvider 内で処理される
   } catch (e) {
-    // エラーハンドリング
-  } finally {
-    setIsPurchasing(false);
+    // purchasePackage 内でエラーアラートが表示されるため、ここでは何もしない
   }
 };
 
-// ... in JSX
-<TouchableOpacity onPress={handlePurchase} disabled={isPurchasing}>
-  {/* ... */}
-</TouchableOpacity>;
+// FlatList内の onPress を更新
+// onPress={() => handlePurchase(item)}
+// ...
 ```
 
-### 3. 復元リンクの `onPress` ハンドラ
+### 3. 復元処理の実装
+
+購入復元ボタンのための `handleRestore` 関数を実装し、`restorePermissions` を呼び出します。
+処理結果に応じてユーザーに `Alert` でフィードバックします。
 
 ```tsx
+// ...
+import { useRouter } from "expo-router";
+
+// ...
+const router = useRouter();
+
+// ...
+
 const handleRestore = async () => {
   try {
-    await restorePermissions();
-    alert("Permissions restored successfully!");
+    const customerInfo = await restorePermissions();
+    if (customerInfo.entitlements.active["premium"]) {
+      Alert.alert("成功", "購入情報が復元されました。");
+      // 復元成功後も Provider 内のリスナーが検知して自動で画面遷移する
+    } else {
+      Alert.alert("情報", "有効な購入情報が見つかりませんでした。");
+    }
   } catch (e) {
-    alert("Could not restore permissions.");
+    Alert.alert("エラー", "復元処理中にエラーが発生しました。");
   }
 };
 
-// ... in JSX
-<TouchableOpacity onPress={handleRestore}>
-  <Text>Restore Purchases</Text>
-</TouchableOpacity>;
+// ...
+
+// <TouchableOpacity onPress={handleRestore}>
+//   <Text style={styles.restoreText}>購入を復元</Text>
+// </TouchableOpacity>
 ```
-
-## 実装手順
-
-1.  `paywall.tsx` で `usePurchases` から `purchasePackage` と `restorePermissions` を取得します。
-2.  購入処理中の状態を管理する `isPurchasing` の `useState` を追加します。
-3.  購入ボタンの `onPress` で `handlePurchase` を呼び出します。この関数は以下を実装します。
-    - 処理開始時に `setIsPurchasing(true)` を設定します。
-    - `try...catch...finally` ブロックで `await purchasePackage(selectedPackage)` を呼び出します。
-    - `try` ブロック（成功時）: Toast 通知で「購入が完了しました！」などのメッセージを表示します。
-    - `catch` ブロック（失敗時）: エラーオブジェクトを判定し、「購入がキャンセルされました」または「エラーが発生しました」のように、原因に応じたメッセージを Toast 通知で表示します。
-    - `finally` ブロック: `setIsPurchasing(false)` を設定します。
-4.  購入ボタンに `disabled={isPurchasing}` を設定し、処理中の多重タップを防ぎます。
-5.  復元リンクの `onPress` で `restorePermissions` を呼び出す `handleRestore` を実装し、成功・失敗を Toast 通知でユーザーに伝えます。
 
 ## 完了条件
 
-- [ ] 購入ボタンを押すと、選択したプランの購入フローが開始される。
-- [ ] 購入処理中はボタンが無効化される。
-- [ ] 復元リンクを押すと、購入の復元処理が実行される。
+- [ ] いずれかのプランボタンをタップすると、OS の購入画面（App Store / Google Play）が表示される。
+- [ ] 「購入を復元」ボタンをタップすると、復元処理が実行され、成功・失敗に応じたアラートが表示される。
+- [ ] 購入または復元に成功すると、自動的にメイン画面 (`/(tabs)`) に遷移する。
 
 ## 次のタスク
 
-- **T5-4-3**: ペイウォール画面のレスポンシブ対応
+- **T5-5-0**: 画面遷移ロジックの更新

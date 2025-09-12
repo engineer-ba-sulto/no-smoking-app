@@ -16,60 +16,73 @@
 
 ## 実装詳細
 
-- **ファイル**: `src/app/paywall.tsx`
-
 ### 1. `usePurchases` フックの利用
+
+`paywall.tsx` 内で `usePurchases` フックを呼び出し、`offerings` と `isLoading` を取得します。
 
 ```tsx
 import { usePurchases } from "@/contexts/PurchaseProvider";
-import { ActivityIndicator, Text } from "react-native";
+import { ActivityIndicator, View, Text } from "react-native";
 
-export default function PaywallScreen() {
-  const { offerings, isLoading } = usePurchases();
+// ...
 
-  if (isLoading) {
-    return <ActivityIndicator />;
-  }
+const { offerings, isLoading } = usePurchases();
 
-  if (!offerings) {
-    return <Text>No products available.</Text>;
-  }
-  // ...
+if (isLoading) {
+  return (
+    <View style={styles.container}>
+      <ActivityIndicator size="large" color="#ffffff" />
+    </View>
+  );
 }
+
+if (!offerings) {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.errorText}>利用可能なプランがありません。</Text>
+    </View>
+  );
+}
+// ...
 ```
 
-### 2. プラン選択エリアの動的描画
+### 2. プラン表示エリアの動的描画
 
-- `MOCK_PLANS` を使用していた部分を、`offerings.availablePackages` を `map` するように変更します。
-- `PurchasesPackage` オブジェクトから価格 (`product.priceString`) やプラン名 (`product.title`) を表示します。
+`MOCK_PLANS` を使用していた部分を、`offerings.availablePackages` を元に動的に描画するように変更します。`FlatList` を使うと効率的です。
 
 ```tsx
-// 変更前
-// MOCK_PLANS.map(plan => ... )
+// ...
+import { FlatList, TouchableOpacity } from "react-native";
+import { PurchasesPackage } from "react-native-purchases";
 
-// 変更後
-offerings.availablePackages.map((pkg) => (
-  <TouchableOpacity
-    key={pkg.identifier}
-    onPress={() => setSelectedPackage(pkg)}
-    // ...
-  >
-    <Text>{pkg.product.title}</Text>
-    <Text>{pkg.product.priceString}</Text>
-  </TouchableOpacity>
-));
+// ...
+
+const handleSelectPackage = (pkg: PurchasesPackage) => {
+  // T5-4-2 で実装
+  console.log("Selected:", pkg.product.identifier);
+};
+
+// ...
+
+{
+  offerings && (
+    <FlatList
+      data={offerings.availablePackages}
+      renderItem={({ item }) => (
+        <TouchableOpacity
+          style={styles.optionButton}
+          onPress={() => handleSelectPackage(item)}
+        >
+          <Text style={styles.optionText}>
+            {item.product.title} - {item.product.priceString}
+          </Text>
+        </TouchableOpacity>
+      )}
+      keyExtractor={(item) => item.identifier}
+    />
+  );
+}
 ```
-
-## 実装手順
-
-1.  `paywall.tsx` で `usePurchases` フックを呼び出し、`offerings`, `isLoading`, `error` を取得します。
-2.  `isLoading` が `true` の間は `<ActivityIndicator />` などを表示します。
-3.  `error` が存在する場合（ネットワークエラーなど）、ユーザーにエラーメッセージを表示する UI を実装します。
-4.  `offerings` がない、または `availablePackages` が空の場合のフォールバック UI (例: "利用可能なプランがありません") を実装します。
-5.  `useState` で管理する `selectedPackage` の**初期値を `null`** に設定します。
-6.  `useEffect` を使用し、`offerings` の読み込みが完了したら、**デフォルトで選択させたいプラン**（例：`offerings.availablePackages[0]`）を `selectedPackage` にセットするロジックを実装します。
-7.  プラン選択エリアの `MOCK_PLANS.map(...)` を `offerings.availablePackages.map(...)` に置き換えます。
-8.  各プランの表示内容を、`PurchasesPackage` オブジェクトのプロパティ (`product.title`, `product.priceString` など) を使うように修正します。
 
 ## 完了条件
 
