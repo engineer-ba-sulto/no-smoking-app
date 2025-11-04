@@ -14,9 +14,11 @@ import {
   DollarSign,
   Info,
   Play,
+  ToggleLeft,
+  ToggleRight,
   User,
 } from "lucide-react-native";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -44,6 +46,7 @@ interface SettingSection {
 export default function SettingsScreen() {
   const { smokerData, updateSmokerData, loadData } = useSmokerData();
   const [showDevInfo, setShowDevInfo] = useState(false);
+  const [useSimplifiedOnboarding, setUseSimplifiedOnboarding] = useState(false);
 
   // 画面がフォーカスされた時にデータを再読み込み
   useFocusEffect(
@@ -62,14 +65,20 @@ export default function SettingsScreen() {
   };
 
   // 開発環境情報を表示するハンドラー
-  const handleShowDevInfo = () => {
+  const handleShowDevInfo = useCallback(() => {
     const devInfo = getDevelopmentInfo();
     const infoText = Object.entries(devInfo)
       .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
       .join("\n");
 
     Alert.alert("開発環境情報", infoText, [{ text: "OK" }]);
-  };
+  }, []);
+
+  // オンボーディング切り替えハンドラー
+  const handleOnboardingToggle = useCallback(() => {
+    setUseSimplifiedOnboarding((prev) => !prev);
+    Haptics.selectionAsync();
+  }, []);
 
   const settingSections: SettingSection[] = [
     {
@@ -138,35 +147,65 @@ export default function SettingsScreen() {
   ];
 
   // 開発環境でのみ表示するセクション
-  const devSections: SettingSection[] = shouldShowDeveloperFeatures()
-    ? [
-        {
-          title: "開発者向け",
-          items: [
-            {
-              icon: <Play size={20} color="#EF4444" strokeWidth={2} />,
-              label: "オンボーディングを確認",
-              onPress: () => router.push("/onboarding"),
-            },
-            {
-              icon: <CreditCard size={20} color="#F59E0B" strokeWidth={2} />,
-              label: "ペイウォール画面",
-              onPress: () => router.push("/paywall"),
-            },
-            {
-              icon: <Database size={20} color="#8B5CF6" strokeWidth={2} />,
-              label: "データベース管理",
-              onPress: () => router.push("/database-manager"),
-            },
-            {
-              icon: <Info size={20} color="#3B82F6" strokeWidth={2} />,
-              label: "開発環境情報",
-              onPress: handleShowDevInfo,
-            },
-          ],
-        },
-      ]
-    : [];
+  const devSections: SettingSection[] = useMemo(() => {
+    if (!shouldShowDeveloperFeatures()) return [];
+
+    return [
+      {
+        title: "開発者向け設定",
+        items: [
+          {
+            icon: useSimplifiedOnboarding ? (
+              <ToggleRight size={20} color="#10B981" strokeWidth={2} />
+            ) : (
+              <ToggleLeft size={20} color="#6B7280" strokeWidth={2} />
+            ),
+            label: useSimplifiedOnboarding
+              ? "省略版オンボーディングを使用(9ステップ)"
+              : "完全版オンボーディングを使用(23ステップ)",
+            toggle: true,
+            value: useSimplifiedOnboarding,
+            onToggle: handleOnboardingToggle,
+          },
+        ],
+      },
+      {
+        title: "開発者向け",
+        items: [
+          {
+            icon: <Play size={20} color="#10B981" strokeWidth={2} />,
+            label: "省略版オンボーディングを確認",
+            onPress: () => router.push("/onboarding-simplified"),
+          },
+          {
+            icon: <Play size={20} color="#EF4444" strokeWidth={2} />,
+            label: "完全版オンボーディングを確認",
+            onPress: () => router.push("/onboarding"),
+          },
+          {
+            icon: <CreditCard size={20} color="#F59E0B" strokeWidth={2} />,
+            label: "完全版ペイウォール画面",
+            onPress: () => router.push("/paywall?forceShow=true"),
+          },
+          {
+            icon: <CreditCard size={20} color="#10B981" strokeWidth={2} />,
+            label: "省略版ペイウォール画面",
+            onPress: () => router.push("/paywall-simplified?forceShow=true"),
+          },
+          {
+            icon: <Database size={20} color="#8B5CF6" strokeWidth={2} />,
+            label: "データベース管理",
+            onPress: () => router.push("/database-manager"),
+          },
+          {
+            icon: <Info size={20} color="#3B82F6" strokeWidth={2} />,
+            label: "開発環境情報",
+            onPress: handleShowDevInfo,
+          },
+        ],
+      },
+    ];
+  }, [useSimplifiedOnboarding]);
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -245,30 +284,59 @@ export default function SettingsScreen() {
               ▼ {section.title}
             </Text>
             <View className="bg-white rounded-xl shadow-sm border-2 border-red-100">
-              {section.items.map((item, itemIndex) => (
-                <TouchableOpacity
-                  key={itemIndex}
-                  className={`flex-row items-center justify-between px-4 py-4 ${
-                    itemIndex === section.items.length - 1
-                      ? ""
-                      : "border-b border-gray-100"
-                  }`}
-                  onPress={() => handleSettingPress(item.onPress)}
-                >
-                  <View className="flex-row items-center flex-1">
-                    {item.icon}
-                    <Text className="text-sm font-medium text-gray-800 ml-3">
-                      {item.label}
-                    </Text>
+              {section.items.map((item, itemIndex) =>
+                item.toggle ? (
+                  <View
+                    key={itemIndex}
+                    className={`flex-row items-center justify-between px-4 py-4 ${
+                      itemIndex === section.items.length - 1
+                        ? ""
+                        : "border-b border-gray-100"
+                    }`}
+                  >
+                    <View className="flex-row items-center flex-1">
+                      {item.icon}
+                      <Text className="text-sm font-medium text-gray-800 ml-3">
+                        {item.label}
+                      </Text>
+                    </View>
+                    <View className="flex-row items-center">
+                      <Text className="text-xs text-red-500 mr-2 font-medium">
+                        DEV
+                      </Text>
+                      <Switch
+                        value={item.value as boolean}
+                        onValueChange={item.onToggle}
+                        thumbColor="#ffffff"
+                        trackColor={{ false: "#d1d5db", true: "#10B981" }}
+                      />
+                    </View>
                   </View>
-                  <View className="flex-row items-center">
-                    <Text className="text-xs text-red-500 mr-2 font-medium">
-                      DEV
-                    </Text>
-                    <ChevronRight size={16} color="#9CA3AF" strokeWidth={2} />
-                  </View>
-                </TouchableOpacity>
-              ))}
+                ) : (
+                  <TouchableOpacity
+                    key={itemIndex}
+                    className={`flex-row items-center justify-between px-4 py-4 ${
+                      itemIndex === section.items.length - 1
+                        ? ""
+                        : "border-b border-gray-100"
+                    }`}
+                    onPress={() => handleSettingPress(item.onPress)}
+                  >
+                    <View className="flex-row items-center flex-1">
+                      {item.icon}
+                      <Text className="text-sm font-medium text-gray-800 ml-3">
+                        {item.label}
+                      </Text>
+                    </View>
+                    <View className="flex-row items-center">
+                      <Text className="text-xs text-red-500 mr-2 font-medium">
+                        DEV
+                      </Text>
+                      <ChevronRight size={16} color="#9CA3AF" strokeWidth={2} />
+                    </View>
+                  </TouchableOpacity>
+                )
+              )}
             </View>
           </View>
         ))}

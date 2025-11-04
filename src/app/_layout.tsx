@@ -1,4 +1,5 @@
 import { PurchaseProvider } from "@/contexts/PurchaseProvider";
+import { shouldShowDeveloperFeatures } from "@/utils/dev-environment";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -51,7 +52,12 @@ export default function RootLayout() {
       if (hasUserData === false) {
         // テーブルは作成されているがデータがない場合 → オンボーディング
         console.log("No user data found, redirecting to onboarding");
-        router.replace("/onboarding");
+        // 開発環境では省略版オンボーディングを使用
+        if (shouldShowDeveloperFeatures()) {
+          router.replace("/onboarding-simplified");
+        } else {
+          router.replace("/onboarding");
+        }
       } else {
         // データが存在する場合 → メインアプリ
         console.log("User data found, redirecting to main app");
@@ -91,7 +97,9 @@ export default function RootLayout() {
     <PurchaseProvider>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="onboarding" />
+        <Stack.Screen name="onboarding-simplified" />
         <Stack.Screen name="paywall" />
+        <Stack.Screen name="paywall-simplified" />
         <Stack.Screen
           name="one-time-offer"
           options={{
@@ -102,6 +110,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="settings/cigarettes-setting" />
         <Stack.Screen name="settings/price-setting" />
+        <Stack.Screen name="settings/name-setting" />
         <Stack.Screen name="database-manager" />
         <Stack.Screen name="+not-found" />
       </Stack>
