@@ -1,17 +1,17 @@
 // オンボーディング背景画像の設定
 export const ONBOARDING_BACKGROUNDS = {
   BG01: {
-    source: require("@/assets/images/bg01.png"),
+    source: require("../../assets/images/bg01.png"),
     name: "bg01",
     description: "推奨背景 - 落ち着いたトーン",
   },
   BG02: {
-    source: require("@/assets/images/bg02.png"),
+    source: require("../../assets/images/bg02.png"),
     name: "bg02",
     description: "代替背景2",
   },
   BG03: {
-    source: require("@/assets/images/bg03.png"),
+    source: require("../../assets/images/bg03.png"),
     name: "bg03",
     description: "代替背景3",
   },
