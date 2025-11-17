@@ -96,19 +96,11 @@ export default function RootLayout() {
   return (
     <PurchaseProvider>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="onboarding" />
-        <Stack.Screen name="onboarding-simplified" />
-        <Stack.Screen name="paywall" />
-        <Stack.Screen name="paywall-simplified" />
-        <Stack.Screen
-          name="one-time-offer"
-          options={{
-            presentation: "modal",
-            animation: "slide_from_bottom",
-          }}
-        />
+        <Stack.Screen name="(paywalls)" />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
+        <Stack.Screen name="onboarding-simplified" />
+        <Stack.Screen name="onboarding" />
       </Stack>
       <StatusBar style="auto" />
     </PurchaseProvider>
