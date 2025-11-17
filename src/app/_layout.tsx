@@ -108,10 +108,6 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="settings/cigarettes-setting" />
-        <Stack.Screen name="settings/price-setting" />
-        <Stack.Screen name="settings/name-setting" />
-        <Stack.Screen name="database-manager" />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />

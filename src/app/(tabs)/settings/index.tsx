@@ -195,7 +195,7 @@ export default function SettingsScreen() {
           {
             icon: <Database size={20} color="#8B5CF6" strokeWidth={2} />,
             label: "データベース管理",
-            onPress: () => router.push("/database-manager"),
+            onPress: () => router.push("/settings/database-manager"),
           },
           {
             icon: <Info size={20} color="#3B82F6" strokeWidth={2} />,
