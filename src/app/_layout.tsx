@@ -1,10 +1,10 @@
-import { PurchaseProvider } from "@/contexts/PurchaseProvider";
 import { shouldShowDeveloperFeatures } from "@/utils/dev-environment";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Text } from "react-native";
+import { ActivityIndicator, Platform, Text } from "react-native";
+import Purchases, { LOG_LEVEL } from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { db } from "../drizzle";
 import migrations from "../drizzle/migrations";
@@ -66,6 +66,28 @@ export default function RootLayout() {
     }
   }, [isDbInitialized, hasUserData]);
 
+  useEffect(() => {
+    Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
+
+    // Platform-specific API keys
+    const iosApiKey = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_IOS as string;
+    const androidApiKey = process.env
+      .EXPO_PUBLIC_REVENUECAT_API_KEY_ANDROID as string;
+
+    if (Platform.OS === "ios") {
+      Purchases.configure({ apiKey: iosApiKey });
+    } else if (Platform.OS === "android") {
+      Purchases.configure({ apiKey: androidApiKey });
+    }
+
+    getCustomerInfo();
+  }, []);
+
+  async function getCustomerInfo() {
+    const customerInfo = await Purchases.getCustomerInfo();
+    console.log("CustomerInfo:", JSON.stringify(customerInfo, null, 2));
+  }
+
   // エラーハンドリング
   if (error) {
     return (
@@ -94,15 +116,13 @@ export default function RootLayout() {
   }
 
   return (
-    <PurchaseProvider>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(paywalls)" />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-        <Stack.Screen name="onboarding-simplified" />
-        <Stack.Screen name="onboarding" />
-      </Stack>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(paywalls)" />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="+not-found" />
+      <Stack.Screen name="onboarding-simplified" />
+      <Stack.Screen name="onboarding" />
       <StatusBar style="auto" />
-    </PurchaseProvider>
+    </Stack>
   );
 }

@@ -187,11 +187,11 @@ export default function SettingsScreen() {
             label: "完全版ペイウォール画面",
             onPress: () => router.push("/paywall?forceShow=true"),
           },
-          {
-            icon: <CreditCard size={20} color="#10B981" strokeWidth={2} />,
-            label: "省略版ペイウォール画面",
-            onPress: () => router.push("/paywall-simplified?forceShow=true"),
-          },
+          // {
+          //   icon: <CreditCard size={20} color="#10B981" strokeWidth={2} />,
+          //   label: "省略版ペイウォール画面",
+          //   onPress: () => router.push("/paywall-simplified?forceShow=true"),
+          // },
           {
             icon: <Database size={20} color="#8B5CF6" strokeWidth={2} />,
             label: "データベース管理",

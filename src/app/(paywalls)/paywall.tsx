@@ -1,12 +1,9 @@
-import { usePurchases } from "@/contexts/PurchaseProvider";
-import { shouldShowDeveloperFeatures } from "@/utils/dev-environment";
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { CheckCircle2, X } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Platform,
   ScrollView,
   StyleSheet,
@@ -14,7 +11,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { PurchasesPackage } from "react-native-purchases";
+import Purchases, {
+  PurchasesOfferings,
+  PurchasesPackage,
+} from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const MOCK_FEATURES = [
@@ -25,62 +25,29 @@ const MOCK_FEATURES = [
 ];
 
 export default function PaywallScreen() {
-  const { offerings, isLoading, purchasePackage, restorePermissions } =
-    usePurchases();
-  const { forceShow } = useLocalSearchParams<{ forceShow?: string }>();
-
-  // 最初の利用可能なパッケージをデフォルトで選択状態にする
+  const [offerings, setOfferings] = useState<PurchasesOfferings | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedPackage, setSelectedPackage] =
     useState<PurchasesPackage | null>(null);
 
-  // ペイフォールの表示制御
-  // forceShowパラメータがある場合は強制的に表示
-  // それ以外はオンボーディングの種類に応じて制御
-  const showPaywall = forceShow === "true" || !shouldShowDeveloperFeatures();
+  useEffect(() => {
+    getOfferings();
+  }, []);
+
+  async function getOfferings() {
+    const offerings = await Purchases.getOfferings();
+    if (
+      offerings.current !== null &&
+      offerings.current.availablePackages.length !== 0
+    ) {
+      setOfferings(offerings);
+      setIsLoading(false);
+    }
+  }
 
   const handleClose = () => {
-    if (showPaywall) {
-      router.push("/one-time-offer");
-    } else {
-      // ペイフォールが非表示の場合は直接メイン画面に遷移
-      router.replace("/(tabs)");
-    }
+    router.push("/one-time-offer");
   };
-
-  const handlePurchase = async (pkg: PurchasesPackage) => {
-    try {
-      await purchasePackage(pkg);
-      // 購入成功後の画面遷移は T5-3-2 の PurchaseProvider 内で処理される
-    } catch (e) {
-      // purchasePackage 内でエラーアラートが表示されるため、ここでは何もしない
-    }
-  };
-
-  const handleRestore = async () => {
-    try {
-      const customerInfo = await restorePermissions();
-      if (customerInfo.entitlements.active["premium"]) {
-        Alert.alert("成功", "購入情報が復元されました。");
-        // 復元成功後も Provider 内のリスナーが検知して自動で画面遷移する
-      } else {
-        Alert.alert("情報", "有効な購入情報が見つかりませんでした。");
-      }
-    } catch (e) {
-      Alert.alert("エラー", "復元処理中にエラーが発生しました。");
-    }
-  };
-
-  // ペイフォールが非表示の場合は直接メイン画面に遷移
-  useEffect(() => {
-    if (!showPaywall) {
-      router.replace("/(tabs)");
-    }
-  }, [showPaywall]);
-
-  // ペイフォールが非表示の場合は何も表示しない
-  if (!showPaywall) {
-    return null;
-  }
 
   // ローディング中の表示
   if (isLoading) {
@@ -187,12 +154,14 @@ export default function PaywallScreen() {
         </View>
 
         <View className="px-6">
-          {offerings.availablePackages.map((pkg) => (
+          {offerings.current?.availablePackages.map((pkg) => (
             <PackageOption
               key={pkg.identifier}
               pkg={pkg}
               isSelected={selectedPackage?.identifier === pkg.identifier}
-              onSelect={handlePurchase}
+              onSelect={() => {
+                setSelectedPackage(pkg);
+              }}
             />
           ))}
         </View>
@@ -214,7 +183,7 @@ export default function PaywallScreen() {
         <View className="flex-row justify-center space-x-4 mt-3">
           <Text className="text-xs text-gray-500">利用規約</Text>
           <Text className="text-xs text-gray-500">プライバシーポリシー</Text>
-          <TouchableOpacity onPress={handleRestore}>
+          <TouchableOpacity onPress={() => {}}>
             <Text className="text-xs text-gray-500">復元</Text>
           </TouchableOpacity>
         </View>
