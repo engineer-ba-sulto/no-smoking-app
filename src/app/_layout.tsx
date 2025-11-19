@@ -70,9 +70,13 @@ export default function RootLayout() {
     Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
 
     // Platform-specific API keys
-    const iosApiKey = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_IOS as string;
-    const androidApiKey = process.env
-      .EXPO_PUBLIC_REVENUECAT_API_KEY_ANDROID as string;
+    // 開発環境ではテスト用APIキー、本番環境では本番用APIキーを使用
+    const iosApiKey = __DEV__
+      ? (process.env.EXPO_PUBLIC_RC_TEST_APIKEY_IOS as string)
+      : (process.env.EXPO_PUBLIC_RC_APIKEY_IOS as string);
+    const androidApiKey = __DEV__
+      ? (process.env.EXPO_PUBLIC_RC_TEST_APIKEY_ANDROID as string)
+      : (process.env.EXPO_PUBLIC_RC_APIKEY_ANDROID as string);
 
     if (Platform.OS === "ios") {
       Purchases.configure({ apiKey: iosApiKey });
