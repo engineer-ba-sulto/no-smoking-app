@@ -12,6 +12,8 @@ import {
   View,
 } from "react-native";
 import Purchases, {
+  PURCHASES_ERROR_CODE,
+  PurchasesError,
   PurchasesOfferings,
   PurchasesPackage,
 } from "react-native-purchases";
@@ -24,9 +26,13 @@ const MOCK_FEATURES = [
   "限定コンテンツの利用",
 ];
 
+// 表示するパッケージIDのリスト
+const PACKAGE_IDS = ["$rc_trial", "$rc_weekly"];
+
 export default function PaywallScreen() {
   const [offerings, setOfferings] = useState<PurchasesOfferings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPurchasing, setIsPurchasing] = useState(false);
   const [selectedPackage, setSelectedPackage] =
     useState<PurchasesPackage | null>(null);
 
@@ -41,12 +47,53 @@ export default function PaywallScreen() {
       offerings.current.availablePackages.length !== 0
     ) {
       setOfferings(offerings);
+      // 年額プランを初期選択状態にする
+      const annualPackage = offerings.current.availablePackages.find(
+        (pkg) => pkg.identifier === "$rc_trial"
+      );
+      if (annualPackage) {
+        setSelectedPackage(annualPackage);
+      }
       setIsLoading(false);
     }
   }
 
   const handleClose = () => {
     router.push("/one-time-offer");
+  };
+
+  const handlePurchase = async () => {
+    if (!selectedPackage) {
+      return;
+    }
+
+    setIsPurchasing(true);
+
+    try {
+      const { customerInfo } = await Purchases.purchasePackage(selectedPackage);
+
+      // 購入成功時の処理
+      console.log("購入成功:", customerInfo);
+
+      // 購入完了後、/に遷移
+      router.push("/");
+    } catch (error) {
+      const purchasesError = error as PurchasesError;
+
+      // ユーザーがキャンセルした場合はエラーを表示しない
+      if (
+        purchasesError.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR
+      ) {
+        console.log("購入がキャンセルされました");
+        return;
+      }
+
+      // その他のエラー
+      console.error("購入エラー:", purchasesError);
+      alert("購入処理中にエラーが発生しました。もう一度お試しください。");
+    } finally {
+      setIsPurchasing(false);
+    }
   };
 
   // ローディング中の表示
@@ -100,9 +147,9 @@ export default function PaywallScreen() {
       }`}
     >
       {/* 年間プランの場合はバッジを表示 */}
-      {pkg.packageType === "ANNUAL" && (
+      {pkg.identifier === "$rc_trial" && (
         <View className="absolute -top-3 right-4 bg-emerald-500 px-3 py-1 rounded-full">
-          <Text className="text-white text-xs font-bold">88% OFF!</Text>
+          <Text className="text-white text-xs font-bold">70% OFF!</Text>
         </View>
       )}
       <View>
@@ -110,7 +157,7 @@ export default function PaywallScreen() {
           {pkg.product.title}
         </Text>
         <Text className="text-sm text-gray-500">
-          {pkg.packageType === "ANNUAL"
+          {pkg.identifier === "$rc_trial"
             ? "最初の7日間は無料"
             : "いつでもキャンセル可能"}
         </Text>
@@ -154,16 +201,18 @@ export default function PaywallScreen() {
         </View>
 
         <View className="px-6">
-          {offerings.current?.availablePackages.map((pkg) => (
-            <PackageOption
-              key={pkg.identifier}
-              pkg={pkg}
-              isSelected={selectedPackage?.identifier === pkg.identifier}
-              onSelect={() => {
-                setSelectedPackage(pkg);
-              }}
-            />
-          ))}
+          {offerings.current?.availablePackages
+            .filter((pkg) => PACKAGE_IDS.includes(pkg.identifier))
+            .map((pkg) => (
+              <PackageOption
+                key={pkg.identifier}
+                pkg={pkg}
+                isSelected={selectedPackage?.identifier === pkg.identifier}
+                onSelect={() => {
+                  setSelectedPackage(pkg);
+                }}
+              />
+            ))}
         </View>
       </ScrollView>
 
@@ -172,10 +221,21 @@ export default function PaywallScreen() {
           Platform.OS === "ios" ? "pb-8" : "pb-4"
         }`}
       >
-        <TouchableOpacity className="bg-emerald-500 rounded-xl py-4 items-center shadow-lg shadow-emerald-200">
-          <Text className="text-white text-lg font-bold">
-            7日間の無料トライアルを開始
-          </Text>
+        <TouchableOpacity
+          className="bg-emerald-500 rounded-xl py-4 items-center shadow-lg shadow-emerald-200"
+          onPress={handlePurchase}
+          disabled={isPurchasing || !selectedPackage}
+          style={{ opacity: isPurchasing || !selectedPackage ? 0.6 : 1 }}
+        >
+          {isPurchasing ? (
+            <ActivityIndicator size="small" color="#ffffff" />
+          ) : (
+            <Text className="text-white text-lg font-bold">
+              {selectedPackage?.identifier === "$rc_trial"
+                ? "7日間の無料トライアルを開始"
+                : "開始"}
+            </Text>
+          )}
         </TouchableOpacity>
         <Text className="text-xs text-gray-500 text-center mt-3 font-medium">
           今すぐのお支払いは不要です。いつでもキャンセル可能です。
