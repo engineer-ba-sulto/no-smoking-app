@@ -67,8 +67,8 @@ export default function OneTimeOfferScreen() {
       // 購入成功時の処理
       console.log("購入成功:", customerInfo);
 
-      // 購入完了後、/に遷移
-      router.push("/");
+      // 購入完了後、メインアプリに遷移
+      router.replace("/(tabs)");
     } catch (error) {
       const purchasesError = error as PurchasesError;
 

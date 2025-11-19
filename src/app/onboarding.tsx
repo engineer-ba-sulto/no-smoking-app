@@ -31,6 +31,7 @@ import { router } from "expo-router";
 import { ArrowLeft, Settings } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { ImageBackground, TouchableOpacity, View } from "react-native";
+import Purchases from "react-native-purchases";
 import {
   Easing,
   useAnimatedStyle,
@@ -101,7 +102,26 @@ export default function OnboardingScreen() {
         hasCompletedOnboarding: true,
       });
 
-      router.replace("/(tabs)");
+      // customerInfoを取得してサブスクリプション状態をチェック
+      try {
+        const customerInfo = await Purchases.getCustomerInfo();
+        const hasActiveSubscription =
+          customerInfo.entitlements.active["premium"] !== undefined;
+
+        if (hasActiveSubscription) {
+          // 有効なサブスクリプションがある場合 → メインアプリに遷移
+          console.log("有効なサブスクリプションを検出、メインアプリに遷移");
+          router.replace("/(tabs)");
+        } else {
+          // サブスクリプションがない場合 → ペイウォールに遷移
+          console.log("サブスクリプションなし、ペイウォールに遷移");
+          router.replace("/(paywalls)/paywall");
+        }
+      } catch (purchaseError) {
+        console.error("CustomerInfo取得エラー:", purchaseError);
+        // エラーが発生した場合もペイウォールに遷移（安全側に倒す）
+        router.replace("/(paywalls)/paywall");
+      }
     } catch (error) {
       console.error("オンボーディング完了エラー:", error);
       // エラーハンドリング - ユーザーにエラーメッセージを表示
