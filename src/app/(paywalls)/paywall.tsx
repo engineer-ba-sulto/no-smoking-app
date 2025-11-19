@@ -32,7 +32,9 @@ const PACKAGE_IDS = ["$rc_trial", "$rc_weekly"];
 export default function PaywallScreen() {
   const [offerings, setOfferings] = useState<PurchasesOfferings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingMessage, setLoadingMessage] = useState<string>("");
   const [isPurchasing, setIsPurchasing] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
   const [selectedPackage, setSelectedPackage] =
     useState<PurchasesPackage | null>(null);
 
@@ -41,19 +43,49 @@ export default function PaywallScreen() {
   }, []);
 
   async function getOfferings() {
-    const offerings = await Purchases.getOfferings();
-    if (
-      offerings.current !== null &&
-      offerings.current.availablePackages.length !== 0
-    ) {
-      setOfferings(offerings);
-      // 年額プランを初期選択状態にする
-      const annualPackage = offerings.current.availablePackages.find(
-        (pkg) => pkg.identifier === "$rc_trial"
-      );
-      if (annualPackage) {
-        setSelectedPackage(annualPackage);
+    try {
+      setIsLoading(true);
+      setError(null);
+      setLoadingMessage("RevenueCatからプラン情報を取得中...");
+      const offerings = await Purchases.getOfferings();
+      setLoadingMessage("プランパッケージを読み込み中...");
+      if (
+        offerings.current !== null &&
+        offerings.current.availablePackages.length !== 0
+      ) {
+        setOfferings(offerings);
+        // 年額プランを初期選択状態にする
+        const annualPackage = offerings.current.availablePackages.find(
+          (pkg) => pkg.identifier === "$rc_trial"
+        );
+        if (annualPackage) {
+          setSelectedPackage(annualPackage);
+        }
+      } else {
+        setError(
+          new Error(
+            "利用可能なプランが見つかりませんでした。RevenueCatの設定を確認してください。"
+          )
+        );
       }
+    } catch (err) {
+      let errorDetails = "プランの読み込み中にエラーが発生しました。";
+
+      if (err instanceof Error) {
+        errorDetails = err.message;
+
+        // PurchasesErrorの場合は詳細情報を追加
+        if ("code" in err && "message" in err) {
+          const purchasesErr = err as unknown as PurchasesError;
+          errorDetails = `エラーコード: ${purchasesErr.code}\nメッセージ: ${
+            purchasesErr.message
+          }\n詳細: ${JSON.stringify(purchasesErr, null, 2)}`;
+        }
+      }
+
+      setError(new Error(errorDetails));
+      console.error("プラン取得エラー:", err);
+    } finally {
       setIsLoading(false);
     }
   }
@@ -101,9 +133,65 @@ export default function PaywallScreen() {
     return (
       <SafeAreaView className="flex-1 bg-gray-50">
         <StatusBar style="dark" />
-        <View className="flex-1 justify-center items-center">
+        <View className="flex-1 justify-center items-center px-6">
           <ActivityIndicator size="large" color="#10b981" />
-          <Text className="text-gray-600 mt-4">プランを読み込み中...</Text>
+          <Text className="text-gray-600 mt-4 text-center font-semibold">
+            プランを読み込み中...
+          </Text>
+          {loadingMessage && (
+            <Text className="text-gray-500 mt-2 text-sm text-center">
+              {loadingMessage}
+            </Text>
+          )}
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // エラー表示
+  if (error) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-50">
+        <StatusBar style="dark" />
+        <View className="flex-1 justify-center items-center px-6">
+          <Text className="text-red-500 text-xl font-bold mb-4 text-center">
+            エラーが発生しました
+          </Text>
+          <ScrollView className="w-full max-h-96">
+            <View className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+              <Text className="text-red-800 font-semibold mb-2">
+                エラーメッセージ:
+              </Text>
+              <Text className="text-red-700 text-sm mb-4">{error.message}</Text>
+              {error.stack && (
+                <>
+                  <Text className="text-red-800 font-semibold mb-2">
+                    スタックトレース:
+                  </Text>
+                  <Text className="text-red-600 text-xs font-mono">
+                    {error.stack}
+                  </Text>
+                </>
+              )}
+            </View>
+          </ScrollView>
+          <View className="flex-row space-x-4 mt-4">
+            <TouchableOpacity
+              onPress={() => {
+                setError(null);
+                getOfferings();
+              }}
+              className="bg-emerald-500 px-6 py-3 rounded-xl"
+            >
+              <Text className="text-white font-bold">再試行</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleClose}
+              className="bg-gray-500 px-6 py-3 rounded-xl"
+            >
+              <Text className="text-white font-bold">閉じる</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </SafeAreaView>
     );
