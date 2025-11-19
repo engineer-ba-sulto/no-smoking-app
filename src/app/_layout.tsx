@@ -1,4 +1,3 @@
-import { shouldShowDeveloperFeatures } from "@/utils/dev-environment";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -52,12 +51,7 @@ export default function RootLayout() {
       if (hasUserData === false) {
         // テーブルは作成されているがデータがない場合 → オンボーディング
         console.log("No user data found, redirecting to onboarding");
-        // 開発環境では省略版オンボーディングを使用
-        if (shouldShowDeveloperFeatures()) {
-          router.replace("/onboarding-simplified");
-        } else {
-          router.replace("/onboarding");
-        }
+        router.replace("/onboarding");
       } else {
         // データが存在する場合 → メインアプリ
         console.log("User data found, redirecting to main app");

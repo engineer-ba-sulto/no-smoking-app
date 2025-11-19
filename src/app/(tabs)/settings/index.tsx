@@ -14,8 +14,6 @@ import {
   DollarSign,
   Info,
   Play,
-  ToggleLeft,
-  ToggleRight,
   User,
 } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
@@ -152,46 +150,18 @@ export default function SettingsScreen() {
 
     return [
       {
-        title: "開発者向け設定",
-        items: [
-          {
-            icon: useSimplifiedOnboarding ? (
-              <ToggleRight size={20} color="#10B981" strokeWidth={2} />
-            ) : (
-              <ToggleLeft size={20} color="#6B7280" strokeWidth={2} />
-            ),
-            label: useSimplifiedOnboarding
-              ? "省略版オンボーディングを使用(9ステップ)"
-              : "完全版オンボーディングを使用(23ステップ)",
-            toggle: true,
-            value: useSimplifiedOnboarding,
-            onToggle: handleOnboardingToggle,
-          },
-        ],
-      },
-      {
         title: "開発者向け",
         items: [
           {
-            icon: <Play size={20} color="#10B981" strokeWidth={2} />,
-            label: "省略版オンボーディングを確認",
-            onPress: () => router.push("/onboarding-simplified"),
-          },
-          {
             icon: <Play size={20} color="#EF4444" strokeWidth={2} />,
-            label: "完全版オンボーディングを確認",
+            label: "オンボーディングを確認",
             onPress: () => router.push("/onboarding"),
           },
           {
             icon: <CreditCard size={20} color="#F59E0B" strokeWidth={2} />,
-            label: "完全版ペイウォール画面",
+            label: "ペイウォール画面",
             onPress: () => router.push("/paywall?forceShow=true"),
           },
-          // {
-          //   icon: <CreditCard size={20} color="#10B981" strokeWidth={2} />,
-          //   label: "省略版ペイウォール画面",
-          //   onPress: () => router.push("/paywall-simplified?forceShow=true"),
-          // },
           {
             icon: <Database size={20} color="#8B5CF6" strokeWidth={2} />,
             label: "データベース管理",
