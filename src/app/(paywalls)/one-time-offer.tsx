@@ -1,19 +1,125 @@
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { X } from "lucide-react-native";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import Purchases, {
+  PURCHASES_ERROR_CODE,
+  PurchasesError,
+  PurchasesPackage,
+} from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function OneTimeOfferScreen() {
+  const [annualPackage, setAnnualPackage] = useState<PurchasesPackage | null>(
+    null
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [isPurchasing, setIsPurchasing] = useState(false);
+
+  useEffect(() => {
+    getOfferings();
+  }, []);
+
+  async function getOfferings() {
+    try {
+      const offerings = await Purchases.getOfferings();
+      if (
+        offerings.current !== null &&
+        offerings.current.availablePackages.length !== 0
+      ) {
+        // $rc_annualパッケージのみを取得
+        const annual = offerings.current.availablePackages.find(
+          (pkg) => pkg.identifier === "$rc_annual"
+        );
+        if (annual) {
+          setAnnualPackage(annual);
+        }
+      }
+    } catch (error) {
+      console.error("オファリング取得エラー:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   const handleClose = () => {
     router.dismissAll();
   };
+
+  const handlePurchase = async () => {
+    if (!annualPackage) {
+      return;
+    }
+
+    setIsPurchasing(true);
+
+    try {
+      const { customerInfo } = await Purchases.purchasePackage(annualPackage);
+
+      // 購入成功時の処理
+      console.log("購入成功:", customerInfo);
+
+      // 購入完了後、/に遷移
+      router.push("/");
+    } catch (error) {
+      const purchasesError = error as PurchasesError;
+
+      // ユーザーがキャンセルした場合はエラーを表示しない
+      if (
+        purchasesError.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR
+      ) {
+        console.log("購入がキャンセルされました");
+        return;
+      }
+
+      // その他のエラー
+      console.error("購入エラー:", purchasesError);
+      alert("購入処理中にエラーが発生しました。もう一度お試しください。");
+    } finally {
+      setIsPurchasing(false);
+    }
+  };
+
+  // ローディング中の表示
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-50">
+        <StatusBar style="dark" />
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#10b981" />
+          <Text className="text-gray-600 mt-4">プランを読み込み中...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // パッケージが利用できない場合の表示
+  if (!annualPackage) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-50">
+        <StatusBar style="dark" />
+        <View className="flex-1 justify-center items-center px-6">
+          <Text className="text-gray-600 text-center">
+            利用可能なプランがありません。
+          </Text>
+          <TouchableOpacity
+            onPress={handleClose}
+            className="mt-4 bg-emerald-500 px-6 py-3 rounded-xl"
+          >
+            <Text className="text-white font-bold">閉じる</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50 text-white">
@@ -42,14 +148,15 @@ export default function OneTimeOfferScreen() {
 
         <View className="w-full bg-white rounded-2xl p-8 items-center border border-emerald-500 shadow-lg shadow-emerald-200">
           <Text className="text-gray-800 text-lg font-semibold">
-            年間プラン
+            {annualPackage.product.title}
           </Text>
           <View className="flex-row items-baseline my-4">
-            <Text className="text-gray-800 text-5xl font-extrabold">¥125</Text>
-            <Text className="text-gray-600 text-2xl font-semibold">/mo</Text>
+            <Text className="text-gray-800 text-5xl font-extrabold">
+              {annualPackage.product.priceString}
+            </Text>
           </View>
           <Text className="text-gray-600 font-medium mb-6">
-            年額 ¥1,500 の一括払い
+            {annualPackage.product.description || "年額プラン"}
           </Text>
 
           <View className="bg-emerald-500 px-4 py-1 rounded-full">
@@ -57,10 +164,19 @@ export default function OneTimeOfferScreen() {
           </View>
         </View>
 
-        <TouchableOpacity className="bg-emerald-500 w-full rounded-xl py-4 items-center mt-8 shadow-lg shadow-emerald-200">
-          <Text className="text-white text-lg font-bold">
-            最安値でゲットする
-          </Text>
+        <TouchableOpacity
+          className="bg-emerald-500 w-full rounded-xl py-4 items-center mt-8 shadow-lg shadow-emerald-200"
+          onPress={handlePurchase}
+          disabled={isPurchasing}
+          style={{ opacity: isPurchasing ? 0.6 : 1 }}
+        >
+          {isPurchasing ? (
+            <ActivityIndicator size="small" color="#ffffff" />
+          ) : (
+            <Text className="text-white text-lg font-bold">
+              最安値でゲットする
+            </Text>
+          )}
         </TouchableOpacity>
 
         <Text className="text-gray-500 text-xs text-center mt-4">
