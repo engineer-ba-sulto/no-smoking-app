@@ -1,7 +1,7 @@
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { CheckCircle2, X } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -20,6 +20,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import LinkButton from "../../components/LinkButton";
 import PurchaseButton from "../../components/PurchaseButton";
 import { purchasePackageSafely } from "../../lib/revenuecat";
+import { hasDismissedOneTimeOffer } from "../../utils/one-time-offer-storage";
 
 const MOCK_FEATURES = [
   "全ての機能への無制限アクセス",
@@ -39,10 +40,24 @@ export default function PaywallScreen() {
   const [error, setError] = useState<Error | null>(null);
   const [selectedPackage, setSelectedPackage] =
     useState<PurchasesPackage | null>(null);
+  const [hasDismissed, setHasDismissed] = useState(false);
 
   useEffect(() => {
     getOfferings();
+    checkDismissedStatus();
   }, []);
+
+  // 画面がフォーカスされた時に状態を再チェック
+  useFocusEffect(
+    useCallback(() => {
+      checkDismissedStatus();
+    }, [])
+  );
+
+  async function checkDismissedStatus() {
+    const dismissed = await hasDismissedOneTimeOffer();
+    setHasDismissed(dismissed);
+  }
 
   async function getOfferings() {
     try {
@@ -92,7 +107,13 @@ export default function PaywallScreen() {
     }
   }
 
-  const handleClose = () => {
+  const handleClose = async () => {
+    // 既に閉じたことがある場合は遷移しない
+    const hasDismissed = await hasDismissedOneTimeOffer();
+    if (hasDismissed) {
+      router.dismissAll();
+      return;
+    }
     router.push("/one-time-offer");
   };
 
@@ -255,12 +276,14 @@ export default function PaywallScreen() {
     <SafeAreaView className="flex-1 bg-gray-50">
       <StatusBar style="dark" />
 
-      {/* 閉じるボタンを追加 */}
-      <View style={styles.closeButton}>
-        <TouchableOpacity onPress={handleClose} className="p-1">
-          <X size={24} className="text-gray-400" />
-        </TouchableOpacity>
-      </View>
+      {/* 閉じるボタンを追加（ワンタイムオファーを閉じていない場合のみ表示） */}
+      {!hasDismissed && (
+        <View style={styles.closeButton}>
+          <TouchableOpacity onPress={handleClose} className="p-1">
+            <X size={24} className="text-gray-400" />
+          </TouchableOpacity>
+        </View>
+      )}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 40 }}
@@ -344,7 +367,7 @@ export default function PaywallScreen() {
 const styles = StyleSheet.create({
   closeButton: {
     position: "absolute",
-    top: Platform.OS === "android" ? 20 : 50,
+    top: Platform.OS === "android" ? 20 : 80,
     left: 20,
     zIndex: 10,
     backgroundColor: "white",

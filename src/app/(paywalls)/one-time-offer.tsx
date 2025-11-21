@@ -15,6 +15,7 @@ import {
 import Purchases, { PurchasesPackage } from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { purchasePackageSafely } from "../../lib/revenuecat";
+import { markOneTimeOfferAsDismissed } from "../../utils/one-time-offer-storage";
 
 export default function OneTimeOfferScreen() {
   const [annualPackage, setAnnualPackage] = useState<PurchasesPackage | null>(
@@ -49,7 +50,9 @@ export default function OneTimeOfferScreen() {
     }
   }
 
-  const handleClose = () => {
+  const handleClose = async () => {
+    // 閉じたことを記録
+    await markOneTimeOfferAsDismissed();
     router.dismissAll();
   };
 
