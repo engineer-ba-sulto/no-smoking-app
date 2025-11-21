@@ -17,6 +17,7 @@ import Purchases, {
   PurchasesPackage,
 } from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
+import LinkButton from "../../components/LinkButton";
 import { purchasePackageSafely } from "../../lib/revenuecat";
 
 const MOCK_FEATURES = [
@@ -318,15 +319,26 @@ export default function PaywallScreen() {
             </Text>
           )}
         </TouchableOpacity>
-        <Text className="text-xs text-gray-500 text-center mt-3 font-medium">
-          今すぐのお支払いは不要です。いつでもキャンセル可能です。
-        </Text>
-        <View className="flex-row justify-center space-x-4 mt-3">
-          <Text className="text-xs text-gray-500">利用規約</Text>
-          <Text className="text-xs text-gray-500">プライバシーポリシー</Text>
-          <TouchableOpacity onPress={() => {}}>
-            <Text className="text-xs text-gray-500">復元</Text>
-          </TouchableOpacity>
+
+        <View className="flex-row justify-center gap-4 mt-3">
+          <LinkButton
+            text="利用規約"
+            onPress={() => {
+              console.log("利用規約が押されました");
+            }}
+          />
+          <LinkButton
+            text="プライバシーポリシー"
+            onPress={() => {
+              console.log("プライバシーポリシーが押されました");
+            }}
+          />
+          <LinkButton
+            text="復元"
+            onPress={() => {
+              console.log("復元が押されました");
+            }}
+          />
         </View>
       </View>
     </SafeAreaView>

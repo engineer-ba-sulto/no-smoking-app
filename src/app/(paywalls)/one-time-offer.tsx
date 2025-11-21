@@ -1,3 +1,4 @@
+import LinkButton from "@/components/LinkButton";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { X } from "lucide-react-native";
@@ -169,17 +170,26 @@ export default function OneTimeOfferScreen() {
           )}
         </TouchableOpacity>
 
-        <Text className="text-gray-500 text-xs text-center mt-4">
-          縛りなし、いつでもキャンセル可能です。
-        </Text>
-      </View>
-
-      <View
-        className={`px-6 ${
-          Platform.OS === "ios" ? "pb-8" : "pb-4"
-        } items-center`}
-      >
-        <Text className="text-xs text-gray-500">史上最安値。</Text>
+        <View className="flex-row justify-center gap-4 mt-3">
+          <LinkButton
+            text="利用規約"
+            onPress={() => {
+              console.log("利用規約が押されました");
+            }}
+          />
+          <LinkButton
+            text="プライバシーポリシー"
+            onPress={() => {
+              console.log("プライバシーポリシーが押されました");
+            }}
+          />
+          <LinkButton
+            text="復元"
+            onPress={() => {
+              console.log("復元が押されました");
+            }}
+          />
+        </View>
       </View>
     </SafeAreaView>
   );
