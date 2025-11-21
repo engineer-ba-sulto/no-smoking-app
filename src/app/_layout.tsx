@@ -9,7 +9,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { db } from "../drizzle";
 import migrations from "../drizzle/migrations";
 import "../global.css";
-import { setupRevenueCatLogHandler } from "../lib/revenuecat";
+import { setupRevenueCatLogHandler } from "../utils/revenuecat";
 
 export default function RootLayout() {
   const { success, error } = useMigrations(db, migrations);

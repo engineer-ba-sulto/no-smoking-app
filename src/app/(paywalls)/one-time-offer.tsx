@@ -7,7 +7,7 @@ import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import Purchases, { PurchasesPackage } from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { purchasePackageSafely } from "../../lib/revenuecat";
+import { purchasePackageSafely } from "../../utils/revenuecat";
 import { markOneTimeOfferAsDismissed } from "../../utils/one-time-offer-storage";
 
 export default function OneTimeOfferScreen() {

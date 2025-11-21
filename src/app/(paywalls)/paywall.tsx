@@ -19,7 +19,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import CloseButton from "../../components/CloseButton";
 import LinkButton from "../../components/LinkButton";
 import PurchaseButton from "../../components/PurchaseButton";
-import { purchasePackageSafely } from "../../lib/revenuecat";
+import { purchasePackageSafely } from "../../utils/revenuecat";
 import { hasDismissedOneTimeOffer } from "../../utils/one-time-offer-storage";
 
 const MOCK_FEATURES = [
