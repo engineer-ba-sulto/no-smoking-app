@@ -10,12 +10,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import Purchases, {
-  PURCHASES_ERROR_CODE,
-  PurchasesError,
-  PurchasesPackage,
-} from "react-native-purchases";
+import Purchases, { PurchasesPackage } from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { purchasePackageSafely } from "../../lib/revenuecat";
 
 export default function OneTimeOfferScreen() {
   const [annualPackage, setAnnualPackage] = useState<PurchasesPackage | null>(
@@ -62,26 +59,19 @@ export default function OneTimeOfferScreen() {
     setIsPurchasing(true);
 
     try {
-      const { customerInfo } = await Purchases.purchasePackage(annualPackage);
+      const result = await purchasePackageSafely(annualPackage);
 
-      // 購入成功時の処理
-      console.log("購入成功:", customerInfo);
-
-      // 購入完了後、メインアプリに遷移
-      router.replace("/(tabs)");
-    } catch (error) {
-      const purchasesError = error as PurchasesError;
-
-      // ユーザーがキャンセルした場合はエラーを表示しない
-      if (
-        purchasesError.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR
-      ) {
-        console.log("購入がキャンセルされました");
+      // キャンセル時は何もしない
+      if (!result) {
         return;
       }
 
+      // 購入成功時の処理
+      console.log("購入成功:", result.customerInfo);
+      router.replace("/(tabs)");
+    } catch (error) {
       // その他のエラー
-      console.error("購入エラー:", purchasesError);
+      console.error("購入エラー:", error);
       alert("購入処理中にエラーが発生しました。もう一度お試しください。");
     } finally {
       setIsPurchasing(false);

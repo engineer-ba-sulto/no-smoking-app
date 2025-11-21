@@ -9,6 +9,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { db } from "../drizzle";
 import migrations from "../drizzle/migrations";
 import "../global.css";
+import { setupRevenueCatLogHandler } from "../lib/revenuecat";
 
 export default function RootLayout() {
   const { success, error } = useMigrations(db, migrations);
@@ -64,7 +65,9 @@ export default function RootLayout() {
   useEffect(() => {
     const initializeRevenueCat = async () => {
       try {
-        Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
+        // カスタムログハンドラーを設定
+        setupRevenueCatLogHandler();
+        Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.DEBUG : LOG_LEVEL.ERROR);
 
         // RevenueCat APIキーの取得
         // 開発環境ではprocess.envから直接取得

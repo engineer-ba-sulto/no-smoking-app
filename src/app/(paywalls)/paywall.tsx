@@ -12,12 +12,12 @@ import {
   View,
 } from "react-native";
 import Purchases, {
-  PURCHASES_ERROR_CODE,
   PurchasesError,
   PurchasesOfferings,
   PurchasesPackage,
 } from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { purchasePackageSafely } from "../../lib/revenuecat";
 
 const MOCK_FEATURES = [
   "全ての機能への無制限アクセス",
@@ -102,26 +102,19 @@ export default function PaywallScreen() {
     setIsPurchasing(true);
 
     try {
-      const { customerInfo } = await Purchases.purchasePackage(selectedPackage);
+      const result = await purchasePackageSafely(selectedPackage);
 
-      // 購入成功時の処理
-      console.log("購入成功:", customerInfo);
-
-      // 購入完了後、メインアプリに遷移
-      router.replace("/(tabs)");
-    } catch (error) {
-      const purchasesError = error as PurchasesError;
-
-      // ユーザーがキャンセルした場合はエラーを表示しない
-      if (
-        purchasesError.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR
-      ) {
-        console.log("購入がキャンセルされました");
+      // キャンセル時は何もしない
+      if (!result) {
         return;
       }
 
+      // 購入成功時の処理
+      console.log("購入成功:", result.customerInfo);
+      router.replace("/(tabs)");
+    } catch (error) {
       // その他のエラー
-      console.error("購入エラー:", purchasesError);
+      console.error("購入エラー:", error);
       alert("購入処理中にエラーが発生しました。もう一度お試しください。");
     } finally {
       setIsPurchasing(false);
