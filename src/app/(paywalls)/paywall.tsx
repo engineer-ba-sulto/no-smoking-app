@@ -1,12 +1,11 @@
 import { router, useFocusEffect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { CheckCircle2, X } from "lucide-react-native";
+import { CheckCircle2 } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -17,6 +16,7 @@ import Purchases, {
   PurchasesPackage,
 } from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
+import CloseButton from "../../components/CloseButton";
 import LinkButton from "../../components/LinkButton";
 import PurchaseButton from "../../components/PurchaseButton";
 import { purchasePackageSafely } from "../../lib/revenuecat";
@@ -277,13 +277,7 @@ export default function PaywallScreen() {
       <StatusBar style="dark" />
 
       {/* 閉じるボタンを追加（ワンタイムオファーを閉じていない場合のみ表示） */}
-      {!hasDismissed && (
-        <View style={styles.closeButton}>
-          <TouchableOpacity onPress={handleClose} className="p-1">
-            <X size={24} className="text-gray-400" />
-          </TouchableOpacity>
-        </View>
-      )}
+      {!hasDismissed && <CloseButton onPress={handleClose} topOffset={80} />}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 40 }}
@@ -362,20 +356,3 @@ export default function PaywallScreen() {
     </SafeAreaView>
   );
 }
-
-// StyleSheetを追加
-const styles = StyleSheet.create({
-  closeButton: {
-    position: "absolute",
-    top: Platform.OS === "android" ? 20 : 80,
-    left: 20,
-    zIndex: 10,
-    backgroundColor: "white",
-    borderRadius: 999,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-});

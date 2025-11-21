@@ -1,17 +1,10 @@
+import CloseButton from "@/components/CloseButton";
 import LinkButton from "@/components/LinkButton";
 import PurchaseButton from "@/components/PurchaseButton";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { X } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import Purchases, { PurchasesPackage } from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { purchasePackageSafely } from "../../lib/revenuecat";
@@ -121,11 +114,7 @@ export default function OneTimeOfferScreen() {
       <StatusBar style="dark" />
 
       {/* 閉じるボタン */}
-      <View style={styles.closeButton}>
-        <TouchableOpacity onPress={handleClose} className="p-1">
-          <X size={24} className="text-gray-400" />
-        </TouchableOpacity>
-      </View>
+      <CloseButton onPress={handleClose} />
 
       <View className="flex-1 justify-center items-center p-6">
         <View className="bg-emerald-500 px-4 py-1 rounded-full mb-4">
@@ -190,19 +179,3 @@ export default function OneTimeOfferScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  closeButton: {
-    position: "absolute",
-    top: Platform.OS === "android" ? 20 : 50,
-    left: 20,
-    zIndex: 10,
-    backgroundColor: "white",
-    borderRadius: 999,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-});
