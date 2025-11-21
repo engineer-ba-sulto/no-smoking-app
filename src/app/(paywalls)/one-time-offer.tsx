@@ -1,4 +1,5 @@
 import LinkButton from "@/components/LinkButton";
+import PurchaseButton from "@/components/PurchaseButton";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { X } from "lucide-react-native";
@@ -155,20 +156,12 @@ export default function OneTimeOfferScreen() {
           </View>
         </View>
 
-        <TouchableOpacity
-          className="bg-emerald-500 w-full rounded-xl py-4 items-center mt-8 shadow-lg shadow-emerald-200"
+        <PurchaseButton
           onPress={handlePurchase}
-          disabled={isPurchasing}
-          style={{ opacity: isPurchasing ? 0.6 : 1 }}
-        >
-          {isPurchasing ? (
-            <ActivityIndicator size="small" color="#ffffff" />
-          ) : (
-            <Text className="text-white text-lg font-bold">
-              最安値でゲットする
-            </Text>
-          )}
-        </TouchableOpacity>
+          isLoading={isPurchasing}
+          text="最安値でゲットする"
+          className="w-full mt-8"
+        />
 
         <View className="flex-row justify-center gap-4 mt-3">
           <LinkButton

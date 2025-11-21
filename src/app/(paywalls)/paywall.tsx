@@ -18,6 +18,7 @@ import Purchases, {
 } from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LinkButton from "../../components/LinkButton";
+import PurchaseButton from "../../components/PurchaseButton";
 import { purchasePackageSafely } from "../../lib/revenuecat";
 
 const MOCK_FEATURES = [
@@ -303,22 +304,16 @@ export default function PaywallScreen() {
           Platform.OS === "ios" ? "pb-8" : "pb-4"
         }`}
       >
-        <TouchableOpacity
-          className="bg-emerald-500 rounded-xl py-4 items-center shadow-lg shadow-emerald-200"
+        <PurchaseButton
           onPress={handlePurchase}
-          disabled={isPurchasing || !selectedPackage}
-          style={{ opacity: isPurchasing || !selectedPackage ? 0.6 : 1 }}
-        >
-          {isPurchasing ? (
-            <ActivityIndicator size="small" color="#ffffff" />
-          ) : (
-            <Text className="text-white text-lg font-bold">
-              {selectedPackage?.identifier === "$rc_trial"
-                ? "7日間の無料トライアルを開始"
-                : "開始"}
-            </Text>
-          )}
-        </TouchableOpacity>
+          isLoading={isPurchasing}
+          disabled={!selectedPackage}
+          text={
+            selectedPackage?.identifier === "$rc_trial"
+              ? "7日間の無料トライアルを開始"
+              : "開始"
+          }
+        />
 
         <View className="flex-row justify-center gap-4 mt-3">
           <LinkButton
