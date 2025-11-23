@@ -1,5 +1,6 @@
 import CloseButton from "@/components/CloseButton";
 import LinkButton from "@/components/LinkButton";
+import PackageCard from "@/components/PackageCard";
 import PurchaseButton from "@/components/PurchaseButton";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -130,23 +131,7 @@ export default function OneTimeOfferScreen() {
           このオファーは二度と表示されません。
         </Text>
 
-        <View className="w-full bg-white rounded-2xl p-8 items-center border border-emerald-500 shadow-lg shadow-emerald-200">
-          <Text className="text-gray-800 text-lg font-semibold">
-            {annualPackage.product.title}
-          </Text>
-          <View className="flex-row items-baseline my-4">
-            <Text className="text-gray-800 text-5xl font-extrabold">
-              {annualPackage.product.priceString}
-            </Text>
-          </View>
-          <Text className="text-gray-600 font-medium mb-6">
-            {annualPackage.product.description || "年額プラン"}
-          </Text>
-
-          <View className="bg-emerald-500 px-4 py-1 rounded-full">
-            <Text className="text-white font-bold text-sm">70%割引</Text>
-          </View>
-        </View>
+        <PackageCard pkg={annualPackage} isSelected={true} />
 
         <PurchaseButton
           onPress={handlePurchase}

@@ -18,9 +18,10 @@ import Purchases, {
 import { SafeAreaView } from "react-native-safe-area-context";
 import CloseButton from "../../components/CloseButton";
 import LinkButton from "../../components/LinkButton";
+import PackageCard from "../../components/PackageCard";
 import PurchaseButton from "../../components/PurchaseButton";
-import { purchasePackageSafely } from "../../utils/revenuecat";
 import { hasDismissedOneTimeOffer } from "../../utils/one-time-offer-storage";
+import { purchasePackageSafely } from "../../utils/revenuecat";
 
 const MOCK_FEATURES = [
   "全ての機能への無制限アクセス",
@@ -233,45 +234,6 @@ export default function PaywallScreen() {
     );
   }
 
-  const PackageOption = ({
-    pkg,
-    isSelected,
-    onSelect,
-  }: {
-    pkg: PurchasesPackage;
-    isSelected: boolean;
-    onSelect: (pkg: PurchasesPackage) => void;
-  }) => (
-    <TouchableOpacity
-      onPress={() => onSelect(pkg)}
-      className={`border-2 rounded-xl p-4 mb-4 flex-row justify-between items-center relative ${
-        isSelected
-          ? "border-emerald-500 bg-emerald-50"
-          : "border-gray-200 bg-white"
-      }`}
-    >
-      {/* 年間プランの場合はバッジを表示 */}
-      {pkg.identifier === "$rc_trial" && (
-        <View className="absolute -top-3 right-4 bg-emerald-500 px-3 py-1 rounded-full">
-          <Text className="text-white text-xs font-bold">70% OFF!</Text>
-        </View>
-      )}
-      <View>
-        <Text className="text-lg font-bold text-gray-800">
-          {pkg.product.title}
-        </Text>
-        <Text className="text-sm text-gray-500">
-          {pkg.identifier === "$rc_trial"
-            ? "最初の7日間は無料"
-            : "いつでもキャンセル可能"}
-        </Text>
-      </View>
-      <Text className="text-lg font-bold text-gray-800">
-        {pkg.product.priceString}
-      </Text>
-    </TouchableOpacity>
-  );
-
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <StatusBar style="dark" />
@@ -304,12 +266,12 @@ export default function PaywallScreen() {
           {offerings.current?.availablePackages
             .filter((pkg) => PACKAGE_IDS.includes(pkg.identifier))
             .map((pkg) => (
-              <PackageOption
+              <PackageCard
                 key={pkg.identifier}
                 pkg={pkg}
                 isSelected={selectedPackage?.identifier === pkg.identifier}
-                onSelect={() => {
-                  setSelectedPackage(pkg);
+                onSelect={(selectedPkg) => {
+                  setSelectedPackage(selectedPkg);
                 }}
               />
             ))}
