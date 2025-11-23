@@ -99,3 +99,28 @@ export async function purchasePackageSafely(
     throw error;
   }
 }
+
+/**
+ * 購入を復元し、エラーハンドリングを行う
+ * @returns 復元成功時はcustomerInfoを返す。エラー時は例外を投げる
+ */
+export async function restorePurchasesSafely(): Promise<{
+  customerInfo: any;
+  hasActiveEntitlements: boolean;
+}> {
+  try {
+    const customerInfo = await Purchases.restorePurchases();
+
+    // アクティブなエンタイトルメントがあるかチェック
+    const activeEntitlements = Object.keys(customerInfo.entitlements.active);
+    const hasActiveEntitlements = activeEntitlements.length > 0;
+
+    return {
+      customerInfo,
+      hasActiveEntitlements,
+    };
+  } catch (error) {
+    // エラーは再スロー（呼び出し側で処理）
+    throw error;
+  }
+}
