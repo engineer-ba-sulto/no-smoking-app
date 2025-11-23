@@ -1,6 +1,6 @@
 import CloseButton from "@/components/CloseButton";
-import LinkButton from "@/components/LinkButton";
 import PackageCard from "@/components/PackageCard";
+import PaywallFooterLinks from "@/components/PaywallFooterLinks";
 import PurchaseButton from "@/components/PurchaseButton";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -162,26 +162,7 @@ export default function OneTimeOfferScreen() {
           className="w-full mt-8"
         />
 
-        <View className="flex-row justify-center gap-4 mt-3">
-          <LinkButton
-            text="利用規約"
-            onPress={() => {
-              console.log("利用規約が押されました");
-            }}
-          />
-          <LinkButton
-            text="プライバシーポリシー"
-            onPress={() => {
-              console.log("プライバシーポリシーが押されました");
-            }}
-          />
-          <LinkButton
-            text="復元"
-            onPress={() => {
-              console.log("復元が押されました");
-            }}
-          />
-        </View>
+        <PaywallFooterLinks />
       </View>
     </SafeAreaView>
   );
