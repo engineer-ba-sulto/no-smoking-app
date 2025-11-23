@@ -1,6 +1,5 @@
 import { router, useFocusEffect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { CheckCircle2 } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -22,13 +21,6 @@ import PackageCard from "../../components/PackageCard";
 import PurchaseButton from "../../components/PurchaseButton";
 import { hasDismissedOneTimeOffer } from "../../utils/one-time-offer-storage";
 import { purchasePackageSafely } from "../../utils/revenuecat";
-
-const MOCK_FEATURES = [
-  "全ての機能への無制限アクセス",
-  "広告の非表示",
-  "専門家によるサポート",
-  "限定コンテンツの利用",
-];
 
 // 表示するパッケージIDのリスト
 const PACKAGE_IDS = ["$rc_trial", "$rc_weekly"];
@@ -249,17 +241,8 @@ export default function PaywallScreen() {
             全ての機能へ
           </Text>
           <Text className="text-3xl font-extrabold text-emerald-500">
-            無制限アクセス
+            プレミアムプラン
           </Text>
-        </View>
-
-        <View className="px-6 space-y-3 mb-8">
-          {MOCK_FEATURES.map((feature, index) => (
-            <View key={index} className="flex-row items-center">
-              <CheckCircle2 size={22} className="text-emerald-500" />
-              <Text className="text-base text-gray-700 ml-3">{feature}</Text>
-            </View>
-          ))}
         </View>
 
         <View className="px-6">
