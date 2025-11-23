@@ -5,11 +5,17 @@ import PurchaseButton from "@/components/PurchaseButton";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Purchases, { PurchasesPackage } from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { purchasePackageSafely } from "../../utils/revenuecat";
 import { markOneTimeOfferAsDismissed } from "../../utils/one-time-offer-storage";
+import { purchasePackageSafely } from "../../utils/revenuecat";
 
 export default function OneTimeOfferScreen() {
   const [annualPackage, setAnnualPackage] = useState<PurchasesPackage | null>(
@@ -44,10 +50,26 @@ export default function OneTimeOfferScreen() {
     }
   }
 
-  const handleClose = async () => {
-    // 閉じたことを記録
-    await markOneTimeOfferAsDismissed();
-    router.dismissAll();
+  const handleClose = () => {
+    Alert.alert(
+      "このオファーを閉じますか？",
+      "このオファーは一度閉じると、もう開くことができません。本当に閉じますか？",
+      [
+        {
+          text: "キャンセル",
+          style: "cancel",
+        },
+        {
+          text: "閉じる",
+          style: "destructive",
+          onPress: async () => {
+            // 閉じたことを記録
+            await markOneTimeOfferAsDismissed();
+            router.dismissAll();
+          },
+        },
+      ]
+    );
   };
 
   const handlePurchase = async () => {
