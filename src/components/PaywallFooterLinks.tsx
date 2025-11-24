@@ -1,5 +1,7 @@
+import * as Linking from "expo-linking";
 import React from "react";
 import { Alert, View } from "react-native";
+import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from "../constants/urls";
 import { restorePurchasesSafely } from "../utils/revenuecat";
 import LinkButton from "./LinkButton";
 
@@ -21,6 +23,58 @@ export default function PaywallFooterLinks({
   onPrivacyPress,
   onRestorePress,
 }: PaywallFooterLinksProps) {
+  /**
+   * 利用規約のURLを開く
+   */
+  const handleTermsPress = async () => {
+    // カスタムハンドラーが指定されている場合はそちらを使用
+    if (onTermsPress) {
+      onTermsPress();
+      return;
+    }
+
+    try {
+      const canOpen = await Linking.canOpenURL(TERMS_OF_SERVICE_URL);
+      if (canOpen) {
+        await Linking.openURL(TERMS_OF_SERVICE_URL);
+      } else {
+        Alert.alert("エラー", "利用規約ページを開くことができませんでした。");
+      }
+    } catch (error) {
+      console.error("利用規約リンクエラー:", error);
+      Alert.alert("エラー", "利用規約ページを開くことができませんでした。");
+    }
+  };
+
+  /**
+   * プライバシーポリシーのURLを開く
+   */
+  const handlePrivacyPress = async () => {
+    // カスタムハンドラーが指定されている場合はそちらを使用
+    if (onPrivacyPress) {
+      onPrivacyPress();
+      return;
+    }
+
+    try {
+      const canOpen = await Linking.canOpenURL(PRIVACY_POLICY_URL);
+      if (canOpen) {
+        await Linking.openURL(PRIVACY_POLICY_URL);
+      } else {
+        Alert.alert(
+          "エラー",
+          "プライバシーポリシーページを開くことができませんでした。"
+        );
+      }
+    } catch (error) {
+      console.error("プライバシーポリシーリンクエラー:", error);
+      Alert.alert(
+        "エラー",
+        "プライバシーポリシーページを開くことができませんでした。"
+      );
+    }
+  };
+
   /**
    * 購入を復元する
    */
@@ -57,24 +111,8 @@ export default function PaywallFooterLinks({
 
   return (
     <View className="flex-row justify-center gap-4 mt-3">
-      <LinkButton
-        text="利用規約"
-        onPress={
-          onTermsPress ||
-          (() => {
-            console.log("利用規約が押されました");
-          })
-        }
-      />
-      <LinkButton
-        text="プライバシーポリシー"
-        onPress={
-          onPrivacyPress ||
-          (() => {
-            console.log("プライバシーポリシーが押されました");
-          })
-        }
-      />
+      <LinkButton text="利用規約" onPress={handleTermsPress} />
+      <LinkButton text="プライバシーポリシー" onPress={handlePrivacyPress} />
       <LinkButton text="復元" onPress={handleRestore} />
     </View>
   );
