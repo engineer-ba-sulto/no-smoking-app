@@ -146,11 +146,8 @@ export default function OneTimeOfferScreen() {
           </Text>
         </View>
 
-        <Text className="text-gray-800 text-3xl font-extrabold text-center mb-2">
+        <Text className="text-gray-800 text-3xl font-extrabold text-center mb-8">
           お見逃しなく！
-        </Text>
-        <Text className="text-gray-600 text-center mb-8">
-          このオファーは二度と表示されません。
         </Text>
 
         <PackageCard pkg={annualPackage} isSelected={true} />

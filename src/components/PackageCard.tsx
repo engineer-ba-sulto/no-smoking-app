@@ -13,6 +13,36 @@ export default function PackageCard({
   isSelected = false,
   onSelect,
 }: PackageCardProps) {
+  /**
+   * パッケージ識別子に基づいて表示テキストを取得
+   */
+  const getPackageDescription = (identifier: string): string => {
+    switch (identifier) {
+      case "$rc_trial":
+        return "最初の7日間は無料";
+      case "$rc_annual":
+        return "このオファーは二度と表示されません。";
+      default:
+        return "いつでもキャンセル可能";
+    }
+  };
+
+  /**
+   * パッケージ識別子に基づいてバッジテキストを取得
+   */
+  const getPackageBadgeText = (identifier: string): string | null => {
+    switch (identifier) {
+      case "$rc_trial":
+        return "70%割引";
+      case "$rc_annual":
+        return "80%割引";
+      default:
+        return null;
+    }
+  };
+
+  const badgeText = getPackageBadgeText(pkg.identifier);
+
   const cardContent = (
     <View
       className={`w-full bg-white rounded-2xl p-8 mb-4 items-center border shadow-lg ${
@@ -30,15 +60,12 @@ export default function PackageCard({
         </Text>
       </View>
       <Text className="text-gray-600 font-medium mb-6">
-        {pkg.product.description ||
-          (pkg.identifier === "$rc_trial"
-            ? "最初の7日間は無料"
-            : "いつでもキャンセル可能")}
+        {getPackageDescription(pkg.identifier)}
       </Text>
-      {/* トライアルプランの場合はバッジを表示 */}
-      {pkg.identifier === "$rc_trial" && (
-        <View className="bg-emerald-500 px-4 py-1 rounded-full">
-          <Text className="text-white font-bold text-sm">70%割引</Text>
+      {/* パッケージに応じたバッジを表示 */}
+      {badgeText && (
+        <View className="bg-emerald-500 px-6 py-2 rounded-full shadow-lg border-b-2 border-emerald-600">
+          <Text className="text-white font-extrabold text-lg">{badgeText}</Text>
         </View>
       )}
     </View>
@@ -56,4 +83,3 @@ export default function PackageCard({
   // onSelectが提供されていない場合はViewのみ
   return cardContent;
 }
-
