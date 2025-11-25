@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "buildNumber": "4",
-      "icon": "./assets/images/icon.png",
+      "icon": "./assets/images/ios.icon",
       "supportsTablet": true,
       "bundleIdentifier": "com.engineer-ba-sulto.no-smoking-app",
       "infoPlist": {
