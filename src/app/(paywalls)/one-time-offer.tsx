@@ -1,21 +1,21 @@
+import CloseButton from "@/components/CloseButton";
+import PackageCard from "@/components/PackageCard";
+import PaywallFooterLinks from "@/components/PaywallFooterLinks";
+import PurchaseButton from "@/components/PurchaseButton";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { X } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Platform,
-  StyleSheet,
+  Alert,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import Purchases, {
-  PURCHASES_ERROR_CODE,
-  PurchasesError,
-  PurchasesPackage,
-} from "react-native-purchases";
+import Purchases, { PurchasesPackage } from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { markOneTimeOfferAsDismissed } from "../../utils/one-time-offer-storage";
+import { purchasePackageSafely } from "../../utils/revenuecat";
 
 export default function OneTimeOfferScreen() {
   const [annualPackage, setAnnualPackage] = useState<PurchasesPackage | null>(
@@ -51,7 +51,25 @@ export default function OneTimeOfferScreen() {
   }
 
   const handleClose = () => {
-    router.dismissAll();
+    Alert.alert(
+      "このオファーを閉じますか？",
+      "このオファーは一度閉じると、もう開くことができません。本当に閉じますか？",
+      [
+        {
+          text: "キャンセル",
+          style: "cancel",
+        },
+        {
+          text: "閉じる",
+          style: "destructive",
+          onPress: async () => {
+            // 閉じたことを記録
+            await markOneTimeOfferAsDismissed();
+            router.dismissAll();
+          },
+        },
+      ]
+    );
   };
 
   const handlePurchase = async () => {
@@ -62,26 +80,19 @@ export default function OneTimeOfferScreen() {
     setIsPurchasing(true);
 
     try {
-      const { customerInfo } = await Purchases.purchasePackage(annualPackage);
+      const result = await purchasePackageSafely(annualPackage);
 
-      // 購入成功時の処理
-      console.log("購入成功:", customerInfo);
-
-      // 購入完了後、メインアプリに遷移
-      router.replace("/(tabs)");
-    } catch (error) {
-      const purchasesError = error as PurchasesError;
-
-      // ユーザーがキャンセルした場合はエラーを表示しない
-      if (
-        purchasesError.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR
-      ) {
-        console.log("購入がキャンセルされました");
+      // キャンセル時は何もしない
+      if (!result) {
         return;
       }
 
+      // 購入成功時の処理
+      console.log("購入成功:", result.customerInfo);
+      router.replace("/(tabs)");
+    } catch (error) {
       // その他のエラー
-      console.error("購入エラー:", purchasesError);
+      console.error("購入エラー:", error);
       alert("購入処理中にエラーが発生しました。もう一度お試しください。");
     } finally {
       setIsPurchasing(false);
@@ -126,11 +137,7 @@ export default function OneTimeOfferScreen() {
       <StatusBar style="dark" />
 
       {/* 閉じるボタン */}
-      <View style={styles.closeButton}>
-        <TouchableOpacity onPress={handleClose} className="p-1">
-          <X size={24} className="text-gray-400" />
-        </TouchableOpacity>
-      </View>
+      <CloseButton onPress={handleClose} />
 
       <View className="flex-1 justify-center items-center p-6">
         <View className="bg-emerald-500 px-4 py-1 rounded-full mb-4">
@@ -139,74 +146,21 @@ export default function OneTimeOfferScreen() {
           </Text>
         </View>
 
-        <Text className="text-gray-800 text-3xl font-extrabold text-center mb-2">
+        <Text className="text-gray-800 text-3xl font-extrabold text-center mb-8">
           お見逃しなく！
         </Text>
-        <Text className="text-gray-600 text-center mb-8">
-          このオファーは二度と表示されません。
-        </Text>
 
-        <View className="w-full bg-white rounded-2xl p-8 items-center border border-emerald-500 shadow-lg shadow-emerald-200">
-          <Text className="text-gray-800 text-lg font-semibold">
-            {annualPackage.product.title}
-          </Text>
-          <View className="flex-row items-baseline my-4">
-            <Text className="text-gray-800 text-5xl font-extrabold">
-              {annualPackage.product.priceString}
-            </Text>
-          </View>
-          <Text className="text-gray-600 font-medium mb-6">
-            {annualPackage.product.description || "年額プラン"}
-          </Text>
+        <PackageCard pkg={annualPackage} isSelected={true} />
 
-          <View className="bg-emerald-500 px-4 py-1 rounded-full">
-            <Text className="text-white font-bold text-sm">70%割引</Text>
-          </View>
-        </View>
-
-        <TouchableOpacity
-          className="bg-emerald-500 w-full rounded-xl py-4 items-center mt-8 shadow-lg shadow-emerald-200"
+        <PurchaseButton
           onPress={handlePurchase}
-          disabled={isPurchasing}
-          style={{ opacity: isPurchasing ? 0.6 : 1 }}
-        >
-          {isPurchasing ? (
-            <ActivityIndicator size="small" color="#ffffff" />
-          ) : (
-            <Text className="text-white text-lg font-bold">
-              最安値でゲットする
-            </Text>
-          )}
-        </TouchableOpacity>
+          isLoading={isPurchasing}
+          text="最安値でゲットする"
+          className="w-full mt-8"
+        />
 
-        <Text className="text-gray-500 text-xs text-center mt-4">
-          縛りなし、いつでもキャンセル可能です。
-        </Text>
-      </View>
-
-      <View
-        className={`px-6 ${
-          Platform.OS === "ios" ? "pb-8" : "pb-4"
-        } items-center`}
-      >
-        <Text className="text-xs text-gray-500">史上最安値。</Text>
+        <PaywallFooterLinks />
       </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  closeButton: {
-    position: "absolute",
-    top: Platform.OS === "android" ? 20 : 50,
-    left: 20,
-    zIndex: 10,
-    backgroundColor: "white",
-    borderRadius: 999,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-});

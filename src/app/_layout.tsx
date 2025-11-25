@@ -1,4 +1,5 @@
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
+import Constants from "expo-constants";
 import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
@@ -8,6 +9,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { db } from "../drizzle";
 import migrations from "../drizzle/migrations";
 import "../global.css";
+import { setupRevenueCatLogHandler } from "../utils/revenuecat";
 
 export default function RootLayout() {
   const { success, error } = useMigrations(db, migrations);
@@ -61,24 +63,63 @@ export default function RootLayout() {
   }, [isDbInitialized, hasUserData]);
 
   useEffect(() => {
-    Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
+    const initializeRevenueCat = async () => {
+      try {
+        // カスタムログハンドラーを設定
+        setupRevenueCatLogHandler();
+        Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.DEBUG : LOG_LEVEL.ERROR);
 
-    // Platform-specific API keys
-    // 開発環境ではテスト用APIキー、本番環境では本番用APIキーを使用
-    const iosApiKey = __DEV__
-      ? (process.env.EXPO_PUBLIC_RC_TEST_APIKEY_IOS as string)
-      : (process.env.EXPO_PUBLIC_RC_APIKEY_IOS as string);
-    const androidApiKey = __DEV__
-      ? (process.env.EXPO_PUBLIC_RC_TEST_APIKEY_ANDROID as string)
-      : (process.env.EXPO_PUBLIC_RC_APIKEY_ANDROID as string);
+        // RevenueCat APIキーの取得
+        // 開発環境ではprocess.envから直接取得
+        // 本番環境ではConstants.expoConfig.extraから取得
+        const revenueCatConfig = Constants.expoConfig?.extra?.revenueCat as
+          | {
+              iosApiKey?: string;
+              androidApiKey?: string;
+            }
+          | undefined;
 
-    if (Platform.OS === "ios") {
-      Purchases.configure({ apiKey: iosApiKey });
-    } else if (Platform.OS === "android") {
-      Purchases.configure({ apiKey: androidApiKey });
-    }
+        // 開発環境ではテスト用APIキー、本番環境では本番用APIキーを使用
+        const iosApiKey = __DEV__
+          ? (process.env.EXPO_PUBLIC_RC_TEST_APIKEY_IOS as string)
+          : revenueCatConfig?.iosApiKey;
 
-    getCustomerInfo();
+        const androidApiKey = __DEV__
+          ? (process.env.EXPO_PUBLIC_RC_TEST_APIKEY_ANDROID as string)
+          : revenueCatConfig?.androidApiKey;
+
+        // APIキーの検証
+        if (!iosApiKey && Platform.OS === "ios") {
+          console.error(
+            "RevenueCat iOS API key is missing. Please check your environment variables."
+          );
+          return;
+        }
+
+        if (!androidApiKey && Platform.OS === "android") {
+          console.error(
+            "RevenueCat Android API key is missing. Please check your environment variables."
+          );
+          return;
+        }
+
+        // RevenueCatの初期化
+        if (Platform.OS === "ios" && iosApiKey) {
+          Purchases.configure({ apiKey: iosApiKey });
+          console.log("RevenueCat initialized for iOS");
+        } else if (Platform.OS === "android" && androidApiKey) {
+          Purchases.configure({ apiKey: androidApiKey });
+          console.log("RevenueCat initialized for Android");
+        }
+
+        // 顧客情報の取得
+        await getCustomerInfo();
+      } catch (error) {
+        console.error("RevenueCat initialization error:", error);
+      }
+    };
+
+    initializeRevenueCat();
   }, []);
 
   async function getCustomerInfo() {
