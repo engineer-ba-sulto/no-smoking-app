@@ -27,6 +27,7 @@ import {
 import { DEFAULT_BACKGROUND } from "@/constants/backgrounds";
 import { ONBOARDING_CONFIG, OnboardingStep } from "@/constants/onboarding";
 import { useSmokerData } from "@/hooks/useSmokerData";
+import { hasDismissedOneTimeOffer } from "@/utils/one-time-offer-storage";
 import { router } from "expo-router";
 import { ArrowLeft, Settings } from "lucide-react-native";
 import { useEffect, useState } from "react";
@@ -49,7 +50,6 @@ export default function OnboardingScreen() {
   const [cigarettesPerDay, setCigarettesPerDay] = useState(20);
   const [pricePerPack, setPricePerPack] = useState(600);
   const [cigarettesPerPack, setCigarettesPerPack] = useState(20);
-  const [startTime, setStartTime] = useState<"now" | "later">("now");
 
   const { updateSmokerData } = useSmokerData();
 
@@ -113,14 +113,40 @@ export default function OnboardingScreen() {
           console.log("有効なサブスクリプションを検出、メインアプリに遷移");
           router.replace("/(tabs)");
         } else {
-          // サブスクリプションがない場合 → ペイウォールに遷移
-          console.log("サブスクリプションなし、ペイウォールに遷移");
-          router.replace("/(paywalls)/paywall");
+          // サブスクリプションがない場合
+          // ワンタイムオファーの状態もチェック
+          const hasDismissed = await hasDismissedOneTimeOffer();
+
+          if (hasDismissed) {
+            // 既にワンタイムオファーを閉じた場合 → メインアプリに遷移
+            // （ガイドライン5.6: 2回目の購入プロンプトを防ぐ）
+            console.log(
+              "サブスクリプションなし、ワンタイムオファーは既に閉じられているためメインアプリに遷移"
+            );
+            router.replace("/(tabs)");
+          } else {
+            // ワンタイムオファーをまだ閉じていない場合 → ペイウォールに遷移
+            console.log("サブスクリプションなし、ペイウォールに遷移");
+            router.replace("/(paywalls)/paywall");
+          }
         }
       } catch (purchaseError) {
         console.error("CustomerInfo取得エラー:", purchaseError);
-        // エラーが発生した場合もペイウォールに遷移（安全側に倒す）
-        router.replace("/(paywalls)/paywall");
+        // エラーが発生した場合、ワンタイムオファーの状態をチェック
+        try {
+          const hasDismissed = await hasDismissedOneTimeOffer();
+          if (hasDismissed) {
+            // 既にワンタイムオファーを閉じた場合 → メインアプリに遷移
+            router.replace("/(tabs)");
+          } else {
+            // ワンタイムオファーをまだ閉じていない場合 → ペイウォールに遷移（安全側に倒す）
+            router.replace("/(paywalls)/paywall");
+          }
+        } catch (dismissedError) {
+          console.error("ワンタイムオファー状態取得エラー:", dismissedError);
+          // エラーが発生した場合もペイウォールに遷移（安全側に倒す）
+          router.replace("/(paywalls)/paywall");
+        }
       }
     } catch (error) {
       console.error("オンボーディング完了エラー:", error);

@@ -21,10 +21,23 @@ export default function PackageCard({
       case "$rc_trial":
         return "最初の7日間は無料";
       case "$rc_annual":
-        return "このオファーは二度と表示されません。";
+        return "お見逃しなく！";
       default:
         return "いつでもキャンセル可能";
     }
+  };
+
+  /**
+   * 無料トライアル後の自動課金情報を取得
+   */
+  const getTrialAutoRenewalInfo = (
+    identifier: string,
+    priceString: string
+  ): string | null => {
+    if (identifier === "$rc_trial") {
+      return `無料トライアル終了後、自動的に${priceString}が請求されます`;
+    }
+    return null;
   };
 
   /**
@@ -59,9 +72,17 @@ export default function PackageCard({
           {pkg.product.priceString}
         </Text>
       </View>
-      <Text className="text-gray-600 font-medium mb-6">
+      <Text className="text-gray-600 font-medium mb-2">
         {getPackageDescription(pkg.identifier)}
       </Text>
+      {/* 無料トライアル後の自動課金情報を表示 */}
+      {getTrialAutoRenewalInfo(pkg.identifier, pkg.product.priceString) && (
+        <View className="w-full mb-4">
+          <Text className="text-gray-700 text-sm font-semibold text-center">
+            {getTrialAutoRenewalInfo(pkg.identifier, pkg.product.priceString)}
+          </Text>
+        </View>
+      )}
       {/* パッケージに応じたバッジを表示 */}
       {badgeText && (
         <View className="bg-emerald-500 px-6 py-2 rounded-full shadow-lg border-b-2 border-emerald-600">

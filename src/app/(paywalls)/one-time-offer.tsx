@@ -16,6 +16,7 @@ import Purchases, { PurchasesPackage } from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { markOneTimeOfferAsDismissed } from "../../utils/one-time-offer-storage";
 import { purchasePackageSafely } from "../../utils/revenuecat";
+import { checkSubscriptionStatus } from "../../utils/subscription-check";
 
 export default function OneTimeOfferScreen() {
   const [annualPackage, setAnnualPackage] = useState<PurchasesPackage | null>(
@@ -25,7 +26,7 @@ export default function OneTimeOfferScreen() {
   const [isPurchasing, setIsPurchasing] = useState(false);
 
   useEffect(() => {
-    getOfferings();
+    checkSubscriptionStatus(getOfferings);
   }, []);
 
   async function getOfferings() {
@@ -89,6 +90,9 @@ export default function OneTimeOfferScreen() {
 
       // 購入成功時の処理
       console.log("購入成功:", result.customerInfo);
+      // 購入成功時も、ワンタイムオファーを閉じたことを記録
+      // （次回以降表示されないようにする）
+      await markOneTimeOfferAsDismissed();
       router.replace("/(tabs)");
     } catch (error) {
       // その他のエラー
@@ -141,22 +145,32 @@ export default function OneTimeOfferScreen() {
 
       <View className="flex-1 justify-center items-center p-6">
         <View className="bg-emerald-500 px-4 py-1 rounded-full mb-4">
-          <Text className="text-white font-bold text-sm">
+          <Text className="text-white font-bold text-lg">
             一度きりのオファー
           </Text>
         </View>
 
         <Text className="text-gray-800 text-3xl font-extrabold text-center mb-8">
-          お見逃しなく！
+          閉じたら、もう表示されません！
         </Text>
 
         <PackageCard pkg={annualPackage} isSelected={true} />
+
+        {/* 自動更新についての説明 */}
+        <View className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 w-full">
+          <Text className="text-blue-900 font-bold text-sm mb-2 text-center">
+            自動更新について
+          </Text>
+          <Text className="text-blue-800 text-xs text-center leading-5">
+            このサブスクリプションは自動的に更新されます。期間終了前にキャンセルしない限り、自動的に次の期間分の料金が請求されます。
+          </Text>
+        </View>
 
         <PurchaseButton
           onPress={handlePurchase}
           isLoading={isPurchasing}
           text="最安値でゲットする"
-          className="w-full mt-8"
+          className="w-full mt-4"
         />
 
         <PaywallFooterLinks />
