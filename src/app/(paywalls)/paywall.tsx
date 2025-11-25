@@ -267,6 +267,20 @@ export default function PaywallScreen() {
           Platform.OS === "ios" ? "pb-8" : "pb-4"
         }`}
       >
+        {/* 無料トライアル選択時の自動課金説明 */}
+        {selectedPackage?.identifier === "$rc_trial" && (
+          <View className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+            <Text className="text-blue-900 font-bold text-sm mb-2 text-center">
+              自動更新について
+            </Text>
+            <Text className="text-blue-800 text-xs text-center leading-5">
+              7日間の無料トライアル終了後、自動的に年額プラン（
+              {selectedPackage.product.priceString}
+              ）が請求されます。トライアル期間中にキャンセルしない限り、自動的に課金されます。
+            </Text>
+          </View>
+        )}
+
         <PurchaseButton
           onPress={handlePurchase}
           isLoading={isPurchasing}

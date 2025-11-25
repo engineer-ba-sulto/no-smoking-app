@@ -156,11 +156,21 @@ export default function OneTimeOfferScreen() {
 
         <PackageCard pkg={annualPackage} isSelected={true} />
 
+        {/* 自動更新についての説明 */}
+        <View className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 w-full">
+          <Text className="text-blue-900 font-bold text-sm mb-2 text-center">
+            自動更新について
+          </Text>
+          <Text className="text-blue-800 text-xs text-center leading-5">
+            このサブスクリプションは自動的に更新されます。期間終了前にキャンセルしない限り、自動的に次の期間分の料金が請求されます。
+          </Text>
+        </View>
+
         <PurchaseButton
           onPress={handlePurchase}
           isLoading={isPurchasing}
           text="最安値でゲットする"
-          className="w-full mt-8"
+          className="w-full mt-4"
         />
 
         <PaywallFooterLinks />
