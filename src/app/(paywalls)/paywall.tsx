@@ -21,6 +21,7 @@ import PaywallFooterLinks from "../../components/PaywallFooterLinks";
 import PurchaseButton from "../../components/PurchaseButton";
 import { hasDismissedOneTimeOffer } from "../../utils/one-time-offer-storage";
 import { purchasePackageSafely } from "../../utils/revenuecat";
+import { checkSubscriptionStatus } from "../../utils/subscription-check";
 
 // 表示するパッケージIDのリスト
 const PACKAGE_IDS = ["$rc_trial", "$rc_weekly"];
@@ -36,7 +37,7 @@ export default function PaywallScreen() {
   const [hasDismissed, setHasDismissed] = useState(false);
 
   useEffect(() => {
-    getOfferings();
+    checkSubscriptionStatus(getOfferings);
     checkDismissedStatus();
   }, []);
 

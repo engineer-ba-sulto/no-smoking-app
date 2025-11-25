@@ -16,6 +16,7 @@ import Purchases, { PurchasesPackage } from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { markOneTimeOfferAsDismissed } from "../../utils/one-time-offer-storage";
 import { purchasePackageSafely } from "../../utils/revenuecat";
+import { checkSubscriptionStatus } from "../../utils/subscription-check";
 
 export default function OneTimeOfferScreen() {
   const [annualPackage, setAnnualPackage] = useState<PurchasesPackage | null>(
@@ -25,7 +26,7 @@ export default function OneTimeOfferScreen() {
   const [isPurchasing, setIsPurchasing] = useState(false);
 
   useEffect(() => {
-    getOfferings();
+    checkSubscriptionStatus(getOfferings);
   }, []);
 
   async function getOfferings() {
@@ -89,6 +90,9 @@ export default function OneTimeOfferScreen() {
 
       // 購入成功時の処理
       console.log("購入成功:", result.customerInfo);
+      // 購入成功時も、ワンタイムオファーを閉じたことを記録
+      // （次回以降表示されないようにする）
+      await markOneTimeOfferAsDismissed();
       router.replace("/(tabs)");
     } catch (error) {
       // その他のエラー
@@ -141,13 +145,13 @@ export default function OneTimeOfferScreen() {
 
       <View className="flex-1 justify-center items-center p-6">
         <View className="bg-emerald-500 px-4 py-1 rounded-full mb-4">
-          <Text className="text-white font-bold text-sm">
+          <Text className="text-white font-bold text-lg">
             一度きりのオファー
           </Text>
         </View>
 
         <Text className="text-gray-800 text-3xl font-extrabold text-center mb-8">
-          お見逃しなく！
+          閉じたら、もう表示されません！
         </Text>
 
         <PackageCard pkg={annualPackage} isSelected={true} />

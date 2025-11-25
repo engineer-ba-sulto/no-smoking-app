@@ -21,7 +21,7 @@ export default function PackageCard({
       case "$rc_trial":
         return "最初の7日間は無料";
       case "$rc_annual":
-        return "このオファーは二度と表示されません。";
+        return "お見逃しなく！";
       default:
         return "いつでもキャンセル可能";
     }
