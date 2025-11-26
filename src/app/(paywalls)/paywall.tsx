@@ -1,6 +1,6 @@
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -18,7 +18,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import PackageCard from "../../components/PackageCard";
 import PaywallFooterLinks from "../../components/PaywallFooterLinks";
 import PurchaseButton from "../../components/PurchaseButton";
-import { hasDismissedOneTimeOffer } from "../../utils/one-time-offer-storage";
 import { purchasePackageSafely } from "../../utils/revenuecat";
 import { checkSubscriptionStatus } from "../../utils/subscription-check";
 
@@ -33,24 +32,9 @@ export default function PaywallScreen() {
   const [error, setError] = useState<Error | null>(null);
   const [selectedPackage, setSelectedPackage] =
     useState<PurchasesPackage | null>(null);
-  const [hasDismissed, setHasDismissed] = useState(false);
-
   useEffect(() => {
     checkSubscriptionStatus(getOfferings);
-    checkDismissedStatus();
   }, []);
-
-  // 画面がフォーカスされた時に状態を再チェック
-  useFocusEffect(
-    useCallback(() => {
-      checkDismissedStatus();
-    }, [])
-  );
-
-  async function checkDismissedStatus() {
-    const dismissed = await hasDismissedOneTimeOffer();
-    setHasDismissed(dismissed);
-  }
 
   async function getOfferings() {
     try {
@@ -100,14 +84,8 @@ export default function PaywallScreen() {
     }
   }
 
-  const handleClose = async () => {
-    // 既に閉じたことがある場合は遷移しない
-    const hasDismissed = await hasDismissedOneTimeOffer();
-    if (hasDismissed) {
-      router.dismissAll();
-      return;
-    }
-    router.push("/one-time-offer");
+  const handleClose = () => {
+    router.dismissAll();
   };
 
   const handlePurchase = async () => {
