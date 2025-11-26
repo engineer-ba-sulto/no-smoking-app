@@ -24,10 +24,12 @@ export async function testMigration() {
     const newProfile = await db
       .insert(userProfile)
       .values({
+        userName: "テストユーザー",
         smokingStartDate: new Date().toISOString(),
         cigsPerDay: 20,
         pricePerPack: 500.0,
         cigsPerPack: 20,
+        motivations: JSON.stringify(["健康のため", "節約のため"]),
       })
       .returning();
 

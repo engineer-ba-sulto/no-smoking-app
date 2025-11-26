@@ -28,10 +28,12 @@ export class DatabaseManager {
 
       // テストデータの挿入
       const testData = {
+        userName: "テストユーザー",
         smokingStartDate: new Date().toISOString(),
         cigsPerDay: 20,
         pricePerPack: 500,
         cigsPerPack: 20,
+        motivations: JSON.stringify(["健康のため", "節約のため"]),
       };
 
       const newProfile = await db
