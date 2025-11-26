@@ -21,23 +21,10 @@ export default function PackageCard({
       case "$rc_trial":
         return "最初の7日間は無料";
       case "$rc_annual":
-        return "お見逃しなく！";
+        return "即決価格！";
       default:
         return "いつでもキャンセル可能";
     }
-  };
-
-  /**
-   * 無料トライアル後の自動課金情報を取得
-   */
-  const getTrialAutoRenewalInfo = (
-    identifier: string,
-    priceString: string
-  ): string | null => {
-    if (identifier === "$rc_trial") {
-      return `無料トライアル終了後、自動的に${priceString}が請求されます`;
-    }
-    return null;
   };
 
   /**
@@ -67,26 +54,20 @@ export default function PackageCard({
       <Text className="text-gray-800 text-lg font-semibold">
         {pkg.product.title}
       </Text>
-      <View className="flex-row items-baseline my-4">
-        <Text className="text-gray-800 text-5xl font-extrabold">
+      <View className="flex-row items-baseline my-2">
+        <Text className="text-gray-800 text-4xl font-extrabold">
           {pkg.product.priceString}
         </Text>
       </View>
       <Text className="text-gray-600 font-medium mb-2">
         {getPackageDescription(pkg.identifier)}
       </Text>
-      {/* 無料トライアル後の自動課金情報を表示 */}
-      {getTrialAutoRenewalInfo(pkg.identifier, pkg.product.priceString) && (
-        <View className="w-full mb-4">
-          <Text className="text-gray-700 text-sm font-semibold text-center">
-            {getTrialAutoRenewalInfo(pkg.identifier, pkg.product.priceString)}
-          </Text>
-        </View>
-      )}
       {/* パッケージに応じたバッジを表示 */}
       {badgeText && (
-        <View className="bg-emerald-500 px-6 py-2 rounded-full shadow-lg border-b-2 border-emerald-600">
-          <Text className="text-white font-extrabold text-lg">{badgeText}</Text>
+        <View className="bg-emerald-500 px-5 py-1.5 rounded-full shadow-lg border-b-2 border-emerald-600">
+          <Text className="text-white font-extrabold text-base">
+            {badgeText}
+          </Text>
         </View>
       )}
     </View>

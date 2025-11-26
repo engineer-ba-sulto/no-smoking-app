@@ -3,7 +3,6 @@ import {
   getDevelopmentInfo,
   shouldShowDeveloperFeatures,
 } from "@/utils/dev-environment";
-import { resetOneTimeOfferState } from "@/utils/one-time-offer-storage";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
@@ -15,10 +14,9 @@ import {
   DollarSign,
   Info,
   Play,
-  RotateCcw,
   User,
 } from "lucide-react-native";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import {
   Alert,
   ScrollView,
@@ -44,9 +42,7 @@ interface SettingSection {
 }
 
 export default function SettingsScreen() {
-  const { smokerData, updateSmokerData, loadData } = useSmokerData();
-  const [showDevInfo, setShowDevInfo] = useState(false);
-  const [useSimplifiedOnboarding, setUseSimplifiedOnboarding] = useState(false);
+  const { smokerData, loadData } = useSmokerData();
 
   // 画面がフォーカスされた時にデータを再読み込み
   useFocusEffect(
@@ -72,35 +68,6 @@ export default function SettingsScreen() {
       .join("\n");
 
     Alert.alert("開発環境情報", infoText, [{ text: "OK" }]);
-  }, []);
-
-  // オンボーディング切り替えハンドラー
-  const handleOnboardingToggle = useCallback(() => {
-    setUseSimplifiedOnboarding((prev) => !prev);
-    Haptics.selectionAsync();
-  }, []);
-
-  // ワンタイムオファー制限解除ハンドラー
-  const handleResetOneTimeOffer = useCallback(() => {
-    Alert.alert("ワンタイムオファー制限を解除", "解除しますか？", [
-      {
-        text: "キャンセル",
-        style: "cancel",
-      },
-      {
-        text: "解除",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await resetOneTimeOfferState();
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          } catch (error) {
-            console.error("ワンタイムオファー制限解除エラー:", error);
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-          }
-        },
-      },
-    ]);
   }, []);
 
   const settingSections: SettingSection[] = [
@@ -188,11 +155,6 @@ export default function SettingsScreen() {
             onPress: () => router.push("/paywall?forceShow=true"),
           },
           {
-            icon: <RotateCcw size={20} color="#10B981" strokeWidth={2} />,
-            label: "ワンタイムオファー制限を解除",
-            onPress: handleResetOneTimeOffer,
-          },
-          {
             icon: <Database size={20} color="#8B5CF6" strokeWidth={2} />,
             label: "データベース管理",
             onPress: () => router.push("/settings/database-manager"),
@@ -205,7 +167,7 @@ export default function SettingsScreen() {
         ],
       },
     ];
-  }, [useSimplifiedOnboarding, handleResetOneTimeOffer]);
+  }, [handleShowDevInfo]);
 
   return (
     <View className="flex-1 bg-gray-50">

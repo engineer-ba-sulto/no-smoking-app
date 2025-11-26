@@ -1,6 +1,6 @@
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -15,16 +15,14 @@ import Purchases, {
   PurchasesPackage,
 } from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
-import CloseButton from "../../components/CloseButton";
 import PackageCard from "../../components/PackageCard";
 import PaywallFooterLinks from "../../components/PaywallFooterLinks";
 import PurchaseButton from "../../components/PurchaseButton";
-import { hasDismissedOneTimeOffer } from "../../utils/one-time-offer-storage";
 import { purchasePackageSafely } from "../../utils/revenuecat";
 import { checkSubscriptionStatus } from "../../utils/subscription-check";
 
-// 表示するパッケージIDのリスト
-const PACKAGE_IDS = ["$rc_trial", "$rc_weekly"];
+// 表示するパッケージIDのリスト（順序通りに表示される）
+const PACKAGE_IDS = ["$rc_annual", "$rc_trial", "$rc_weekly"];
 
 export default function PaywallScreen() {
   const [offerings, setOfferings] = useState<PurchasesOfferings | null>(null);
@@ -34,24 +32,9 @@ export default function PaywallScreen() {
   const [error, setError] = useState<Error | null>(null);
   const [selectedPackage, setSelectedPackage] =
     useState<PurchasesPackage | null>(null);
-  const [hasDismissed, setHasDismissed] = useState(false);
-
   useEffect(() => {
     checkSubscriptionStatus(getOfferings);
-    checkDismissedStatus();
   }, []);
-
-  // 画面がフォーカスされた時に状態を再チェック
-  useFocusEffect(
-    useCallback(() => {
-      checkDismissedStatus();
-    }, [])
-  );
-
-  async function checkDismissedStatus() {
-    const dismissed = await hasDismissedOneTimeOffer();
-    setHasDismissed(dismissed);
-  }
 
   async function getOfferings() {
     try {
@@ -65,9 +48,9 @@ export default function PaywallScreen() {
         offerings.current.availablePackages.length !== 0
       ) {
         setOfferings(offerings);
-        // 年額プランを初期選択状態にする
+        // 年額プラン（$rc_annual）を初期選択状態にする
         const annualPackage = offerings.current.availablePackages.find(
-          (pkg) => pkg.identifier === "$rc_trial"
+          (pkg) => pkg.identifier === "$rc_annual"
         );
         if (annualPackage) {
           setSelectedPackage(annualPackage);
@@ -101,14 +84,8 @@ export default function PaywallScreen() {
     }
   }
 
-  const handleClose = async () => {
-    // 既に閉じたことがある場合は遷移しない
-    const hasDismissed = await hasDismissedOneTimeOffer();
-    if (hasDismissed) {
-      router.dismissAll();
-      return;
-    }
-    router.push("/one-time-offer");
+  const handleClose = () => {
+    router.dismissAll();
   };
 
   const handlePurchase = async () => {
@@ -231,13 +208,11 @@ export default function PaywallScreen() {
     <SafeAreaView className="flex-1 bg-gray-50">
       <StatusBar style="dark" />
 
-      {/* 閉じるボタンを追加（ワンタイムオファーを閉じていない場合のみ表示） */}
-      {!hasDismissed && <CloseButton onPress={handleClose} topOffset={80} />}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 40 }}
       >
-        <View className="p-6 pt-16 items-center">
+        <View className="p-6 items-center">
           <Text className="text-3xl font-extrabold text-gray-800">
             全ての機能へ
           </Text>
@@ -267,7 +242,7 @@ export default function PaywallScreen() {
           Platform.OS === "ios" ? "pb-8" : "pb-4"
         }`}
       >
-        {/* 無料トライアル選択時の自動課金説明 */}
+        {/* 自動更新についての説明 */}
         {selectedPackage?.identifier === "$rc_trial" && (
           <View className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
             <Text className="text-blue-900 font-bold text-sm mb-2 text-center">
@@ -280,6 +255,26 @@ export default function PaywallScreen() {
             </Text>
           </View>
         )}
+        {selectedPackage?.identifier === "$rc_annual" && (
+          <View className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+            <Text className="text-blue-900 font-bold text-sm mb-2 text-center">
+              自動更新について
+            </Text>
+            <Text className="text-blue-800 text-xs text-center leading-5">
+              このサブスクリプションは自動的に更新されます。期間終了前にキャンセルしない限り、自動的に次の期間分の料金が請求されます。
+            </Text>
+          </View>
+        )}
+        {selectedPackage?.identifier === "$rc_weekly" && (
+          <View className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+            <Text className="text-blue-900 font-bold text-sm mb-2 text-center">
+              自動更新について
+            </Text>
+            <Text className="text-blue-800 text-xs text-center leading-5">
+              このサブスクリプションは自動的に更新されます。期間終了前にキャンセルしない限り、自動的に次の期間分の料金が請求されます。
+            </Text>
+          </View>
+        )}
 
         <PurchaseButton
           onPress={handlePurchase}
@@ -288,6 +283,8 @@ export default function PaywallScreen() {
           text={
             selectedPackage?.identifier === "$rc_trial"
               ? "7日間の無料トライアルを開始"
+              : selectedPackage?.identifier === "$rc_annual"
+              ? "最安値でゲットする"
               : "開始"
           }
         />
