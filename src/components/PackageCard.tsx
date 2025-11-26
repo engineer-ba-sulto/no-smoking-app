@@ -21,7 +21,7 @@ export default function PackageCard({
       case "$rc_trial":
         return "最初の7日間は無料";
       case "$rc_annual":
-        return "お見逃しなく！";
+        return "即決価格！";
       default:
         return "いつでもキャンセル可能";
     }
@@ -59,7 +59,7 @@ export default function PackageCard({
           {pkg.product.priceString}
         </Text>
       </View>
-      <Text className="text-gray-600 font-medium mb-1 text-sm">
+      <Text className="text-gray-600 font-medium mb-2">
         {getPackageDescription(pkg.identifier)}
       </Text>
       {/* パッケージに応じたバッジを表示 */}
