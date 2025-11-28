@@ -1,5 +1,7 @@
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import Constants from "expo-constants";
+import * as QuickActions from "expo-quick-actions";
+import { RouterAction, useQuickActionRouting } from "expo-quick-actions/router";
 import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
@@ -10,7 +12,6 @@ import { db } from "../drizzle";
 import migrations from "../drizzle/migrations";
 import "../global.css";
 import { setupRevenueCatLogHandler } from "../utils/revenuecat";
-
 export default function RootLayout() {
   const { success, error } = useMigrations(db, migrations);
   const [isDbInitialized, setIsDbInitialized] = useState(false);
@@ -126,6 +127,20 @@ export default function RootLayout() {
     const customerInfo = await Purchases.getCustomerInfo();
     console.log("CustomerInfo:", JSON.stringify(customerInfo, null, 2));
   }
+
+  useQuickActionRouting();
+
+  useEffect(() => {
+    // Now you can configure your quick actions to link places (including externally):
+    QuickActions.setItems<RouterAction>([
+      {
+        title: "New Chat",
+        icon: "compose",
+        id: "0",
+        params: { href: "/compose" },
+      },
+    ]);
+  }, []);
 
   // エラーハンドリング
   if (error) {
