@@ -4,6 +4,7 @@ import * as QuickActions from "expo-quick-actions";
 import { RouterAction, useQuickActionRouting } from "expo-quick-actions/router";
 import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import * as StoreReview from "expo-store-review";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Platform, Text } from "react-native";
 import Purchases, { LOG_LEVEL } from "react-native-purchases";
@@ -128,7 +129,23 @@ export default function RootLayout() {
     console.log("CustomerInfo:", JSON.stringify(customerInfo, null, 2));
   }
 
-  useQuickActionRouting();
+  // QuickActionがタップされたときにStoreReviewを呼び出す
+  const handleQuickAction = async (action: QuickActions.Action) => {
+    try {
+      // StoreReviewが利用可能かチェック
+      const isAvailable = await StoreReview.isAvailableAsync();
+      if (isAvailable) {
+        // アプリ内レビューをリクエスト
+        StoreReview.requestReview();
+      }
+    } catch (error) {
+      console.error("StoreReview error:", error);
+    }
+    // falseを返すことで、通常のルーティングを続行
+    return false;
+  };
+
+  useQuickActionRouting(handleQuickAction);
 
   useEffect(() => {
     // Now you can configure your quick actions to link places (including externally):
