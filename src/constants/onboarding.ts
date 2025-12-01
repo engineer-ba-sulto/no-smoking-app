@@ -1,0 +1,31 @@
+export const ONBOARDING_CONFIG = {
+  TOTAL_STEPS: 23,
+  STEPS: {
+    WELCOME: 1,
+    NAME: 2,
+    HEART_RISK: 3,
+    LUNG_RISK: 4,
+    OTHER_RISK: 5,
+    PASSIVE_SMOKING: 6,
+    APPEARANCE_IMPACT: 7,
+    SOCIAL_CONSTRAINTS: 8,
+    DAILY_COST: 9,
+    ANNUAL_COST: 10,
+    TEN_YEAR_COST: 11,
+    TWENTY_YEAR_COST: 12,
+    TRAVEL_EXPERIENCE: 13,
+    WANTS_HOBBIES: 14,
+    INVESTMENT: 15,
+    FAMILY: 16,
+    QUESTIONNAIRE: 17,
+    MOTIVATION: 18,
+    CIGARETTES: 19,
+    PRICE: 20,
+    PACK_SIZE: 21,
+    READY: 22,
+    SUPPORT: 23,
+  },
+} as const;
+
+export type OnboardingStep =
+  (typeof ONBOARDING_CONFIG.STEPS)[keyof typeof ONBOARDING_CONFIG.STEPS];

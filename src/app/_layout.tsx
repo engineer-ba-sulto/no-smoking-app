@@ -1,56 +1,206 @@
-import { useFrameworkReady } from "@/hooks/useFrameworkReady";
-import { useSmokerData } from "@/hooks/useSmokerData";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
+import Constants from "expo-constants";
+import * as QuickActions from "expo-quick-actions";
+import { RouterAction, useQuickActionRouting } from "expo-quick-actions/router";
 import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
-import { Text, View } from "react-native";
+import * as StoreReview from "expo-store-review";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Platform, Text } from "react-native";
+import Purchases, { LOG_LEVEL } from "react-native-purchases";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { db } from "../drizzle";
 import migrations from "../drizzle/migrations";
 import "../global.css";
-
+import { setupRevenueCatLogHandler } from "../utils/revenuecat";
 export default function RootLayout() {
-  useFrameworkReady();
-  const { smokerData, loading } = useSmokerData();
   const { success, error } = useMigrations(db, migrations);
+  const [isDbInitialized, setIsDbInitialized] = useState(false);
+  const [dbInitError, setDbInitError] = useState<Error | null>(null);
+  const [hasUserData, setHasUserData] = useState<boolean | null>(null);
 
+  // DB初期化処理
   useEffect(() => {
-    if (!loading && smokerData) {
-      if (!smokerData.hasCompletedOnboarding) {
+    const initializeDatabase = async () => {
+      try {
+        console.log("Starting database initialization...");
+
+        // データベース接続の確認（テーブルが作成されているかチェック）
+        await db.query.userProfile.findFirst();
+
+        // ユーザーデータの存在確認
+        const profiles = await db.query.userProfile.findMany();
+        setHasUserData(profiles.length > 0);
+
+        setIsDbInitialized(true);
+        console.log("Database initialization completed - tables are ready");
+      } catch (err) {
+        console.error("Database initialization error:", err);
+        setDbInitError(
+          err instanceof Error ? err : new Error("Unknown initialization error")
+        );
+      }
+    };
+
+    // マイグレーションが成功した場合のみDB初期化を実行
+    if (success) {
+      initializeDatabase();
+    }
+  }, [success]);
+
+  // ルーティング処理
+  useEffect(() => {
+    // テーブルが作成され、データの存在確認が完了した場合のみルーティング
+    if (isDbInitialized && hasUserData !== null) {
+      if (hasUserData === false) {
+        // テーブルは作成されているがデータがない場合 → オンボーディング
+        console.log("No user data found, redirecting to onboarding");
         router.replace("/onboarding");
       } else {
+        // データが存在する場合 → メインアプリ
+        console.log("User data found, redirecting to main app");
         router.replace("/(tabs)");
       }
     }
-  }, [loading, smokerData]);
+  }, [isDbInitialized, hasUserData]);
 
+  useEffect(() => {
+    const initializeRevenueCat = async () => {
+      try {
+        // カスタムログハンドラーを設定
+        setupRevenueCatLogHandler();
+        Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.DEBUG : LOG_LEVEL.ERROR);
+
+        // RevenueCat APIキーの取得
+        // 開発環境ではprocess.envから直接取得
+        // 本番環境ではConstants.expoConfig.extraから取得
+        const revenueCatConfig = Constants.expoConfig?.extra?.revenueCat as
+          | {
+              iosApiKey?: string;
+              androidApiKey?: string;
+            }
+          | undefined;
+
+        // 開発環境ではテスト用APIキー、本番環境では本番用APIキーを使用
+        const iosApiKey = __DEV__
+          ? (process.env.EXPO_PUBLIC_RC_TEST_APIKEY_IOS as string)
+          : revenueCatConfig?.iosApiKey;
+
+        const androidApiKey = __DEV__
+          ? (process.env.EXPO_PUBLIC_RC_TEST_APIKEY_ANDROID as string)
+          : revenueCatConfig?.androidApiKey;
+
+        // APIキーの検証
+        if (!iosApiKey && Platform.OS === "ios") {
+          console.error(
+            "RevenueCat iOS API key is missing. Please check your environment variables."
+          );
+          return;
+        }
+
+        if (!androidApiKey && Platform.OS === "android") {
+          console.error(
+            "RevenueCat Android API key is missing. Please check your environment variables."
+          );
+          return;
+        }
+
+        // RevenueCatの初期化
+        if (Platform.OS === "ios" && iosApiKey) {
+          Purchases.configure({ apiKey: iosApiKey });
+          console.log("RevenueCat initialized for iOS");
+        } else if (Platform.OS === "android" && androidApiKey) {
+          Purchases.configure({ apiKey: androidApiKey });
+          console.log("RevenueCat initialized for Android");
+        }
+
+        // 顧客情報の取得
+        await getCustomerInfo();
+      } catch (error) {
+        console.error("RevenueCat initialization error:", error);
+      }
+    };
+
+    initializeRevenueCat();
+  }, []);
+
+  async function getCustomerInfo() {
+    const customerInfo = await Purchases.getCustomerInfo();
+    console.log("CustomerInfo:", JSON.stringify(customerInfo, null, 2));
+  }
+
+  // QuickActionがタップされたときにStoreReviewを呼び出す
+  const handleQuickAction = async (action: QuickActions.Action) => {
+    // レビュー用のQuickAction（id: "review"）の場合
+    if (action.id === "review") {
+      try {
+        // StoreReviewが利用可能かチェック
+        const isAvailable = await StoreReview.isAvailableAsync();
+        if (isAvailable) {
+          // アプリ内レビューをリクエスト
+          StoreReview.requestReview();
+        } else {
+          console.log("StoreReview is not available");
+        }
+      } catch (error) {
+        console.error("StoreReview error:", error);
+      }
+      // trueを返すことで、ルーティングをスキップ（レビュー表示のみ）
+      return true;
+    }
+    // その他のアクションは通常のルーティングを続行
+    return false;
+  };
+
+  useQuickActionRouting(handleQuickAction);
+
+  useEffect(() => {
+    // レビュー用のQuickActionを設定
+    QuickActions.setItems<RouterAction>([
+      {
+        title: "レビューを書く",
+        icon: "favorite",
+        id: "review",
+        params: { href: "" }, // ルーティングは行わない（handleQuickActionで処理）
+      },
+    ]);
+  }, []);
+
+  // エラーハンドリング
   if (error) {
     return (
-      <View>
+      <SafeAreaView className="flex-1 items-center justify-center">
         <Text>Migration error: {error.message}</Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
-  if (!success) {
+  if (dbInitError) {
     return (
-      <View>
-        <Text>Migration is in progress...</Text>
-      </View>
+      <SafeAreaView className="flex-1 items-center justify-center">
+        <Text>Database initialization error: {dbInitError.message}</Text>
+      </SafeAreaView>
+    );
+  }
+
+  // 初期化中の表示
+  if (!success || !isDbInitialized || hasUserData === null) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" />
+        <Text>Initializing database...</Text>
+      </SafeAreaView>
     );
   }
 
   return (
-    <>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="onboarding" />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="settings/cigarettes-setting" />
-        <Stack.Screen name="settings/price-setting" />
-        <Stack.Screen name="database-manager" />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(paywalls)" />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="+not-found" />
+      <Stack.Screen name="onboarding-simplified" />
+      <Stack.Screen name="onboarding" />
       <StatusBar style="auto" />
-    </>
+    </Stack>
   );
 }

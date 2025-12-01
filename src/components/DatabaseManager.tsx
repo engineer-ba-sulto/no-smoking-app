@@ -1,5 +1,7 @@
+import { db } from "@/drizzle";
 import { MainSeeder } from "@/drizzle/seeders/main-seeder";
 import {
+  initialStartupPatterns,
   TestDataPattern,
   testDataPatterns,
 } from "@/drizzle/seeders/test-data-sets";
@@ -7,6 +9,8 @@ import {
   AlertTriangle,
   Database,
   Play,
+  RefreshCw,
+  Smartphone,
   Trash2,
   Trophy,
 } from "lucide-react-native";
@@ -60,6 +64,29 @@ export const DatabaseManagerComponent = ({
     }
   };
 
+  const runMigrations = async () => {
+    try {
+      // テーブル作成（存在しない場合）
+      await db.run(`
+        CREATE TABLE IF NOT EXISTS user_profile (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          smoking_start_date TEXT NOT NULL,
+          cigs_per_day INTEGER NOT NULL,
+          price_per_pack REAL NOT NULL,
+          cigs_per_pack INTEGER NOT NULL,
+          motivations TEXT NOT NULL DEFAULT '[]',
+          has_completed_onboarding INTEGER NOT NULL DEFAULT 0,
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      console.log("テーブル作成が完了しました");
+    } catch (error) {
+      console.error("マイグレーションエラー:", error);
+      throw error;
+    }
+  };
+
   const handleClearAllData = () => {
     Alert.alert(
       "全データ削除",
@@ -99,6 +126,25 @@ export const DatabaseManagerComponent = ({
     );
   };
 
+  const handleSeedInitialStartupDefault = () => {
+    Alert.alert(
+      "初回起動データ投入",
+      "スマホを初ダウンロードして使う時点のテストデータを投入しますか？\n\n（禁煙開始時刻は現在時刻に設定されます）",
+      [
+        { text: "キャンセル", style: "cancel" },
+        {
+          text: "投入",
+          onPress: () =>
+            handleAction(
+              () => mainSeeder.seedInitialStartupDefault(),
+              "初回起動データの投入が完了しました",
+              "初回起動データの投入中にエラーが発生しました"
+            ),
+        },
+      ]
+    );
+  };
+
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case "basic":
@@ -107,6 +153,8 @@ export const DatabaseManagerComponent = ({
         return <AlertTriangle size={16} color="#F59E0B" strokeWidth={2} />;
       case "achievement":
         return <Trophy size={16} color="#8B5CF6" strokeWidth={2} />;
+      case "initial":
+        return <Smartphone size={16} color="#3B82F6" strokeWidth={2} />;
       default:
         return <Database size={16} color="#6B7280" strokeWidth={2} />;
     }
@@ -120,6 +168,8 @@ export const DatabaseManagerComponent = ({
         return "bg-yellow-50 border-yellow-200";
       case "achievement":
         return "bg-purple-50 border-purple-200";
+      case "initial":
+        return "bg-blue-50 border-blue-200";
       default:
         return "bg-gray-50 border-gray-200";
     }
@@ -133,13 +183,16 @@ export const DatabaseManagerComponent = ({
         return "境界値テスト";
       case "achievement":
         return "アチーブメントテスト";
+      case "initial":
+        return "初回起動パターン";
       default:
         return "その他";
     }
   };
 
-  // カテゴリごとにパターンをグループ化
-  const groupedPatterns = testDataPatterns.reduce((acc, pattern) => {
+  // カテゴリごとにパターンをグループ化（初回起動パターンも含める）
+  const allPatterns = [...initialStartupPatterns, ...testDataPatterns];
+  const groupedPatterns = allPatterns.reduce((acc, pattern) => {
     if (!acc[pattern.category]) {
       acc[pattern.category] = [];
     }
@@ -186,6 +239,28 @@ export const DatabaseManagerComponent = ({
               >
                 {hasData ? "タップ" : "データなし"}
               </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className={`flex-row items-center justify-between p-4 rounded-lg border bg-blue-50 border-blue-200 ${
+                loading ? "opacity-50" : ""
+              }`}
+              onPress={() =>
+                handleAction(
+                  runMigrations,
+                  "データベーステーブルが作成されました",
+                  "テーブル作成中にエラーが発生しました"
+                )
+              }
+              disabled={loading}
+            >
+              <View className="flex-row items-center">
+                <RefreshCw size={20} color="#3B82F6" strokeWidth={2} />
+                <Text className="text-sm font-medium ml-3 text-gray-800">
+                  データベーステーブル作成
+                </Text>
+              </View>
+              <Text className="text-xs text-gray-500">タップ</Text>
             </TouchableOpacity>
           </View>
         </View>

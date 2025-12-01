@@ -1,7 +1,11 @@
-import { SOSScreen } from "@/components/SOSScreen";
-import { StatsCard } from "@/components/StatsCard";
+import { AppHeader } from "@/components/AppHeader";
+import { BreathingTimer } from "@/components/BreathingTimer";
+import { StatsCard } from "@/components/home/ui/StatsCard";
+import { DEFAULT_BACKGROUND } from "@/constants/backgrounds";
 import { useQuitTimer } from "@/hooks/useQuitTimer";
 import { useSmokerData } from "@/hooks/useSmokerData";
+import { BlurView } from "expo-blur";
+import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from "expo-router";
 import {
@@ -12,10 +16,17 @@ import {
   Target,
 } from "lucide-react-native";
 import { useCallback, useState } from "react";
-import { Modal, Text, TouchableOpacity, View } from "react-native";
+import {
+  ImageBackground,
+  Modal,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function HomeScreen() {
-  const [showSOS, setShowSOS] = useState(false);
+  const [showBreathingTimer, setShowBreathingTimer] = useState(false);
   const { smokerData, loadData } = useSmokerData();
   const { quitStats } = useQuitTimer(
     smokerData?.quitDate,
@@ -24,7 +35,7 @@ export default function HomeScreen() {
     smokerData?.cigarettesPerPack
   );
 
-  const userName = smokerData?.name || "あなた";
+  const userName = smokerData?.userName || "あなた";
 
   // 画面がフォーカスされた時にデータを再読み込み
   useFocusEffect(
@@ -33,42 +44,62 @@ export default function HomeScreen() {
     }, [loadData])
   );
 
+  // SOSボタンが押された時のハンドラー
+  const handleSOSPress = () => {
+    // ハプティックフィードバック（緊急時なので強い振動）
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    setShowBreathingTimer(true);
+  };
+
   return (
-    <View className="flex-1 bg-gray-100">
-      {/* Header with gradient */}
-      <LinearGradient
-        colors={["#10B981", "#059669"]}
-        style={{
-          paddingTop: 60,
-          paddingBottom: 10,
-          paddingHorizontal: 20,
-          borderBottomLeftRadius: 20,
-          borderBottomRightRadius: 20,
+    <ImageBackground
+      source={DEFAULT_BACKGROUND.source}
+      className="flex-1"
+      resizeMode="cover"
+    >
+      {/* 半透明のオーバーレイ */}
+      <View className="absolute inset-0 bg-white/80" />
+
+      {/* Header */}
+      <AppHeader
+        title={`こんにちは、${userName}さん！`}
+        healthStatus={{
+          icon: <Heart size={16} color="#065f46" strokeWidth={2} />,
+          text: "血圧が正常値に近づいています",
         }}
-      >
-        <Text className="text-lg font-semibold text-white mb-2">
-          こんにちは、{userName}さん！
-        </Text>
-        <View className="flex-row items-center bg-white/20 px-3 py-1.5 rounded-xl self-start">
-          <Heart size={16} color="#ffffff" strokeWidth={2} />
-          <Text className="text-xs text-white ml-1.5 font-medium">
-            血圧が正常値に近づいています
-          </Text>
-        </View>
-      </LinearGradient>
+      />
 
       {/* Main content */}
-      <View className="flex-1 px-5 pt-8">
+      <ScrollView className="flex-1 px-5 pt-8 relative z-10">
         <Text className="text-base text-gray-600 text-center mb-5 font-medium">
           あなたが禁煙をはじめてから...
         </Text>
 
         {/* Main timer display */}
-        <View className="bg-white rounded-2xl p-8 mb-8 items-center shadow-sm">
-          <Text className="text-2xl font-bold text-gray-800 text-center leading-8">
-            {quitStats.days}日 {quitStats.hours}時間 {quitStats.minutes}分{" "}
-            {quitStats.seconds}秒
-          </Text>
+        <View
+          className="mb-8 rounded-2xl overflow-hidden"
+          style={{
+            shadowColor: "#000",
+            shadowOffset: {
+              width: 0,
+              height: 4,
+            },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 8,
+          }}
+        >
+          <BlurView
+            intensity={20}
+            tint="light"
+            className="p-8 items-center"
+            style={{ backgroundColor: "rgba(255, 255, 255, 0.6)" }}
+          >
+            <Text className="text-2xl font-bold text-gray-800 text-center leading-8">
+              {quitStats.days}日 {quitStats.hours}時間 {quitStats.minutes}分{" "}
+              {quitStats.seconds}秒
+            </Text>
+          </BlurView>
         </View>
 
         {/* Stats grid */}
@@ -98,12 +129,12 @@ export default function HomeScreen() {
             color="#F97316"
           />
         </View>
-      </View>
+      </ScrollView>
 
       {/* SOS FAB */}
       <TouchableOpacity
-        className="absolute bottom-5 right-5 w-15 h-15 rounded-full shadow-lg"
-        onPress={() => setShowSOS(true)}
+        className="absolute bottom-5 right-5 w-15 h-15 rounded-full shadow-lg z-20"
+        onPress={handleSOSPress}
         activeOpacity={0.8}
       >
         <LinearGradient
@@ -121,15 +152,18 @@ export default function HomeScreen() {
         </LinearGradient>
       </TouchableOpacity>
 
-      {/* SOS Modal */}
+      {/* Breathing Timer Modal */}
       <Modal
-        visible={showSOS}
+        visible={showBreathingTimer}
         animationType="slide"
         presentationStyle="formSheet"
-        onRequestClose={() => setShowSOS(false)}
+        onRequestClose={() => setShowBreathingTimer(false)}
       >
-        <SOSScreen onClose={() => setShowSOS(false)} />
+        <BreathingTimer
+          onClose={() => setShowBreathingTimer(false)}
+          onComplete={() => setShowBreathingTimer(false)}
+        />
       </Modal>
-    </View>
+    </ImageBackground>
   );
 }

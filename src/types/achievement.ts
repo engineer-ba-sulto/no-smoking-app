@@ -1,5 +1,5 @@
 export type AchievementCategory = "duration" | "cigarettes" | "money";
-export type AchievementTier = "bronze" | "silver" | "gold" | "platinum";
+export type AchievementTier = "bronze" | "silver" | "gold" | 'platinum';
 
 export interface Achievement {
   id: string;

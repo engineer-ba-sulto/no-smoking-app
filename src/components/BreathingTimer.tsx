@@ -1,6 +1,7 @@
+import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { Pause, Play, X } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import Animated, {
   Easing,
@@ -18,29 +19,46 @@ export function BreathingTimer({ onClose, onComplete }: Props) {
   const [timeLeft, setTimeLeft] = useState(180); // 3 minutes in seconds
   const [isActive, setIsActive] = useState(false);
   const [phase, setPhase] = useState<"inhale" | "hold" | "exhale">("inhale");
-
   const scale = useSharedValue(1);
   const opacity = useSharedValue(0.3);
+  const breathingIntervalRef = useRef<number | null>(null);
+  const timerIntervalRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-
-    if (isActive && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((timeLeft) => timeLeft - 1);
-      }, 1000);
-    } else if (timeLeft === 0) {
-      onComplete();
-    }
-
-    return () => clearInterval(interval);
-  }, [isActive, timeLeft, onComplete]);
-
+  // メインタイマーの管理
   useEffect(() => {
     if (isActive) {
-      // Breathing animation cycle: 4 seconds in, 4 seconds hold, 4 seconds out
+      timerIntervalRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          const newTime = prev - 1;
+          if (newTime <= 0) {
+            // タイマー終了
+            onComplete();
+            return 0;
+          }
+          return newTime;
+        });
+      }, 1000);
+    } else {
+      // 停止時はタイマーをクリア
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+    };
+  }, [isActive]);
+
+  // 呼吸サイクルの管理
+  useEffect(() => {
+    if (isActive) {
       const breathingCycle = () => {
-        // Inhale
+        // Inhale phase (4 seconds)
         setPhase("inhale");
         scale.value = withTiming(1.3, {
           duration: 4000,
@@ -52,12 +70,12 @@ export function BreathingTimer({ onClose, onComplete }: Props) {
         });
 
         setTimeout(() => {
-          // Hold
+          // Hold phase (4 seconds)
           setPhase("hold");
         }, 4000);
 
         setTimeout(() => {
-          // Exhale
+          // Exhale phase (4 seconds)
           setPhase("exhale");
           scale.value = withTiming(1, {
             duration: 4000,
@@ -70,12 +88,36 @@ export function BreathingTimer({ onClose, onComplete }: Props) {
         }, 8000);
       };
 
+      // 最初のサイクルを開始
       breathingCycle();
-      const cycleInterval = setInterval(breathingCycle, 12000);
 
-      return () => clearInterval(cycleInterval);
+      // 12秒ごとにサイクルを繰り返し
+      breathingIntervalRef.current = setInterval(breathingCycle, 12000);
+    } else {
+      // 停止時はリセット
+      setPhase("inhale");
+      scale.value = withTiming(1, {
+        duration: 500,
+        easing: Easing.inOut(Easing.ease),
+      });
+      opacity.value = withTiming(0.3, {
+        duration: 500,
+        easing: Easing.inOut(Easing.ease),
+      });
+
+      if (breathingIntervalRef.current) {
+        clearInterval(breathingIntervalRef.current);
+        breathingIntervalRef.current = null;
+      }
     }
-  }, [isActive]);
+
+    return () => {
+      if (breathingIntervalRef.current) {
+        clearInterval(breathingIntervalRef.current);
+        breathingIntervalRef.current = null;
+      }
+    };
+  }, [isActive, scale, opacity]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -101,6 +143,18 @@ export function BreathingTimer({ onClose, onComplete }: Props) {
     }
   };
 
+  // 開始/停止ボタンのハンドラー
+  const handleToggleTimer = () => {
+    if (isActive) {
+      // 停止時：軽い振動
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } else {
+      // 開始時：中程度の振動
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    setIsActive(!isActive);
+  };
+
   return (
     <View className="flex-1 bg-white">
       {/* Header */}
@@ -110,22 +164,20 @@ export function BreathingTimer({ onClose, onComplete }: Props) {
         </TouchableOpacity>
       </View>
 
-      <View className="flex-1 items-center justify-between px-5 pb-10">
+      {/* Main content - centered */}
+      <View className="flex-1 items-center justify-center px-5">
         {/* Timer display */}
-        <View className="items-center mt-5">
-          <Text className="text-4xl font-bold text-gray-800 mb-2">
+        <View className="items-center mb-8">
+          <Text className="text-6xl font-bold text-gray-800 mb-3">
             {formatTime(timeLeft)}
-          </Text>
-          <Text className="text-lg text-gray-600 font-medium">
-            {isActive ? getPhaseText() : "深呼吸を始めましょう"}
           </Text>
         </View>
 
         {/* Breathing circle */}
-        <View className="items-center justify-center flex-1">
+        <View className="items-center justify-center mb-12">
           <Animated.View
             style={[
-              { width: 200, height: 200, borderRadius: 100 },
+              { width: 300, height: 300, borderRadius: 150 },
               animatedStyle,
             ]}
           >
@@ -134,16 +186,22 @@ export function BreathingTimer({ onClose, onComplete }: Props) {
               style={{
                 width: "100%",
                 height: "100%",
-                borderRadius: 100,
+                borderRadius: 150,
+                justifyContent: "center",
+                alignItems: "center",
               }}
-            />
+            >
+              <Text className="text-3xl font-bold text-white text-center">
+                {isActive ? getPhaseText() : "深呼吸を始めましょう"}
+              </Text>
+            </LinearGradient>
           </Animated.View>
         </View>
 
         {/* Control button */}
         <TouchableOpacity
-          className="rounded-xl shadow-lg"
-          onPress={() => setIsActive(!isActive)}
+          className="rounded-xl shadow-lg mb-6"
+          onPress={handleToggleTimer}
           activeOpacity={0.8}
         >
           <LinearGradient
@@ -152,25 +210,25 @@ export function BreathingTimer({ onClose, onComplete }: Props) {
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              paddingVertical: 16,
-              paddingHorizontal: 32,
+              paddingVertical: 18,
+              paddingHorizontal: 40,
               borderRadius: 12,
             }}
           >
             {isActive ? (
-              <Pause size={24} color="#ffffff" strokeWidth={2} />
+              <Pause size={28} color="#ffffff" strokeWidth={2} />
             ) : (
-              <Play size={24} color="#ffffff" strokeWidth={2} />
+              <Play size={28} color="#ffffff" strokeWidth={2} />
             )}
-            <Text className="text-base font-semibold text-white ml-2">
+            <Text className="text-lg font-semibold text-white ml-3">
               {isActive ? "一時停止" : "開始"}
             </Text>
           </LinearGradient>
         </TouchableOpacity>
 
         {/* Instructions */}
-        <View className="px-5 mt-5">
-          <Text className="text-sm text-gray-600 text-center leading-5">
+        <View className="px-5">
+          <Text className="text-base text-gray-600 text-center leading-6">
             ゆっくりと深く呼吸し、心を落ち着けてください。
           </Text>
         </View>

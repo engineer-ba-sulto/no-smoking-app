@@ -1,21 +1,38 @@
-import { InputField } from "@/components/InputField";
-import { MotivationSelector } from "@/components/MotivationSelector";
-import { NumberStepper } from "@/components/NumberStepper";
-import { OnboardingProgress } from "@/components/OnboardingProgress";
-import { StepButton } from "@/components/StepButton";
-import { useSmokerData } from "@/hooks/useSmokerData";
-import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
-import { Heart, Sparkles } from "lucide-react-native";
-import { useEffect, useState } from "react";
 import {
-  Dimensions,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import Animated, {
+  AnnualCostNewStep,
+  AppearanceImpactStep,
+  CigarettesStep,
+  DailyCostStep,
+  FamilyStep,
+  HeartRiskStep,
+  InvestmentStep,
+  LungRiskStep,
+  MotivationStep,
+  NameStep,
+  OnboardingProgress,
+  OtherRiskStep,
+  PackSizeStep,
+  PassiveSmokingStep,
+  PriceStep,
+  QuestionnaireStep,
+  ReadyStep,
+  SocialConstraintsStep,
+  SupportStep,
+  TenYearCostStep,
+  TravelExperienceStep,
+  TwentyYearCostStep,
+  WantsHobbiesStep,
+  WelcomeStep,
+} from "@/components/onboarding";
+import { DEFAULT_BACKGROUND } from "@/constants/backgrounds";
+import { ONBOARDING_CONFIG, OnboardingStep } from "@/constants/onboarding";
+import { useSmokerData } from "@/hooks/useSmokerData";
+import { router } from "expo-router";
+import { ArrowLeft, Settings } from "lucide-react-native";
+import { useEffect, useState } from "react";
+import { ImageBackground, TouchableOpacity, View } from "react-native";
+import Purchases from "react-native-purchases";
+import {
   Easing,
   useAnimatedStyle,
   useSharedValue,
@@ -23,17 +40,15 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-const { width } = Dimensions.get("window");
-
-type OnboardingStep = 1 | 2 | 3 | 4 | 5 | 6;
-
 export default function OnboardingScreen() {
-  const [currentStep, setCurrentStep] = useState<OnboardingStep>(1);
+  const [currentStep, setCurrentStep] = useState<OnboardingStep>(
+    ONBOARDING_CONFIG.STEPS.WELCOME
+  );
+  const [userName, setUserName] = useState("");
   const [selectedMotivations, setSelectedMotivations] = useState<string[]>([]);
   const [cigarettesPerDay, setCigarettesPerDay] = useState(20);
-  const [pricePerPack, setPricePerPack] = useState("600");
-  const [cigarettesPerPack, setCigarettesPerPack] = useState("20");
-  const [startTime, setStartTime] = useState<"now" | "later">("now");
+  const [pricePerPack, setPricePerPack] = useState(600);
+  const [cigarettesPerPack, setCigarettesPerPack] = useState(20);
 
   const { updateSmokerData } = useSmokerData();
 
@@ -61,249 +76,216 @@ export default function OnboardingScreen() {
   }));
 
   const nextStep = () => {
-    if (currentStep < 6) {
+    if (currentStep < ONBOARDING_CONFIG.TOTAL_STEPS) {
       setCurrentStep((prev) => (prev + 1) as OnboardingStep);
     }
   };
 
-  const canProceedFromStep = () => {
-    switch (currentStep) {
-      case 1:
-        return true;
-      case 2:
-        return selectedMotivations.length > 0;
-      case 3:
-        return cigarettesPerDay > 0;
-      case 4:
-        return pricePerPack && cigarettesPerPack;
-      case 5:
-        return true;
-      case 6:
-        return true;
-      default:
-        return false;
+  const prevStep = () => {
+    if (currentStep > ONBOARDING_CONFIG.STEPS.WELCOME) {
+      setCurrentStep((prev) => (prev - 1) as OnboardingStep);
     }
   };
 
   const completeOnboarding = async () => {
-    const quitDate =
-      startTime === "now" ? new Date().toISOString() : new Date().toISOString(); // For now, both use current time
+    try {
+      const quitDate = new Date().toISOString();
 
-    await updateSmokerData({
-      motivations: selectedMotivations,
-      cigarettesPerDay,
-      pricePerPack: parseInt(pricePerPack),
-      cigarettesPerPack: parseInt(cigarettesPerPack),
-      quitDate,
-      hasCompletedOnboarding: true,
-    });
+      await updateSmokerData({
+        userName: userName,
+        motivations: selectedMotivations,
+        cigarettesPerDay,
+        pricePerPack,
+        cigarettesPerPack,
+        quitDate,
+        hasCompletedOnboarding: true,
+      });
 
-    router.replace("/(tabs)");
+      // customerInfoを取得してサブスクリプション状態をチェック
+      try {
+        const customerInfo = await Purchases.getCustomerInfo();
+        const hasActiveSubscription =
+          customerInfo.entitlements.active["premium"] !== undefined;
+
+        if (hasActiveSubscription) {
+          // 有効なサブスクリプションがある場合 → メインアプリに遷移
+          console.log("有効なサブスクリプションを検出、メインアプリに遷移");
+          router.replace("/(tabs)");
+        } else {
+          // サブスクリプションがない場合 → ペイウォールに遷移
+          console.log("サブスクリプションなし、ペイウォールに遷移");
+          router.replace("/(paywalls)/paywall");
+        }
+      } catch (purchaseError) {
+        console.error("CustomerInfo取得エラー:", purchaseError);
+        // エラーが発生した場合 → ペイウォールに遷移（安全側に倒す）
+        router.replace("/(paywalls)/paywall");
+      }
+    } catch (error) {
+      console.error("オンボーディング完了エラー:", error);
+      // エラーハンドリング - ユーザーにエラーメッセージを表示
+      alert("データの保存に失敗しました。もう一度お試しください。");
+    }
   };
 
   const renderStepContent = () => {
     switch (currentStep) {
-      case 1:
+      case ONBOARDING_CONFIG.STEPS.WELCOME:
+        return <WelcomeStep onNext={nextStep} animatedStyle={animatedStyle} />;
+
+      case ONBOARDING_CONFIG.STEPS.NAME:
         return (
-          <Animated.View
-            style={animatedStyle}
-            className="items-center justify-center min-h-[500px] px-5"
-          >
-            <View className="mb-8">
-              <LinearGradient
-                colors={["#10B981", "#059669"]}
-                style={{
-                  width: 120,
-                  height: 120,
-                  borderRadius: 60,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Sparkles size={40} color="#ffffff" strokeWidth={2} />
-              </LinearGradient>
-            </View>
-            <Text className="text-3xl font-bold text-gray-800 text-center mb-4">
-              ようこそ！
-            </Text>
-            <Text className="text-base text-gray-600 text-center leading-6 mb-10">
-              人生を変える、大きな一歩を{"\n"}踏み出してくださり嬉しいです。
-            </Text>
-            <StepButton
-              title="一緒にがんばる"
-              onPress={nextStep}
-              className="w-full mt-5"
-            />
-          </Animated.View>
+          <NameStep
+            onNext={nextStep}
+            animatedStyle={animatedStyle}
+            userName={userName}
+            onNameChange={setUserName}
+          />
         );
 
-      case 2:
+      case ONBOARDING_CONFIG.STEPS.HEART_RISK:
         return (
-          <Animated.View
-            style={animatedStyle}
-            className="items-center justify-center min-h-[500px] px-5"
-          >
-            <Text className="text-2xl font-semibold text-gray-800 text-center mb-4 leading-8">
-              あなたが禁煙を決意した、{"\n"}一番の理由は何ですか？
-            </Text>
-            <Text className="text-sm text-gray-400 text-center mb-8">
-              (複数選択可)
-            </Text>
-            <MotivationSelector
-              selectedMotivations={selectedMotivations}
-              onSelectionChange={setSelectedMotivations}
-            />
-            <StepButton
-              title="次へ >"
-              onPress={nextStep}
-              disabled={!canProceedFromStep()}
-              className="w-full mt-5"
-            />
-          </Animated.View>
+          <HeartRiskStep
+            onNext={nextStep}
+            animatedStyle={animatedStyle}
+            userName={userName}
+          />
         );
 
-      case 3:
+      case ONBOARDING_CONFIG.STEPS.LUNG_RISK:
         return (
-          <Animated.View
-            style={animatedStyle}
-            className="items-center justify-center min-h-[500px] px-5"
-          >
-            <Text className="text-2xl font-semibold text-gray-800 text-center mb-4 leading-8">
-              1日に、およそ何本くらい{"\n"}吸っていましたか？
-            </Text>
-            <View className="my-10">
-              <NumberStepper
-                value={cigarettesPerDay}
-                onChange={setCigarettesPerDay}
-                min={1}
-                max={80}
-                suffix="本"
-              />
-            </View>
-            <StepButton
-              title="次へ >"
-              onPress={nextStep}
-              className="w-full mt-5"
-            />
-          </Animated.View>
+          <LungRiskStep
+            onNext={nextStep}
+            animatedStyle={animatedStyle}
+            userName={userName}
+          />
         );
 
-      case 4:
+      case ONBOARDING_CONFIG.STEPS.OTHER_RISK:
         return (
-          <Animated.View
-            style={animatedStyle}
-            className="items-center justify-center min-h-[500px] px-5"
-          >
-            <Text className="text-2xl font-semibold text-gray-800 text-center mb-4 leading-8">
-              いつも吸っていたタバコについて{"\n"}教えてください。
-            </Text>
-            <View className="w-full my-5">
-              <InputField
-                label="▼ タバコ1箱の価格は？"
-                suffix="円"
-                value={pricePerPack}
-                onChangeText={setPricePerPack}
-                keyboardType="numeric"
-                placeholder="600"
-              />
-              <InputField
-                label="▼ 1箱の本数は？"
-                suffix="本"
-                value={cigarettesPerPack}
-                onChangeText={setCigarettesPerPack}
-                keyboardType="numeric"
-                placeholder="20"
-              />
-            </View>
-            <StepButton
-              title="次へ >"
-              onPress={nextStep}
-              disabled={!canProceedFromStep()}
-              className="w-full mt-5"
-            />
-          </Animated.View>
+          <OtherRiskStep
+            onNext={nextStep}
+            animatedStyle={animatedStyle}
+            userName={userName}
+          />
         );
 
-      case 5:
+      case ONBOARDING_CONFIG.STEPS.PASSIVE_SMOKING:
         return (
-          <Animated.View
-            style={animatedStyle}
-            className="items-center justify-center min-h-[500px] px-5"
-          >
-            <Text className="text-2xl font-semibold text-gray-800 text-center mb-4 leading-8">
-              準備は整いました。{"\n\n"}あなたの新しい人生は、{"\n"}
-              いつから始まりますか？
-            </Text>
-            <View className="w-full my-8">
-              <TouchableOpacity
-                className={`rounded-xl mb-5 ${
-                  startTime === "now" ? "shadow-lg" : ""
-                }`}
-                onPress={() => setStartTime("now")}
-                activeOpacity={0.8}
-              >
-                <LinearGradient
-                  colors={["#10B981", "#059669"]}
-                  style={{
-                    paddingVertical: 20,
-                    paddingHorizontal: 32,
-                    borderRadius: 12,
-                    alignItems: "center",
-                  }}
-                >
-                  <Text className="text-base font-semibold text-white">
-                    今、この瞬間から始める
-                  </Text>
-                </LinearGradient>
-              </TouchableOpacity>
-
-              <StepButton
-                title="未来の日時を設定する"
-                onPress={() => setStartTime("later")}
-                variant="secondary"
-              />
-            </View>
-            <StepButton
-              title="次へ >"
-              onPress={nextStep}
-              className="w-full mt-5"
-            />
-          </Animated.View>
+          <PassiveSmokingStep onNext={nextStep} animatedStyle={animatedStyle} />
         );
 
-      case 6:
+      case ONBOARDING_CONFIG.STEPS.APPEARANCE_IMPACT:
         return (
-          <Animated.View
-            style={animatedStyle}
-            className="items-center justify-center min-h-[500px] px-5"
-          >
-            <View className="mb-8">
-              <LinearGradient
-                colors={["#8B5CF6", "#7C3AED"]}
-                style={{
-                  width: 120,
-                  height: 120,
-                  borderRadius: 60,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Heart size={40} color="#ffffff" strokeWidth={2} />
-              </LinearGradient>
-            </View>
-            <Text className="text-2xl font-semibold text-gray-800 text-center mb-4 leading-8">
-              私たちが24時間{"\n"}あなたに寄り添います。
-            </Text>
-            <Text className="text-base text-gray-600 text-center leading-6 mb-10">
-              大切な節目をお祝いするために、{"\n"}
-              応援メッセージを受け取ってください。
-            </Text>
-            <StepButton
-              title="最高のサポートを受け取る"
-              onPress={completeOnboarding}
-              className="w-full mt-5"
-            />
-          </Animated.View>
+          <AppearanceImpactStep
+            onNext={nextStep}
+            animatedStyle={animatedStyle}
+          />
+        );
+
+      case ONBOARDING_CONFIG.STEPS.SOCIAL_CONSTRAINTS:
+        return (
+          <SocialConstraintsStep
+            onNext={nextStep}
+            animatedStyle={animatedStyle}
+          />
+        );
+
+      case ONBOARDING_CONFIG.STEPS.DAILY_COST:
+        return (
+          <DailyCostStep onNext={nextStep} animatedStyle={animatedStyle} />
+        );
+
+      case ONBOARDING_CONFIG.STEPS.ANNUAL_COST:
+        return (
+          <AnnualCostNewStep onNext={nextStep} animatedStyle={animatedStyle} />
+        );
+
+      case ONBOARDING_CONFIG.STEPS.TEN_YEAR_COST:
+        return (
+          <TenYearCostStep onNext={nextStep} animatedStyle={animatedStyle} />
+        );
+
+      case ONBOARDING_CONFIG.STEPS.TWENTY_YEAR_COST:
+        return (
+          <TwentyYearCostStep onNext={nextStep} animatedStyle={animatedStyle} />
+        );
+
+      case ONBOARDING_CONFIG.STEPS.TRAVEL_EXPERIENCE:
+        return (
+          <TravelExperienceStep
+            onNext={nextStep}
+            animatedStyle={animatedStyle}
+          />
+        );
+
+      case ONBOARDING_CONFIG.STEPS.WANTS_HOBBIES:
+        return (
+          <WantsHobbiesStep onNext={nextStep} animatedStyle={animatedStyle} />
+        );
+
+      case ONBOARDING_CONFIG.STEPS.INVESTMENT:
+        return (
+          <InvestmentStep onNext={nextStep} animatedStyle={animatedStyle} />
+        );
+
+      case ONBOARDING_CONFIG.STEPS.FAMILY:
+        return <FamilyStep onNext={nextStep} animatedStyle={animatedStyle} />;
+
+      case ONBOARDING_CONFIG.STEPS.QUESTIONNAIRE:
+        return (
+          <QuestionnaireStep onNext={nextStep} animatedStyle={animatedStyle} />
+        );
+
+      case ONBOARDING_CONFIG.STEPS.MOTIVATION:
+        return (
+          <MotivationStep
+            onNext={nextStep}
+            animatedStyle={animatedStyle}
+            selectedMotivations={selectedMotivations}
+            onSelectionChange={setSelectedMotivations}
+          />
+        );
+
+      case ONBOARDING_CONFIG.STEPS.CIGARETTES:
+        return (
+          <CigarettesStep
+            onNext={nextStep}
+            animatedStyle={animatedStyle}
+            cigarettesPerDay={cigarettesPerDay}
+            onCigarettesChange={setCigarettesPerDay}
+          />
+        );
+
+      case ONBOARDING_CONFIG.STEPS.PRICE:
+        return (
+          <PriceStep
+            onNext={nextStep}
+            animatedStyle={animatedStyle}
+            pricePerPack={pricePerPack}
+            onPriceChange={setPricePerPack}
+          />
+        );
+
+      case ONBOARDING_CONFIG.STEPS.PACK_SIZE:
+        return (
+          <PackSizeStep
+            onNext={nextStep}
+            animatedStyle={animatedStyle}
+            cigarettesPerPack={cigarettesPerPack}
+            onCigarettesPerPackChange={setCigarettesPerPack}
+          />
+        );
+
+      case ONBOARDING_CONFIG.STEPS.READY:
+        return <ReadyStep onNext={nextStep} animatedStyle={animatedStyle} />;
+
+      case ONBOARDING_CONFIG.STEPS.SUPPORT:
+        return (
+          <SupportStep
+            onComplete={completeOnboarding}
+            animatedStyle={animatedStyle}
+          />
         );
 
       default:
@@ -312,20 +294,46 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white pt-12 android:pt-8">
-      <OnboardingProgress currentStep={currentStep} totalSteps={6} />
+    <ImageBackground
+      source={DEFAULT_BACKGROUND.source}
+      className="flex-1 pt-14 android:pt-8"
+      resizeMode="cover"
+    >
+      {/* 半透明のオーバーレイ */}
+      <View className="absolute inset-0 bg-white/80" />
 
-      <ScrollView
-        className="flex-1 px-5"
-        contentContainerStyle={{
-          flexGrow: 1,
-          justifyContent: "center",
-          paddingBottom: 40,
-        }}
-        showsVerticalScrollIndicator={false}
-      >
-        {renderStepContent()}
-      </ScrollView>
-    </View>
+      {/* 戻るボタン */}
+      {currentStep > ONBOARDING_CONFIG.STEPS.WELCOME && (
+        <TouchableOpacity
+          onPress={prevStep}
+          className="absolute top-12 left-4 z-50 bg-white/90 rounded-full p-2 android:top-8 shadow-sm"
+          activeOpacity={0.7}
+        >
+          <ArrowLeft size={20} color="#374151" strokeWidth={2} />
+        </TouchableOpacity>
+      )}
+
+      {/* 開発用設定ショートカットボタン */}
+      {__DEV__ && (
+        <TouchableOpacity
+          onPress={() => router.push("/(tabs)/settings")}
+          className="absolute top-12 right-4 z-50 bg-white/90 rounded-full p-2 android:top-8 shadow-sm border-2 border-red-200"
+          activeOpacity={0.7}
+        >
+          <Settings size={20} color="#EF4444" strokeWidth={2} />
+        </TouchableOpacity>
+      )}
+
+      {/* コンテンツ */}
+      <View className="flex-1 relative z-10">
+        <OnboardingProgress
+          currentStep={currentStep}
+          totalSteps={ONBOARDING_CONFIG.TOTAL_STEPS}
+        />
+        <View className="flex-1 px-5 justify-center">
+          {renderStepContent()}
+        </View>
+      </View>
+    </ImageBackground>
   );
 }

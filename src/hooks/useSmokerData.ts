@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { userProfileRepository } from "../drizzle/repositories/user-profile-repository";
 
 export interface SmokerData {
-  name?: string;
+  userName: string;
   motivations: string[];
   cigarettesPerDay: number;
   pricePerPack: number;
@@ -28,15 +28,17 @@ export function useSmokerData() {
       if (profiles.length > 0) {
         const profile = profiles[0];
         const newSmokerData: SmokerData = {
-          name: "あなた",
-          motivations: [],
+          userName: profile.userName,
+          motivations: profile.motivations
+            ? JSON.parse(profile.motivations)
+            : [],
           cigarettesPerDay: profile.cigsPerDay,
           pricePerPack: profile.pricePerPack,
           cigarettesPerPack: profile.cigsPerPack,
           quitDate: profile.smokingStartDate,
           motivationNotifications: true,
           achievementNotifications: true,
-          hasCompletedOnboarding: true,
+          hasCompletedOnboarding: profile.hasCompletedOnboarding,
         };
         setSmokerData(newSmokerData);
       } else {
@@ -64,27 +66,39 @@ export function useSmokerData() {
   const updateSmokerData = useCallback(
     async (updates: Partial<SmokerData>) => {
       try {
-        if (!smokerData) {
-          throw new Error("No smoker data available");
-        }
-
         const updatedData = { ...smokerData, ...updates } as SmokerData;
 
         // データベースにプロフィールが存在する場合は更新
         const profiles = await userProfileRepository.findAll();
 
         if (profiles.length > 0) {
-          await userProfileRepository.update(profiles[0].id, {
+					await userProfileRepository.update(profiles[0].id, {
+						userName: updatedData.userName,
             cigsPerDay: updatedData.cigarettesPerDay,
             pricePerPack: updatedData.pricePerPack,
             cigsPerPack: updatedData.cigarettesPerPack,
             smokingStartDate: updatedData.quitDate,
+            motivations: JSON.stringify(updatedData.motivations),
+            hasCompletedOnboarding: updatedData.hasCompletedOnboarding,
           });
 
           // データベース更新後にローカル状態を更新
           setSmokerData(updatedData);
         } else {
-          // プロフィールがない場合はローカル状態のみ更新
+					// プロフィールがない場合は新規作成
+          if (updatedData.hasCompletedOnboarding) {
+						await userProfileRepository.create({
+							userName: updatedData.userName,
+              smokingStartDate: updatedData.quitDate,
+              cigsPerDay: updatedData.cigarettesPerDay,
+              pricePerPack: updatedData.pricePerPack,
+              cigsPerPack: updatedData.cigarettesPerPack,
+              motivations: JSON.stringify(updatedData.motivations),
+              hasCompletedOnboarding: updatedData.hasCompletedOnboarding,
+            });
+          }
+
+          // ローカル状態を更新
           setSmokerData(updatedData);
         }
       } catch (error) {

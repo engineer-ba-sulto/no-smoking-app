@@ -8,12 +8,64 @@ export interface TestDataPattern {
   id: string;
   name: string;
   description: string;
-  category: "basic" | "edgeCase" | "achievement";
+  category: "basic" | "edgeCase" | "achievement" | "initial";
   data: CreateUserProfileInput;
 }
 
 /**
- * 11種類の個別テストデータパターン
+ * 初回起動用のテストデータパターン
+ * スマホを初ダウンロードして使う時点の典型的なユーザー
+ */
+export const initialStartupPatterns: TestDataPattern[] = [
+  {
+    id: "initial-fresh-start",
+    name: "初回起動パターン",
+    description: "今から禁煙を始める新規ユーザー（禁煙開始時刻は現在時刻）",
+    category: "initial",
+    data: {
+      userName: "初回起動パターン",
+      smokingStartDate: new Date().toISOString(),
+      cigsPerDay: 20,
+      pricePerPack: 650,
+      cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約"]),
+      hasCompletedOnboarding: true,
+    },
+  },
+  {
+    id: "initial-light-smoker",
+    name: "軽度喫煙者パターン",
+    description: "1日10本程度の軽度喫煙者が今から禁煙を始める",
+    category: "initial",
+    data: {
+      userName: "軽度喫煙者パターン",
+      smokingStartDate: new Date().toISOString(),
+      cigsPerDay: 10,
+      pricePerPack: 600,
+      cigsPerPack: 20,
+      motivations: JSON.stringify(["家族のため", "健康のため"]),
+      hasCompletedOnboarding: true,
+    },
+  },
+  {
+    id: "initial-heavy-smoker",
+    name: "重度喫煙者パターン",
+    description: "1日30本以上の重度喫煙者が今から禁煙を始める",
+    category: "initial",
+    data: {
+      userName: "重度喫煙者パターン",
+      smokingStartDate: new Date().toISOString(),
+      cigsPerDay: 30,
+      pricePerPack: 700,
+      cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約", "家族のため"]),
+      hasCompletedOnboarding: true,
+    },
+  },
+];
+
+/**
+ * 14種類の個別テストデータパターン
  * 各パターンを個別に選択して登録できる
  */
 export const testDataPatterns: TestDataPattern[] = [
@@ -24,10 +76,13 @@ export const testDataPatterns: TestDataPattern[] = [
     description: "7日前に禁煙を開始した典型的なユーザー",
     category: "basic",
     data: {
+      userName: "1週間経過パターン",
       smokingStartDate: subDays(new Date(), 7).toISOString(),
       cigsPerDay: 15,
       pricePerPack: 600,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約"]),
+      hasCompletedOnboarding: true,
     },
   },
   {
@@ -36,10 +91,13 @@ export const testDataPatterns: TestDataPattern[] = [
     description: "30日前に禁煙を開始した典型的なユーザー",
     category: "basic",
     data: {
+      userName: "1ヶ月経過パターン",
       smokingStartDate: subDays(new Date(), 30).toISOString(),
       cigsPerDay: 20,
       pricePerPack: 650,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約"]),
+      hasCompletedOnboarding: true,
     },
   },
   {
@@ -48,24 +106,30 @@ export const testDataPatterns: TestDataPattern[] = [
     description: "90日前に禁煙を開始した典型的なユーザー",
     category: "basic",
     data: {
+      userName: "3ヶ月経過パターン",
       smokingStartDate: subDays(new Date(), 90).toISOString(),
       cigsPerDay: 25,
       pricePerPack: 700,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約"]),
+      hasCompletedOnboarding: true,
     },
   },
 
-  // 境界値テストパターン (4件)
+  // 境界値テストパターン (5件)
   {
-    id: "edge-1minute",
-    name: "1分前パターン",
-    description: "1分前に禁煙を開始した極短期間のユーザー",
+    id: "edge-1hour",
+    name: "1時間前パターン",
+    description: "1時間前に禁煙を開始した短期間のユーザー",
     category: "edgeCase",
     data: {
-      smokingStartDate: subMinutes(new Date(), 1).toISOString(),
-      cigsPerDay: 10,
-      pricePerPack: 500,
+      userName: "1時間前パターン",
+      smokingStartDate: subMinutes(new Date(), 59).toISOString(),
+      cigsPerDay: 15,
+      pricePerPack: 550,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため"]),
+      hasCompletedOnboarding: true,
     },
   },
   {
@@ -74,10 +138,13 @@ export const testDataPatterns: TestDataPattern[] = [
     description: "1年前に禁煙を開始した長期ユーザー",
     category: "edgeCase",
     data: {
+      userName: "1年経過パターン",
       smokingStartDate: subYears(new Date(), 1).toISOString(),
       cigsPerDay: 30,
       pricePerPack: 750,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約", "家族のため"]),
+      hasCompletedOnboarding: true,
     },
   },
   {
@@ -86,10 +153,13 @@ export const testDataPatterns: TestDataPattern[] = [
     description: "喫煙本数が0の特殊ケース",
     category: "edgeCase",
     data: {
+      userName: "喫煙本数0パターン",
       smokingStartDate: subDays(new Date(), 14).toISOString(),
       cigsPerDay: 0,
       pricePerPack: 600,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため"]),
+      hasCompletedOnboarding: true,
     },
   },
   {
@@ -98,24 +168,60 @@ export const testDataPatterns: TestDataPattern[] = [
     description: "タバコ価格が0の特殊ケース",
     category: "edgeCase",
     data: {
+      userName: "タバコ価格0パターン",
       smokingStartDate: subDays(new Date(), 21).toISOString(),
       cigsPerDay: 15,
       pricePerPack: 0,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため"]),
+      hasCompletedOnboarding: true,
     },
   },
 
-  // アチーブメントテストパターン (4件)
+  // アチーブメントテストパターン (6件)
+  {
+    id: "achievement-6hours",
+    name: "6時間経過パターン",
+    description: "6時間前に禁煙を開始したユーザー",
+    category: "achievement",
+    data: {
+      userName: "6時間経過パターン",
+      smokingStartDate: subHours(new Date(), 6).toISOString(),
+      cigsPerDay: 20,
+      pricePerPack: 650,
+      cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約"]),
+      hasCompletedOnboarding: true,
+    },
+  },
+  {
+    id: "achievement-12hours",
+    name: "12時間経過パターン",
+    description: "12時間前に禁煙を開始したユーザー",
+    category: "achievement",
+    data: {
+      userName: "12時間経過パターン",
+      smokingStartDate: subHours(new Date(), 12).toISOString(),
+      cigsPerDay: 20,
+      pricePerPack: 650,
+      cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約"]),
+      hasCompletedOnboarding: true,
+    },
+  },
   {
     id: "achievement-1day",
     name: "1日達成直前パターン",
     description: "23時間後に禁煙開始（もうすぐ1日達成）",
     category: "achievement",
-    data: {
+		data: {
+			userName: "1日達成直前パターン",
       smokingStartDate: subHours(new Date(), 23).toISOString(),
       cigsPerDay: 20,
       pricePerPack: 650,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約"]),
+      hasCompletedOnboarding: true,
     },
   },
   {
@@ -124,10 +230,13 @@ export const testDataPatterns: TestDataPattern[] = [
     description: "6日23時間後に禁煙開始（もうすぐ1週間達成）",
     category: "achievement",
     data: {
+      userName: "1週間達成直前パターン",
       smokingStartDate: subHours(new Date(), 6 * 24 + 23).toISOString(),
       cigsPerDay: 25,
       pricePerPack: 700,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約"]),
+      hasCompletedOnboarding: true,
     },
   },
   {
@@ -136,10 +245,13 @@ export const testDataPatterns: TestDataPattern[] = [
     description: "29日23時間後に禁煙開始（もうすぐ1ヶ月達成）",
     category: "achievement",
     data: {
+      userName: "1ヶ月達成直前パターン",
       smokingStartDate: subHours(new Date(), 29 * 24 + 23).toISOString(),
       cigsPerDay: 30,
       pricePerPack: 750,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約", "家族のため"]),
+      hasCompletedOnboarding: true,
     },
   },
   {
@@ -148,10 +260,13 @@ export const testDataPatterns: TestDataPattern[] = [
     description: "364日23時間後に禁煙開始（もうすぐ1年達成）",
     category: "achievement",
     data: {
+      userName: "1年達成直前パターン",
       smokingStartDate: subHours(new Date(), 364 * 24 + 23).toISOString(),
       cigsPerDay: 35,
       pricePerPack: 800,
       cigsPerPack: 20,
+      motivations: JSON.stringify(["健康のため", "お金の節約", "家族のため"]),
+      hasCompletedOnboarding: true,
     },
   },
 ];
