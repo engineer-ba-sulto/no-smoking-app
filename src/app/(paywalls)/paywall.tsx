@@ -18,7 +18,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import PackageCard from "../../components/PackageCard";
 import PaywallFooterLinks from "../../components/PaywallFooterLinks";
 import PurchaseButton from "../../components/PurchaseButton";
-import { purchasePackageSafely } from "../../utils/revenuecat";
+import {
+  isTrialAlreadyUsedError,
+  purchasePackageSafely,
+} from "../../utils/revenuecat";
 import { checkSubscriptionStatus } from "../../utils/subscription-check";
 
 // 表示するパッケージIDのリスト（順序通りに表示される）
@@ -107,9 +110,18 @@ export default function PaywallScreen() {
       console.log("購入成功:", result.customerInfo);
       router.replace("/(tabs)");
     } catch (error) {
-      // その他のエラー
+      // エラーハンドリング
       console.error("購入エラー:", error);
-      alert("購入処理中にエラーが発生しました。もう一度お試しください。");
+
+      // トライアル使用済みエラーの場合
+      if (isTrialAlreadyUsedError(error)) {
+        alert(
+          "無料トライアルについて\n\nこのアカウントでは、無料トライアルは既にご利用いただいています。\n年額プランまたは週額プランをご利用ください。"
+        );
+      } else {
+        // その他のエラー
+        alert("購入処理中にエラーが発生しました。もう一度お試しください。");
+      }
     } finally {
       setIsPurchasing(false);
     }
