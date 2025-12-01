@@ -1,7 +1,10 @@
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import Constants from "expo-constants";
+import * as QuickActions from "expo-quick-actions";
+import { RouterAction, useQuickActionRouting } from "expo-quick-actions/router";
 import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import * as StoreReview from "expo-store-review";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Platform, Text } from "react-native";
 import Purchases, { LOG_LEVEL } from "react-native-purchases";
@@ -10,7 +13,6 @@ import { db } from "../drizzle";
 import migrations from "../drizzle/migrations";
 import "../global.css";
 import { setupRevenueCatLogHandler } from "../utils/revenuecat";
-
 export default function RootLayout() {
   const { success, error } = useMigrations(db, migrations);
   const [isDbInitialized, setIsDbInitialized] = useState(false);
@@ -126,6 +128,43 @@ export default function RootLayout() {
     const customerInfo = await Purchases.getCustomerInfo();
     console.log("CustomerInfo:", JSON.stringify(customerInfo, null, 2));
   }
+
+  // QuickActionがタップされたときにStoreReviewを呼び出す
+  const handleQuickAction = async (action: QuickActions.Action) => {
+    // レビュー用のQuickAction（id: "review"）の場合
+    if (action.id === "review") {
+      try {
+        // StoreReviewが利用可能かチェック
+        const isAvailable = await StoreReview.isAvailableAsync();
+        if (isAvailable) {
+          // アプリ内レビューをリクエスト
+          StoreReview.requestReview();
+        } else {
+          console.log("StoreReview is not available");
+        }
+      } catch (error) {
+        console.error("StoreReview error:", error);
+      }
+      // trueを返すことで、ルーティングをスキップ（レビュー表示のみ）
+      return true;
+    }
+    // その他のアクションは通常のルーティングを続行
+    return false;
+  };
+
+  useQuickActionRouting(handleQuickAction);
+
+  useEffect(() => {
+    // レビュー用のQuickActionを設定
+    QuickActions.setItems<RouterAction>([
+      {
+        title: "レビューを書く",
+        icon: "favorite",
+        id: "review",
+        params: { href: "" }, // ルーティングは行わない（handleQuickActionで処理）
+      },
+    ]);
+  }, []);
 
   // エラーハンドリング
   if (error) {
