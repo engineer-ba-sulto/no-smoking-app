@@ -78,6 +78,43 @@ export function isPurchaseCancelledError(
 }
 
 /**
+ * エラーがトライアル使用済みエラーかどうかを判定
+ * トライアルが既に使用済みの場合、アプリストアはPRODUCT_NOT_AVAILABLE_FOR_PURCHASE_ERRORを返すことがある
+ */
+export function isTrialAlreadyUsedError(
+  error: unknown
+): error is PurchasesError {
+  if (!error || typeof error !== "object") return false;
+  if (!("code" in error) || !("message" in error)) return false;
+
+  const purchasesError = error as PurchasesError;
+
+  // エラーコードで判定
+  if (
+    purchasesError.code ===
+      PURCHASES_ERROR_CODE.PRODUCT_NOT_AVAILABLE_FOR_PURCHASE_ERROR ||
+    purchasesError.code === PURCHASES_ERROR_CODE.PURCHASE_INVALID_ERROR
+  ) {
+    // エラーメッセージにトライアル関連のキーワードが含まれているか確認
+    const message = purchasesError.message?.toLowerCase() || "";
+    const trialKeywords = [
+      "trial",
+      "トライアル",
+      "introductory",
+      "intro",
+      "already used",
+      "already purchased",
+      "not eligible",
+      "eligibility",
+    ];
+
+    return trialKeywords.some((keyword) => message.includes(keyword));
+  }
+
+  return false;
+}
+
+/**
  * 購入処理を実行し、エラーハンドリングを行う
  * @param pkg 購入するパッケージ
  * @returns 購入成功時はcustomerInfoを返す。キャンセル時はnullを返す。エラー時は例外を投げる
